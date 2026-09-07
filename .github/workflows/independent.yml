@@ -38,6 +38,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: aidoku-${{ runner.os }}-1.98.1-e1320b0-v1
+      - name: Native test-runner build dependencies
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libfontconfig1-dev libfreetype6-dev libssl-dev
       - name: Install pinned Aidoku CLI and WASM test runner
         run: |
           command -v aidoku || cargo install --git https://github.com/Aidoku/aidoku-rs --rev e1320b0a2e11afb59e4dee374883a2212d325699 --locked aidoku-cli
