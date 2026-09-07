@@ -1,0 +1,39 @@
+{
+  "info": {
+    "id": "multi.luc1d-nhentai",
+    "name": "nhentai (LUC1D)",
+    "version": 1,
+    "url": "https://nhentai.net",
+    "contentRating": 2,
+    "languages": [
+      "All",
+      "en",
+      "ja",
+      "zh"
+    ]
+  },
+  "listings": [
+    {
+      "id": "popular-today",
+      "name": "Popular Today"
+    },
+    {
+      "id": "popular-week",
+      "name": "Popular Week"
+    },
+    {
+      "id": "popular",
+      "name": "Popular All"
+    },
+    {
+      "id": "latest",
+      "name": "Latest"
+    }
+  ],
+  "config": {
+    "languageSelectType": "single",
+    "supportsAuthorSearch": true,
+    "supportsArtistSearch": true,
+    "supportsTagSearch": true
+  }
+}

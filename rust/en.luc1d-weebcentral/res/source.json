@@ -1,0 +1,18 @@
+{
+  "info": {
+    "id": "en.luc1d-weebcentral",
+    "name": "Weeb Central (LUC1D)",
+    "version": 1,
+    "url": "https://weebcentral.com",
+    "contentRating": 1,
+    "languages": [
+      "en"
+    ]
+  },
+  "listings": [
+    {
+      "id": "hot",
+      "name": "Hot Updates"
+    }
+  ]
+}

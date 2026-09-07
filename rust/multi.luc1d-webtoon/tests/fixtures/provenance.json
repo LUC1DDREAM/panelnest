@@ -1,0 +1,26 @@
+{
+  "captured_utc": "2026-09-07T16:09:14.067233+00:00",
+  "notes": "HTTP 200 for each. HTML redirected by WEBTOON to www.webtoons.com with webtoon-platform-redirect=true; episode API remained mobile. Public response bodies, no images requested. page parameter is ignored by API; implementation uses verified cursor parameter.",
+  "fixtures": [
+    {
+      "file": "search.html",
+      "url": "https://m.webtoons.com/en/search?keyword=space%20boy",
+      "sha256": "0e10c9f80f6c103e30b0d93defcbc5fe8dae82f577ce6c238db140b864d9c1f4"
+    },
+    {
+      "file": "details.html",
+      "url": "https://m.webtoons.com/en/sf/space-boy/list?title_no=400",
+      "sha256": "276bd010e94d4734dc8657ed1df464eca7acc06571e18deb8e984362e352e3cc"
+    },
+    {
+      "file": "episodes.json",
+      "url": "https://m.webtoons.com/api/v1/webtoon/400/episodes?pageSize=100&page=1",
+      "sha256": "b7cb3e2256ccd7f6ed92e9df2f208b52581c8625a46aa3f6579ace5751ca2694"
+    },
+    {
+      "file": "viewer.html",
+      "url": "https://m.webtoons.com/en/sf/space-boy/ep-1/viewer?title_no=400&episode_no=1",
+      "sha256": "a7173596a935c27e4bd9a3ecebcf4f32af02a8bdcca8e579bd13d9178d03901b"
+    }
+  ]
+}

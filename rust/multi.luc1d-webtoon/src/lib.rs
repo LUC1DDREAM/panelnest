@@ -1,0 +1,262 @@
+#![no_std]
+use aidoku::{
+	Chapter, FilterValue, ImageRequestProvider, Manga, MangaPageResult, MangaStatus, Page,
+	PageContent, PageContext, Result, Source, Viewer,
+	alloc::{String, Vec, vec},
+	imports::{
+		html::Document,
+		net::{Request, TimeUnit, set_rate_limit},
+	},
+	prelude::*,
+};
+use serde_json::Value;
+const BASE: &str = "https://m.webtoons.com";
+struct Webtoon;
+fn parameter<'a>(path: &'a str, name: &str) -> Option<&'a str> {
+	path.split_once('?')?
+		.1
+		.split('&')
+		.filter_map(|p| p.split_once('='))
+		.find(|(k, _)| *k == name)
+		.map(|(_, v)| v)
+}
+fn official_path(url: &str) -> Option<String> {
+	let path = url
+		.strip_prefix("https://www.webtoons.com")
+		.or_else(|| url.strip_prefix(BASE))
+		.unwrap_or(url);
+	if !path.starts_with('/')
+		|| path.starts_with("//")
+		|| path.contains('\\')
+		|| path.contains("..")
+	{
+		return None;
+	}
+	let id = parameter(path, "title_no")?;
+	if id.is_empty() || !id.bytes().all(|b| b.is_ascii_digit()) {
+		return None;
+	}
+	Some(path.into())
+}
+fn encode_query(query: &str) -> String {
+	query
+		.bytes()
+		.map(|b| {
+			if b.is_ascii_alphanumeric() || b"-._~".contains(&b) {
+				format!("{}", b as char)
+			} else {
+				format!("%{b:02X}")
+			}
+		})
+		.collect()
+}
+fn request(path: &str) -> Result<Request> {
+	let url = if path.starts_with("/api/") {
+		format!("{BASE}{path}")
+	} else {
+		format!(
+			"https://www.webtoons.com{path}{}webtoon-platform-redirect=true",
+			if path.contains('?') { "&" } else { "?" }
+		)
+	};
+	Ok(Request::get(url)?.header("Referer", "https://m.webtoons.com/"))
+}
+fn parse_search(html: &Document) -> MangaPageResult {
+	let mut entries: Vec<Manga> = Vec::new();
+	if let Some(links) = html.select("a[href*=\"/list?title_no=\"]") {
+		for el in links {
+			let Some(key) = el.attr("href").and_then(|u| official_path(&u)) else {
+				continue;
+			};
+			let Some(title) = el.select_first(".title, .subj").and_then(|e| e.text()) else {
+				continue;
+			};
+			if title.trim().is_empty() || entries.iter().any(|m| m.key == key) {
+				continue;
+			}
+			entries.push(Manga {
+				url: Some(format!("{BASE}{key}")),
+				key,
+				title,
+				cover: el
+					.select_first("img")
+					.and_then(|e| e.attr("data-src").or_else(|| e.attr("src"))),
+				viewer: Viewer::Webtoon,
+				..Default::default()
+			});
+		}
+	}
+	MangaPageResult {
+		entries,
+		has_next_page: false,
+	}
+}
+fn parse_details(mut m: Manga, h: &Document) -> Result<Manga> {
+	let text = |s: &str| h.select_first(s).and_then(|e| e.text());
+	m.title = text("h1.subj, .detail_header .subj")
+		.ok_or_else(|| error!("WEBTOON details unavailable or restricted"))?;
+	m.cover = h
+		.select_first("meta[property='og:image']")
+		.and_then(|e| e.attr("content"));
+	m.description = text("#_asideDetail .summary, .summary");
+	m.authors = text(".detail_header .author_area").map(|s| {
+		s.replace("author info", "")
+			.split(',')
+			.map(|s| String::from(s.trim()))
+			.filter(|s| !s.is_empty())
+			.collect()
+	});
+	m.tags = text(".detail_header .genre").map(|s| vec![s]);
+	let status = text(".day_info").unwrap_or_default().to_lowercase();
+	m.status = if status.contains("completed") {
+		MangaStatus::Completed
+	} else if status.contains("every") {
+		MangaStatus::Ongoing
+	} else {
+		MangaStatus::Unknown
+	};
+	m.viewer = Viewer::Webtoon;
+	m.url = Some(format!("{BASE}{}", m.key));
+	Ok(m)
+}
+fn parse_episodes(v: Value) -> Result<(Vec<Chapter>, Option<u64>)> {
+	let result = v
+		.get("result")
+		.ok_or_else(|| error!("WEBTOON episode response missing result"))?;
+	let list = result
+		.get("episodeList")
+		.and_then(Value::as_array)
+		.ok_or_else(|| error!("WEBTOON episode list unavailable"))?;
+	let mut chapters = Vec::new();
+	for e in list {
+		let path = e
+			.get("viewerLink")
+			.and_then(Value::as_str)
+			.and_then(official_path)
+			.ok_or_else(|| error!("Invalid episode URL"))?;
+		chapters.push(Chapter {
+			key: path.clone(),
+			url: Some(format!("{BASE}{path}")),
+			title: e
+				.get("episodeTitle")
+				.and_then(Value::as_str)
+				.map(String::from),
+			chapter_number: e.get("episodeNo").and_then(Value::as_u64).map(|n| n as f32),
+			date_uploaded: e
+				.get("exposureDateMillis")
+				.and_then(Value::as_i64)
+				.map(|n| n / 1000),
+			..Default::default()
+		});
+	}
+	let next = result
+		.get("nextCursor")
+		.and_then(Value::as_u64)
+		.filter(|n| *n > 0);
+	Ok((chapters, next))
+}
+fn parse_pages(h: &Document) -> Result<Vec<Page>> {
+	let pages: Vec<Page> = h
+		.select("#_imageList img")
+		.map(|els| {
+			els.filter_map(|el| {
+				let url = el.attr("data-url")?;
+				if !url.starts_with("https://") {
+					return None;
+				}
+				Some(Page {
+					content: PageContent::url(url),
+					..Default::default()
+				})
+			})
+			.collect()
+		})
+		.unwrap_or_default();
+	if pages.is_empty() {
+		return Err(error!(
+			"No public WEBTOON pages: episode may require the app, login, or payment"
+		));
+	}
+	Ok(pages)
+}
+impl Source for Webtoon {
+	fn new() -> Self {
+		set_rate_limit(2, 1, TimeUnit::Seconds);
+		Self
+	}
+	fn get_search_manga_list(
+		&self,
+		query: Option<String>,
+		page: i32,
+		_filters: Vec<FilterValue>,
+	) -> Result<MangaPageResult> {
+		if page > 1 {
+			return Ok(MangaPageResult::default());
+		}
+		let path = match query.filter(|q| !q.trim().is_empty()) {
+			Some(q) => format!("/en/search?keyword={}", encode_query(&q)),
+			None => String::from("/en/genre?sortOrder=MANA"),
+		};
+		Ok(parse_search(&request(&path)?.html()?))
+	}
+	fn get_manga_update(
+		&self,
+		mut manga: Manga,
+		needs_details: bool,
+		needs_chapters: bool,
+	) -> Result<Manga> {
+		let path = official_path(&manga.key).ok_or_else(|| error!("Invalid WEBTOON key"))?;
+		if needs_details {
+			manga = parse_details(manga, &request(&path)?.html()?)?;
+		}
+		if needs_chapters {
+			let id = parameter(&path, "title_no").ok_or_else(|| error!("Missing title number"))?;
+			let kind = if path.contains("/canvas/") {
+				"canvas"
+			} else {
+				"webtoon"
+			};
+			let mut chapters: Vec<Chapter> = Vec::new();
+			let mut cursor = 0;
+			for batch in 0..100 {
+				let value: Value = request(&format!(
+					"/api/v1/{kind}/{id}/episodes?pageSize=100&cursor={cursor}"
+				))?
+				.json_owned()?;
+				let (entries, next) = parse_episodes(value)?;
+				for chapter in entries {
+					if !chapters.iter().any(|c| c.key == chapter.key) {
+						chapters.push(chapter);
+					}
+				}
+				match next {
+					None => break,
+					Some(n) if n > cursor => cursor = n,
+					_ => return Err(error!("WEBTOON repeated pagination cursor")),
+				}
+				if batch == 99 {
+					return Err(error!("WEBTOON episode pagination limit exceeded"));
+				}
+			}
+			chapters.reverse();
+			manga.chapters = Some(chapters);
+		}
+		Ok(manga)
+	}
+	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
+		let path =
+			official_path(&chapter.key).ok_or_else(|| error!("Invalid WEBTOON chapter URL"))?;
+		if parameter(&path, "title_no") != parameter(&manga.key, "title_no") {
+			return Err(error!("Chapter does not belong to this series"));
+		}
+		parse_pages(&request(&path)?.html()?)
+	}
+}
+impl ImageRequestProvider for Webtoon {
+	fn get_image_request(&self, url: String, _context: Option<PageContext>) -> Result<Request> {
+		Ok(Request::get(url)?.header("Referer", "https://m.webtoons.com/"))
+	}
+}
+aidoku::register_source!(Webtoon, ImageRequestProvider);
+#[cfg(test)]
+mod tests;
