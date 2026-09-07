@@ -1,0 +1,15 @@
+{
+  "id": "multi.luc1d-webtoon",
+  "version": 1,
+  "package_verified": true,
+  "fixture_tests_passed": 5,
+  "live_wasm_tests_passed": 6,
+  "ios_tested": false,
+  "package_sha256": "da2b26c6c232184af03da4844266c4fa73854357ddec2c74435be801521cb357",
+  "implemented": [
+    "search",
+    "details",
+    "chapters",
+    "pages"
+  ]
+}

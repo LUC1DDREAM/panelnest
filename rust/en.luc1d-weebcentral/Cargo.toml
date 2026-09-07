@@ -1,0 +1,24 @@
+[package]
+name = "weebcentral"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aidoku = { git = "https://github.com/Aidoku/aidoku-rs.git", rev = "e1320b0a2e11afb59e4dee374883a2212d325699", version = "0.3.0" }
+chrono = { version = "0.4.30", default-features = false, features = ["alloc"] }
+
+[dev-dependencies]
+aidoku = { git = "https://github.com/Aidoku/aidoku-rs.git", rev = "e1320b0a2e11afb59e4dee374883a2212d325699", features = ["test"] }
+aidoku-test = { git = "https://github.com/Aidoku/aidoku-rs.git", rev = "e1320b0a2e11afb59e4dee374883a2212d325699" }
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+opt-level = "s"
+strip = true
+lto = true

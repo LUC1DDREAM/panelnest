@@ -1,0 +1,77 @@
+name: Independent Rust sources
+
+on:
+  push:
+    branches: [main, 'rebuild/**']
+    paths: ['rust/**', 'rebuild/**', '.github/workflows/independent.yml']
+  pull_request:
+    paths: ['rust/**', 'rebuild/**', '.github/workflows/independent.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: independent-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Rust and WASM target
+        run: |
+          rustup toolchain install 1.98.1 --profile minimal
+          rustup default 1.98.1
+          rustup target add wasm32-unknown-unknown
+      - name: Cache compiled tooling
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/aidoku
+            ~/.cargo/bin/aidoku-test-runner
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: aidoku-${{ runner.os }}-1.98.1-e1320b0-v1
+      - name: Native test-runner build dependencies
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libfontconfig1-dev libfreetype6-dev libssl-dev
+      - name: Install pinned Aidoku CLI and WASM test runner
+        run: |
+          command -v aidoku || cargo install --git https://github.com/Aidoku/aidoku-rs --rev e1320b0a2e11afb59e4dee374883a2212d325699 --locked aidoku-cli
+          command -v aidoku-test-runner || cargo install --git https://github.com/Aidoku/aidoku-rs --rev e1320b0a2e11afb59e4dee374883a2212d325699 --locked aidoku-test-runner
+      - name: Publication contract tests
+        run: python -m unittest discover -s rebuild -p test_pipeline.py
+      - name: Test, compile, verify and build independent list
+        shell: bash
+        run: |
+          python rebuild/pipeline.py
+          python rebuild/site_output.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: independent-source-list
+          path: dist/
+          if-no-files-found: error
+      - name: Prepare verified release for Pages
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
