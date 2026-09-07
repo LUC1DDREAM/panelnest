@@ -61,6 +61,9 @@ class SiteTests(unittest.TestCase):
             site_output.prepare(root)
             self.assertEqual(json.loads((root/'index.json').read_text())['sources'],[])
             self.assertEqual(json.loads((root/'experimental/index.json').read_text())['sources'],[{'id':'test'}])
-            self.assertIn('not device-tested',(root/'index.html').read_text())
+            html = (root/'index.html').read_text()
+            self.assertIn('not device-tested', html)
+            self.assertIn('https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/', html)
+            self.assertIn('Add experimental list to Aidoku', html)
 
 if __name__=='__main__': unittest.main()

@@ -10,7 +10,7 @@ All six implement search, details, chapters and page URL retrieval; actual site 
 
 | Source / independent ID | Local WASM fixture tests | Live evidence | Device test / supported publication |
 |---|---:|---|---|
-| AsuraScans `en.luc1d-asurascans` | 2 passed | Not independently verified in integration | Pending / blocked |
+| AsuraScans `en.luc1d-asurascans` | 9 passed | Public metadata fixture; refresh-based lock countdown and fail-closed reader guard; no live paid/device proof | Pending / blocked |
 | WeebCentral `en.luc1d-weebcentral` | 3 passed | Not independently verified in integration | Pending / blocked |
 | nhentai `multi.luc1d-nhentai` | 3 passed | Not independently verified in integration | Pending / blocked |
 | Official WEBTOON `multi.luc1d-webtoon` | 5 passed | Worker WASM-host live smoke passed: public search, details, cursor chapters, page URLs, popular | Pending / blocked |
@@ -20,6 +20,12 @@ All six implement search, details, chapters and page URL retrieval; actual site 
 Independent integration rebuilt and package-verified all six. Generated build-report.json records package SHA256 and test/publication distinctions. `runtime_tested=false` is conservatively retained for every source: WASM fixture execution is not end-to-end Aidoku reading evidence. `publish=false` remains in the manifest. Strict `--release` mode still rejects incomplete approval.
 
 WEBTOON: English advertised, first search page only; Canvas end-to-end and multilingual behavior unverified. No Fast Pass, Daily Pass, app-only or authentication support. Adult adapters: no login, advanced filters, home/listings or deep links; missing reader metadata fails explicitly. No explicit image bytes were downloaded for verification. Access controls are not bypassed.
+
+## Install the experimental list
+
+[Add experimental list to Aidoku](https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/) on a device with Aidoku installed. Or add `https://luc1ddream.github.io/my-aidoku-sources/experimental/` in Aidoku Settings > Source Lists. Catalog JSON: [experimental/index.json](https://luc1ddream.github.io/my-aidoku-sources/experimental/index.json). The root list intentionally contains zero supported sources.
+
+Asura locks show the site-provided release time in UTC and a countdown updated **at refresh**, not a ticking timer. Unknown/premium chapters stay locked; a passed deadline alone never grants access. Current chapter metadata is checked before either reader path. No access-control bypass or paid-account/device test is claimed.
 
 ## Build and experimental distribution
 

@@ -9,12 +9,12 @@ use aidoku::{
 	imports::{
 		defaults::defaults_get,
 		net::{Request, TimeUnit, set_rate_limit},
-		std::parse_date,
 	},
 	prelude::*,
 };
 
 mod auth;
+mod chapters;
 mod helpers;
 mod models;
 
@@ -191,41 +191,17 @@ impl Source for AsuraScans {
 				.ok_or_else(|| error!("Missing chapters"))?;
 
 			let skip_locked = !defaults_get::<bool>("showLocked").unwrap_or(true);
+			// Do not grant premium access from an expired cached subscription.
 			let is_subscribed = auth::is_subscribed();
 
+			let now = aidoku::imports::std::current_date();
 			manga.chapters = Some(
 				chapters_arr
 					.iter()
-					.filter_map(|obj| {
-						let obj = obj[1].as_object()?;
-
-						let locked = !is_subscribed
-							&& obj.get("is_premium")?[1].as_bool().unwrap_or_default();
-						if skip_locked && locked {
-							return None;
-						}
-
-						let chapter_number = obj.get("number")?[1].as_f64().map(|f| f as f32)?;
-						let key = chapter_number.to_string();
-						const DATE_FORMAT: &str = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-						let date_uploaded = obj.get("published_at")?[1].as_str().and_then(|s| {
-							if let Some((before_dot, _)) = s.split_once('.') {
-								parse_date(format!("{before_dot}Z"), DATE_FORMAT)
-							} else {
-								parse_date(s, DATE_FORMAT)
-							}
-						});
-						let url = helpers::get_chapter_url(&key, &manga.key);
-
-						Some(Chapter {
-							key,
-							chapter_number: Some(chapter_number),
-							date_uploaded,
-							url: Some(url),
-							locked,
-							..Default::default()
-						})
+					.filter_map(|row| {
+						chapters::chapter_from_astro(row, &manga.key, is_subscribed, now)
 					})
+					.filter(|chapter| !skip_locked || !chapter.locked)
 					.collect(),
 			);
 		}
@@ -234,6 +210,15 @@ impl Source for AsuraScans {
 	}
 
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
+		// Recheck the source before either reader endpoint: cached Chapter.locked
+		// may be stale, and elapsed timers alone never grant premium access.
+		let current = self.get_manga_update(manga.clone(), false, true)?;
+		chapters::require_readable(
+			current
+				.chapters
+				.as_ref()
+				.and_then(|chapters| chapters.iter().find(|current| current.key == chapter.key)),
+		)?;
 		let api_url = format!("{API_URL}/series/{}/chapters/{}", manga.key, chapter.key);
 		let mut api_req = Request::get(api_url)?;
 		if let Ok(status) = auth::get_login_status() {

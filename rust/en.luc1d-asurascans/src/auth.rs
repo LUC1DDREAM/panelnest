@@ -16,7 +16,44 @@ pub fn is_logged_in() -> bool {
 }
 
 pub fn is_subscribed() -> bool {
-	defaults_get::<LoginStatus>(AUTH_KEY).is_some_and(|s| s.is_subscribed)
+	subscription_with_refresh(
+		defaults_get::<LoginStatus>(AUTH_KEY).map(|s| s.is_subscribed),
+		|| get_login_status().map(|s| s.is_subscribed),
+	)
+}
+
+fn subscription_with_refresh(cached: Option<bool>, refresh: impl FnOnce() -> Result<bool>) -> bool {
+	cached.is_some() && refresh().unwrap_or(false)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use aidoku_test::aidoku_test;
+
+	#[aidoku_test]
+	fn subscription_refresh_discovers_new_entitlement() {
+		let mut refreshed = false;
+		assert!(subscription_with_refresh(Some(false), || {
+			refreshed = true;
+			Ok(true)
+		}));
+		assert!(refreshed);
+	}
+
+	#[aidoku_test]
+	fn subscription_refresh_fails_closed_and_skips_anonymous() {
+		assert!(!subscription_with_refresh(Some(true), || Ok(false)));
+		assert!(!subscription_with_refresh(Some(true), || Err(error!(
+			"Refresh failed"
+		))));
+		let mut refreshed = false;
+		assert!(!subscription_with_refresh(None, || {
+			refreshed = true;
+			Ok(true)
+		}));
+		assert!(!refreshed);
+	}
 }
 
 pub fn handle_login(cookies: HashMap<String, String>) -> Result<bool> {

@@ -74,7 +74,7 @@ def main():
         info=inspect_package(package,row['id'])
         packages.append(str(package))
         results.append(dict(id=row['id'],version=info['version'],sha256=hashlib.sha256(package.read_bytes()).hexdigest(),package_verified=True,runtime_tested=row.get('runtime_tested',False)))
-    run('aidoku','build','-o',str(out),'-n','LUC1D Independent Sources'+('' if args.release else ' — STAGING'),*packages)
+    run('aidoku','build','-o',str(out),'-n','LUC1D Independent Sources'+('' if args.release else ' — EXPERIMENTAL (not device-tested)'),*packages)
     index=json.loads((out/'index.json').read_text())
     actual=[r['id'] for r in index['sources']]
     expected={r['id'] for r in selected}

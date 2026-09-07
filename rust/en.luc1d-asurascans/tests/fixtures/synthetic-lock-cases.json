@@ -1,0 +1,18 @@
+{
+  "kind": "SYNTHETIC edge cases using the observed Astro schema; NOT live site observations",
+  "cases": [
+    {"name":"future_without_premium_flag", "premium":false,"release":"1970-01-01T01:00:00Z","locked":true,"status":"Unlocks in 1h 0m (at refresh); release 1970-01-01 01:00:00 UTC"},
+    {"name":"fractional_minute_rounded_up", "premium":true,"release":"1970-01-01T00:01:00.000001Z","locked":true,"status":"Unlocks in 0h 2m (at refresh); release 1970-01-01 00:01:00 UTC"},
+    {"name":"offset_timezone", "premium":true,"release":"1970-01-01T03:00:00+02:00","locked":true,"status":"Unlocks in 1h 0m (at refresh); release 1970-01-01 01:00:00 UTC"},
+    {"name":"negative_offset", "premium":true,"release":"1969-12-31T20:00:00-05:00","locked":true,"status":"Unlocks in 1h 0m (at refresh); release 1970-01-01 01:00:00 UTC"},
+    {"name":"elapsed_still_premium", "premium":true,"release":"1969-12-31T23:59:59Z","locked":true,"status":"Premium locked; scheduled release passed (1969-12-31 23:59:59 UTC); refresh to check"},
+    {"name":"exact_boundary_still_premium", "premium":true,"release":"1970-01-01T00:00:00Z","locked":true,"status":"Premium locked; scheduled release passed (1970-01-01 00:00:00 UTC); refresh to check"},
+    {"name":"free_elapsed", "premium":false,"release":"1969-12-31T23:59:59Z","locked":false,"status":null},
+    {"name":"free_missing_release", "premium":false,"release":null,"locked":false,"status":null},
+    {"name":"paid_no_timer", "premium":true,"release":null,"locked":true,"status":"Premium locked; release time unknown"},
+    {"name":"invalid_release", "premium":true,"release":"not-a-date","locked":true,"status":"Premium locked; release time unknown"},
+    {"name":"timezone_missing", "premium":true,"release":"1970-01-01T01:00:00","locked":true,"status":"Premium locked; release time unknown"},
+    {"name":"impossible_date", "premium":true,"release":"2026-02-30T01:00:00Z","locked":true,"status":"Premium locked; release time unknown"},
+    {"name":"unknown_lock_state", "premium":null,"release":null,"locked":true,"status":"Locked; availability unknown"}
+  ]
+}
