@@ -14,6 +14,9 @@ class SeoTests(unittest.TestCase):
                 text=(root/lang/'index.html').read_text(encoding='utf-8');tags=Tags(text).tags
                 headline=re.search(r'<h1[^>]*>(.*?)</h1>',text,re.S).group(1)
                 self.assertIn('Aidoku',headline)
+                verification=[a for t,a in tags if t=='meta' and a.get('name')=='google-site-verification']
+                self.assertEqual(verification,[{'name':'google-site-verification','content':'WWwPJxNyRoW9NBZ3JSonNBXYxp76m_qN3I87ieOerE8'}])
+                self.assertIn('name="google-site-verification"',text.split('</head>')[0])
                 self.assertTrue(any(a.get('id')=='faq' for _,a in tags))
                 self.assertGreaterEqual(sum(t=='summary' for t,a in tags),5)
                 self.assertTrue(any(a.get('id')=='source-en.fixture' for _,a in tags))
