@@ -1,5 +1,32 @@
 # Asura Scans
 
+## Discovery (package version 3)
+
+The comic website PopularSidebar offers Weekly, Monthly and All Time, using
+`https://api.asurascans.com/api/trending/{week|month|all}?limit=10`.
+These are now Home scrollers and named listings. Each is the website's top ten,
+in server order, with no pagination or all-time fallback for a failed period.
+No Popular Today listing is exposed: no daily option was evidenced in that UI.
+Existing Trending Comics, Latest Updates, Ranking and authenticated Bookmarks
+remain. Browse filters, deeplinks and chapter/authentication guards are unchanged.
+
+`fixtures/popular-week.json` is a reduced capture of the first two public entries
+from the week endpoint on 2026-09-08; only slug, title, cover URL and public URL
+are retained. No images or reader pages were downloaded.
+
+```sh
+cargo test --locked
+cargo test --locked live_ -- --ignored --nocapture
+cargo build --release --locked
+aidoku package
+aidoku verify package.aix
+```
+
+The opt-in test exercises actual Home and ListingProvider metadata calls. Default
+fixture tests require no network. Both modes passed in the WASM runner. This is
+not iOS rendering or paid-account access proof.
+
+
 ## Timed locks and page access
 
 The pinned Aidoku SDK exposes `Chapter.locked` and a title, not an unlock date or

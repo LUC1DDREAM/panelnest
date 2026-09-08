@@ -1,27 +1,105 @@
 use super::models::*;
+#[aidoku_test]
+fn today_section_can_browse_real_today_listing() {
+	let component = super::home::today_component(aidoku::alloc::vec![aidoku::Manga {
+		key: "1".into(),
+		title: "Neutral fixture".into(),
+		..Default::default()
+	}]);
+	assert_eq!(component.title.as_deref(), Some("Popular Today"));
+	match component.value {
+		aidoku::HomeComponentValue::MangaList {
+			entries,
+			listing,
+			ranking,
+			..
+		} => {
+			assert!(ranking);
+			assert_eq!(entries.len(), 1);
+			assert_eq!(listing.unwrap().id, "popular-today");
+		}
+		_ => panic!("Today must provide listing navigation"),
+	}
+}
+#[aidoku_test]
+fn discovery_rejects_invalid_page_and_listing() {
+	use aidoku::{Listing, ListingProvider, Source};
+	let source = super::NHentai::new();
+	assert!(
+		source
+			.get_manga_list(
+				Listing {
+					id: "latest".into(),
+					..Default::default()
+				},
+				0
+			)
+			.is_err()
+	);
+	assert!(
+		source
+			.get_manga_list(
+				Listing {
+					id: "unsupported".into(),
+					..Default::default()
+				},
+				1
+			)
+			.is_err()
+	);
+}
+#[cfg(feature = "live-tests")]
+#[aidoku_test]
+fn live_discovery_metadata_only() {
+	use aidoku::{Home, Listing, ListingProvider, Source};
+	let source = super::NHentai::new();
+	// No covers or pages are fetched or logged.
+	for id in ["popular-today", "popular-week", "popular", "latest"] {
+		let listing = Listing {
+			id: id.into(),
+			..Default::default()
+		};
+		let first = source.get_manga_list(listing.clone(), 1).unwrap();
+		assert!(!first.entries.is_empty());
+		assert!(first.has_next_page);
+		let second = source.get_manga_list(listing, 2).unwrap();
+		assert!(!second.entries.is_empty());
+		assert!(first.entries[0].key != second.entries[0].key);
+	}
+	source.get_home().unwrap();
+}
 use aidoku_test::aidoku_test;
 
 #[aidoku_test]
 fn fixture_search_metadata_deserializes() {
-    // Synthetic API metadata only; never download gallery content in tests.
-    let response: NHentaiSearchResponse = serde_json::from_str(r#"{
+	// Synthetic API metadata only; never download gallery content in tests.
+	let response: NHentaiSearchResponse = serde_json::from_str(r#"{
         "result":[{"id":1,"media_id":"fixture","thumbnail":"/fixture/cover.png","thumbnail_width":128,"thumbnail_height":128,"english_title":"Fixture","japanese_title":null,"tag_ids":[]}],
         "num_pages":2,"per_page":25,"total":26
     }"#).unwrap();
-    assert_eq!(response.result.len(),1);
-    assert_eq!(response.result[0].id,1);
-    assert_eq!(response.result[0].english_title,"Fixture");
-    assert_eq!(response.num_pages,2);
+	assert_eq!(response.result.len(), 1);
+	assert_eq!(response.result[0].id, 1);
+	assert_eq!(response.result[0].english_title, "Fixture");
+	assert_eq!(response.num_pages, 2);
 }
 
 #[aidoku_test]
 fn malformed_metadata_is_not_silently_accepted() {
-    assert!(serde_json::from_str::<NHentaiSearchResponse>(r#"{"result":[{}]}"#).is_err());
+	assert!(serde_json::from_str::<NHentaiSearchResponse>(r#"{"result":[{}]}"#).is_err());
 }
 
 #[aidoku_test]
 fn fixture_image_paths_preserve_host_and_slashes() {
-    assert_eq!(make_image_url("fixture/page.png",false),"https://i.nhentai.net/fixture/page.png");
-    assert_eq!(make_image_url("/fixture/cover.png",true),"https://t.nhentai.net/fixture/cover.png");
-    assert_eq!(make_image_url("https://example.invalid/image.png",false),"https://example.invalid/image.png");
+	assert_eq!(
+		make_image_url("fixture/page.png", false),
+		"https://i.nhentai.net/fixture/page.png"
+	);
+	assert_eq!(
+		make_image_url("/fixture/cover.png", true),
+		"https://t.nhentai.net/fixture/cover.png"
+	);
+	assert_eq!(
+		make_image_url("https://example.invalid/image.png", false),
+		"https://example.invalid/image.png"
+	);
 }

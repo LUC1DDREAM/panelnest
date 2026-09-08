@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Asura Scans: original inspired icon">
+<title>Amethyst sentinel</title><desc>Angular violet hood, ivory eyes, and a split mantle; newly drawn geometry rather than traced source artwork. Not an official source asset.</desc>
+<defs><linearGradient id="bg" x2="0.8" y2="1"><stop stop-color="#171323"/><stop offset="1" stop-color="#29203E"/></linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#C178FF"/><stop offset="1" stop-color="#713ABA"/></linearGradient></defs>
+<rect width="256" height="256" fill="url(#bg)"/>
+ <path d="M36 205 55 111Q61 83 87 61L128 30 169 61Q195 83 201 111L220 205 164 228H92Z" fill="#312642"/>
+ <path d="M52 198 71 109Q76 91 96 75L128 50 160 75Q180 91 185 109L204 198 166 215H90Z" fill="url(#accent)"/>
+ <path d="M72 191 84 112 128 77 172 112 184 191 158 218H98Z" fill="#100E1A"/>
+ <path d="M86 126 118 137 109 146Q91 145 86 126M170 126 138 137 147 146Q165 145 170 126" fill="#F4F0FF"/>
+ <path d="M68 183 51 205 94 221 107 209ZM188 183 205 205 162 221 149 209Z" fill="#70509E"/>
+ <path d="M94 80 128 52 162 80" fill="none" stroke="#D3A5FF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+ </svg>

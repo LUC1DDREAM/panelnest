@@ -9,7 +9,9 @@ SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 - Default popular genre browse, metadata, cursor-paginated episodes, public reader image URLs, vertical viewer, image Referer.
 - Official mobile episode API; HTML requests use the official desktop site with its documented-in-URLs platform redirect switch because mobile search is JS-only. This is not an authentication or payment workaround.
 - Full live WASM-host smoke: Space Boy search, details, all API episode batches, public episode 1 image URL parsing, default browse.
-- English advertised only: multilingual settings, advanced filters/listings, deep links, exhaustive search pagination, optional-page filtering, season-title normalization, Canvas end-to-end verification deferred.
+- Discovery home: Drama by Popularity / Likes / Date, plus five genre navigation links (Drama, Fantasy, Romance, Action, Comedy). Seven named listings retain official site order; shelf previews show 20 entries, opening the listing returns the complete server-rendered genre result. These pages are not paginated: page > 1 is empty.
+- Important: the site's bare `/en/genre` redirects to a Drama-selected page, NOT a global popularity chart. New discovery uses explicit `/en/genres/drama` routes and labels. No WEBTOON Popular Today or invented ranking period.
+- English advertised only: multilingual settings, advanced search filters, deep links, exhaustive search pagination, optional-page filtering, season-title normalization, Canvas end-to-end verification deferred.
 - No login, app-only chapters, Fast Pass, Daily Pass, purchases, or paywall bypass. Missing reader images returns an explicit error. No image bytes downloaded in tests. Actual iOS installation/image rendering not verified.
 
 ## Reproduce

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="IMHentai: original inspired icon">
+<title>Vermilion monogram</title><desc>A newly constructed slanted H/i monogram inside a broken vermilion orbit, with enlarged counters for small-size clarity. Not an official source asset.</desc>
+<defs><linearGradient id="bg" x2="0.8" y2="1"><stop stop-color="#211418"/><stop offset="1" stop-color="#331B24"/></linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#FF685E"/><stop offset="1" stop-color="#E52D49"/></linearGradient></defs>
+<rect width="256" height="256" fill="url(#bg)"/>
+ <circle cx="128" cy="128" r="87" fill="none" stroke="#622834" stroke-width="13"/>
+ <path d="M62 185A87 87 0 0 1 177 57M194 71A87 87 0 0 1 81 201" fill="none" stroke="url(#accent)" stroke-width="13" stroke-linecap="round"/>
+ <path d="M98 73H126L116 112H151L161 73H189L159 184H131L144 138H109L97 184H69Z" fill="url(#accent)"/>
+ <path d="M103 53H126L121 70H98Z" fill="#FFB2A9"/>
+ <path d="M111 144H131L120 184H100Z" fill="#FFC0B5"/>
+ </svg>

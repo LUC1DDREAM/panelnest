@@ -1,0 +1,8 @@
+{
+  "url": "https://www.webtoons.com/en/genre?sortOrder=MANA&webtoon-platform-redirect=true",
+  "final_url": "https://www.webtoons.com/en/genres?sortOrder=MANA",
+  "status": 200,
+  "retrieved_at": "2026-09-08T10:31:01.676385+00:00",
+  "sha256_utf8": "e97e7e5152ddaefee75c47d650b2421282320eb77625093ed139173fe712450b",
+  "scope": "Default genre resolves to Drama. Actual HTML response; no global/daily popularity interpretation."
+}

@@ -256,6 +256,57 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 	}
 	Ok(pages)
 }
+fn listing_url(id: &str, page: i32) -> Result<String> {
+	ensure!(page > 0, "Invalid page");
+	match id {
+		"latest" => search_url(None, page),
+
+		_ => bail!("Unsupported listing"),
+	}
+}
+fn latest_component(doc: &Document) -> Result<aidoku::HomeComponent> {
+	let result = parse_search(doc);
+	ensure!(
+		!result.entries.is_empty(),
+		"Latest unavailable or site layout changed"
+	);
+	Ok(aidoku::HomeComponent {
+		title: Some("Latest".into()),
+		value: aidoku::HomeComponentValue::Scroller {
+			entries: result.entries.into_iter().map(Into::into).collect(),
+			listing: Some(aidoku::Listing {
+				id: "latest".into(),
+				name: "Latest".into(),
+				..Default::default()
+			}),
+		},
+		..Default::default()
+	})
+}
+fn parse_home(doc: &Document) -> Result<aidoku::HomeLayout> {
+	let components = vec![latest_component(doc)?];
+
+	Ok(aidoku::HomeLayout { components })
+}
+impl aidoku::Home for GallerySource {
+	fn get_home(&self) -> Result<aidoku::HomeLayout> {
+		parse_home(&Request::get(listing_url("latest", 1)?)?.html()?)
+	}
+}
+impl aidoku::ListingProvider for GallerySource {
+	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
+		let url = listing_url(&listing.id, page)?;
+
+		let doc = Request::get(url)?.html()?;
+		let result = parse_search(&doc);
+		ensure!(
+			!result.entries.is_empty(),
+			"Listing unavailable or site layout changed"
+		);
+		Ok(result)
+	}
+}
+
 struct GallerySource;
 impl Source for GallerySource {
 	fn new() -> Self {
@@ -311,7 +362,7 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider);
+aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider);
 
 #[cfg(test)]
 mod tests;

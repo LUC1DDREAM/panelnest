@@ -2,11 +2,21 @@
   "info": {
     "id": "multi.luc1d-hentaifox",
     "name": "HentaiFox (LUC1D)",
-    "version": 3,
+    "version": 4,
     "url": "https://hentaifox.com",
     "contentRating": 2,
     "languages": [
       "multi"
     ]
-  }
+  },
+  "listings": [
+    {
+      "id": "latest",
+      "name": "Latest"
+    },
+    {
+      "id": "top-rated",
+      "name": "Top Rated"
+    }
+  ]
 }

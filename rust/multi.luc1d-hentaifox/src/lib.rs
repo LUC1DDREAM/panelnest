@@ -256,6 +256,116 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 	}
 	Ok(pages)
 }
+fn listing_url(id: &str, page: i32) -> Result<String> {
+	ensure!(page > 0, "Invalid page");
+	match id {
+		"latest" => search_url(None, page),
+		"top-rated" => Ok(format!("{BASE_URL}/")),
+		_ => bail!("Unsupported listing"),
+	}
+}
+fn latest_component(doc: &Document) -> Result<aidoku::HomeComponent> {
+	let result = parse_search(doc);
+	ensure!(
+		!result.entries.is_empty(),
+		"Latest unavailable or site layout changed"
+	);
+	Ok(aidoku::HomeComponent {
+		title: Some("Latest".into()),
+		value: aidoku::HomeComponentValue::Scroller {
+			entries: result.entries.into_iter().map(Into::into).collect(),
+			listing: Some(aidoku::Listing {
+				id: "latest".into(),
+				name: "Latest".into(),
+				..Default::default()
+			}),
+		},
+		..Default::default()
+	})
+}
+fn parse_home(doc: &Document) -> Result<aidoku::HomeLayout> {
+	let components = vec![latest_component(doc)?];
+	let mut components = components;
+	if let Ok(result) = parse_top_rated(doc) {
+		components.push(aidoku::HomeComponent {
+			title: Some("Top Rated".into()),
+			value: aidoku::HomeComponentValue::MangaList {
+				ranking: true,
+				page_size: None,
+				entries: result.entries.into_iter().map(Into::into).collect(),
+				listing: Some(aidoku::Listing {
+					id: "top-rated".into(),
+					name: "Top Rated".into(),
+					..Default::default()
+				}),
+			},
+			..Default::default()
+		});
+	}
+	Ok(aidoku::HomeLayout { components })
+}
+impl aidoku::Home for GallerySource {
+	fn get_home(&self) -> Result<aidoku::HomeLayout> {
+		parse_home(&Request::get(listing_url("latest", 1)?)?.html()?)
+	}
+}
+impl aidoku::ListingProvider for GallerySource {
+	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
+		let url = listing_url(&listing.id, page)?;
+		if listing.id == "top-rated" {
+			if page > 1 {
+				return Ok(MangaPageResult::default());
+			}
+			return parse_top_rated(&Request::get(url)?.html()?);
+		}
+		let doc = Request::get(url)?.html()?;
+		let result = parse_search(&doc);
+		ensure!(
+			!result.entries.is_empty(),
+			"Listing unavailable or site layout changed"
+		);
+		Ok(result)
+	}
+}
+
+// The public homepage renders its default Top Rated sidebar server-side.
+// Do not relabel it as daily popularity or request account-dependent rankings.
+fn parse_top_rated(doc: &Document) -> Result<MangaPageResult> {
+	ensure!(
+		doc.select_first("#top_rated_btn.sidebar_btn_active")
+			.is_some(),
+		"Top Rated unavailable"
+	);
+	let entries = doc
+		.select("#middle_sidebar div.item")
+		.map(|els| {
+			els.filter_map(|el| {
+				let key = key_from_url(&el.select_first("a")?.attr("href")?)?;
+				let img = el.select_first("img")?;
+				let title = img.attr("alt").filter(|v| !v.trim().is_empty())?;
+				Some(Manga {
+					key,
+					title,
+					cover: image(&img),
+					content_rating: ContentRating::NSFW,
+					status: MangaStatus::Completed,
+					viewer: Viewer::RightToLeft,
+					..Default::default()
+				})
+			})
+			.collect::<Vec<_>>()
+		})
+		.unwrap_or_default();
+	ensure!(
+		!entries.is_empty(),
+		"Top Rated unavailable or site layout changed"
+	);
+	Ok(MangaPageResult {
+		entries,
+		has_next_page: false,
+	})
+}
+
 struct GallerySource;
 impl Source for GallerySource {
 	fn new() -> Self {
@@ -311,7 +421,7 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider);
+aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider);
 
 #[cfg(test)]
 mod tests;

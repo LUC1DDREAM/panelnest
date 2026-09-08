@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="HentaiFox: original inspired icon">
+<title>Golden foxfire</title><desc>Original gold comet orbit with a pointed fox-ear interruption and an ivory H, referencing fire without tracing the source. Not an official source asset.</desc>
+<defs><linearGradient id="bg" x2="0.8" y2="1"><stop stop-color="#211C12"/><stop offset="1" stop-color="#352814"/></linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#FFD75E"/><stop offset="1" stop-color="#E8A018"/></linearGradient></defs>
+<rect width="256" height="256" fill="url(#bg)"/>
+ <path d="M193 76 220 49 208 98 232 90 204 125Q207 190 150 211Q97 230 59 188Q24 145 48 95Q75 41 137 46L161 24 161 51 192 44 180 67Q111 42 77 90Q49 130 79 170Q108 208 150 186Q179 172 183 143L176 120 199 108 188 99Z" fill="url(#accent)"/>
+ <path d="M67 169Q47 133 69 98Q88 69 121 66" fill="none" stroke="#FFE4A0" stroke-width="6" stroke-linecap="round"/>
+ <path d="M102 91H124L116 120H147L155 91H177L153 177H131L141 141H110L100 177H78Z" fill="#FFF9E9"/>
+ <path d="M209 156 216 165 210 176 199 170Z" fill="#F8B82D"/>
+ </svg>

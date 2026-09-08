@@ -24,44 +24,53 @@ const FETCH_LIMIT: i32 = 24;
 
 struct WeebCentral;
 
-fn parse_search(html: &aidoku::imports::html::Document) -> MangaPageResult {
-		let entries = html
-			.select("article:has(section)")
-			.map(|elements| {
-				elements
-					.filter_map(|element| {
-						let cover = element.select_first("img")?.attr("abs:src");
+fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResult> {
+	let title = html
+		.select_first("title")
+		.and_then(|el| el.text())
+		.unwrap_or_default();
+	if title.contains("Cloudflare")
+		|| title.contains("Just a moment")
+		|| title.contains("Attention Required")
+	{
+		bail!("Website access blocked; open the source website and try again");
+	}
+	let entries = html
+		.select("article:has(section)")
+		.map(|elements| {
+			elements
+				.filter_map(|element| {
+					let cover = element.select_first("img")?.attr("abs:src");
 
-						let title_element = element.select_first("a")?;
-						let mut title = title_element.text().unwrap_or_default();
+					let title_element = element.select_first("a")?;
+					let mut title = title_element.text().unwrap_or_default();
 
-						const OFFICIAL_PREFIX: &str = "Official ";
-						if title.starts_with(OFFICIAL_PREFIX) {
-							title = title[OFFICIAL_PREFIX.len()..].trim().into();
-						}
+					const OFFICIAL_PREFIX: &str = "Official ";
+					if title.starts_with(OFFICIAL_PREFIX) {
+						title = title[OFFICIAL_PREFIX.len()..].trim().into();
+					}
 
-						let url = title_element.attr("abs:href")?;
-						let key = url.strip_prefix(BASE_URL).map(String::from)?;
+					let url = title_element.attr("abs:href")?;
+					let key = url.strip_prefix(BASE_URL).map(String::from)?;
 
-						Some(Manga {
-							key,
-							title,
-							cover,
-							..Default::default()
-						})
+					Some(Manga {
+						key,
+						title,
+						cover,
+						..Default::default()
 					})
-					.collect::<Vec<Manga>>()
-			})
-			.unwrap_or_default();
+				})
+				.collect::<Vec<Manga>>()
+		})
+		.unwrap_or_default();
 
-		let has_next_page = !entries.is_empty();
+	let has_next_page = !entries.is_empty();
 
-		MangaPageResult {
-			entries,
-			has_next_page,
-		}
+	Ok(MangaPageResult {
+		entries,
+		has_next_page,
+	})
 }
-
 
 impl Source for WeebCentral {
 	fn new() -> Self {
@@ -90,7 +99,7 @@ impl Source for WeebCentral {
 
 		let html = Request::get(&url)?.html()?;
 
-		Ok(parse_search(&html))
+		parse_search(&html)
 	}
 
 	fn get_manga_update(
@@ -254,8 +263,28 @@ impl Source for WeebCentral {
 }
 
 impl ListingProvider for WeebCentral {
-	fn get_manga_list(&self, listing: Listing, _page: i32) -> Result<MangaPageResult> {
+	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult> {
+		if page < 1 {
+			bail!("Invalid page");
+		}
+		if let Some(index) = filter::listing_sort(&listing.id) {
+			return self.get_search_manga_list(
+				None,
+				page,
+				vec![FilterValue::Sort {
+					id: "sort".into(),
+					index,
+					ascending: false,
+				}],
+			);
+		}
 		if listing.id == "hot" {
+			if page > 1 {
+				return Ok(MangaPageResult {
+					entries: Vec::new(),
+					has_next_page: false,
+				});
+			}
 			let html = Request::get(format!("{BASE_URL}/hot-updates"))?.html()?;
 
 			let entries = html
@@ -398,7 +427,11 @@ impl Home for WeebCentral {
 					value: aidoku::HomeComponentValue::MangaChapterList {
 						page_size: Some(3),
 						entries: latest_updates,
-						listing: None,
+						listing: Some(Listing {
+							id: "latest".into(),
+							name: "Latest Updates".into(),
+							..Default::default()
+						}),
 					},
 				},
 				HomeComponent {

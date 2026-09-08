@@ -12,6 +12,18 @@ use aidoku::{
 use serde_json::Value;
 const BASE: &str = "https://m.webtoons.com";
 struct Webtoon;
+fn discovery_path(id: &str) -> Option<&'static str> {
+	match id {
+		"popular" => Some("/en/genres/drama?sortOrder=MANA"),
+		"likes" => Some("/en/genres/drama?sortOrder=LIKEIT"),
+		"date" => Some("/en/genres/drama?sortOrder=UPDATE"),
+		"genre-fantasy" => Some("/en/genres/fantasy?sortOrder=MANA"),
+		"genre-romance" => Some("/en/genres/romance?sortOrder=MANA"),
+		"genre-action" => Some("/en/genres/action?sortOrder=MANA"),
+		"genre-comedy" => Some("/en/genres/comedy?sortOrder=MANA"),
+		_ => None,
+	}
+}
 fn parameter<'a>(path: &'a str, name: &str) -> Option<&'a str> {
 	path.split_once('?')?
 		.1
@@ -195,7 +207,7 @@ impl Source for Webtoon {
 		}
 		let path = match query.filter(|q| !q.trim().is_empty()) {
 			Some(q) => format!("/en/search?keyword={}", encode_query(&q)),
-			None => String::from("/en/genre?sortOrder=MANA"),
+			None => String::from("/en/genres/drama?sortOrder=MANA"),
 		};
 		Ok(parse_search(&request(&path)?.html()?))
 	}
@@ -257,6 +269,81 @@ impl ImageRequestProvider for Webtoon {
 		Ok(Request::get(url)?.header("Referer", "https://m.webtoons.com/"))
 	}
 }
-aidoku::register_source!(Webtoon, ImageRequestProvider);
+fn discovery_component(id: &str, title: &str, entries: Vec<Manga>) -> aidoku::HomeComponent {
+	aidoku::HomeComponent {
+		title: Some(title.into()),
+		subtitle: Some("English Drama genre; site order (not a daily chart)".into()),
+		value: aidoku::HomeComponentValue::Scroller {
+			entries: entries.into_iter().take(20).map(Into::into).collect(),
+			listing: Some(aidoku::Listing {
+				id: id.into(),
+				name: title.into(),
+				..Default::default()
+			}),
+		},
+	}
+}
+impl aidoku::ListingProvider for Webtoon {
+	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
+		let path = discovery_path(&listing.id).ok_or_else(|| error!("Unknown WEBTOON listing"))?;
+		if page < 1 {
+			return Err(error!("Invalid page"));
+		}
+		if page > 1 {
+			return Ok(MangaPageResult::default());
+		}
+		let result = parse_search(&request(path)?.html()?);
+		if result.entries.is_empty() {
+			return Err(error!("WEBTOON discovery unavailable"));
+		}
+		Ok(result)
+	}
+}
+impl aidoku::Home for Webtoon {
+	fn get_home(&self) -> Result<aidoku::HomeLayout> {
+		use aidoku::ListingProvider;
+		let mut components = Vec::new();
+		for (id, title) in [
+			("popular", "Drama: By Popularity"),
+			("likes", "Drama: By Likes"),
+			("date", "Drama: By Date"),
+		] {
+			let result = self.get_manga_list(
+				aidoku::Listing {
+					id: id.into(),
+					..Default::default()
+				},
+				1,
+			)?;
+			components.push(discovery_component(id, title, result.entries));
+		}
+		components.push(aidoku::HomeComponent {
+			title: Some("Browse Genres".into()),
+			subtitle: Some("By Popularity within each genre".into()),
+			value: aidoku::HomeComponentValue::Links(
+				[
+					("popular", "Drama"),
+					("genre-fantasy", "Fantasy"),
+					("genre-romance", "Romance"),
+					("genre-action", "Action"),
+					("genre-comedy", "Comedy"),
+				]
+				.into_iter()
+				.map(|(id, name)| aidoku::Link {
+					title: name.into(),
+					value: Some(aidoku::LinkValue::Listing(aidoku::Listing {
+						id: id.into(),
+						name: name.into(),
+						..Default::default()
+					})),
+					..Default::default()
+				})
+				.collect(),
+			),
+		});
+		Ok(aidoku::HomeLayout { components })
+	}
+}
+aidoku::register_source!(Webtoon, ImageRequestProvider, ListingProvider, Home);
 #[cfg(test)]
 mod tests;

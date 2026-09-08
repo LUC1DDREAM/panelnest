@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Weeb Central: original inspired icon">
+<title>Blue-hour listener</title><desc>Original friendly face with bold blue headphones and a two-leaf sprout; simplified features tuned to app-icon scale. Not an official source asset.</desc>
+<defs><linearGradient id="bg" x2="0.8" y2="1"><stop stop-color="#EEF6FF"/><stop offset="1" stop-color="#D5E6F6"/></linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#67B7FF"/><stop offset="1" stop-color="#3164DA"/></linearGradient></defs>
+<rect width="256" height="256" fill="url(#bg)"/>
+ <path d="M127 56Q105 57 101 35Q124 28 130 52Q135 30 156 33Q158 52 133 59" fill="#407DD7"/>
+ <path d="M61 151V123C61 35 195 35 195 123V151" fill="none" stroke="#275EAB" stroke-width="18"/>
+ <path d="M70 120Q71 75 127 73Q184 75 187 123L181 173Q170 207 128 211Q86 207 75 173Z" fill="#FDFCF8" stroke="#263A55" stroke-width="7"/>
+ <path d="M73 142Q61 94 96 76Q146 51 177 89Q192 106 184 144L165 117 155 92 139 122 119 103 99 129 98 105Z" fill="#25344C"/>
+ <path d="M96 86Q114 73 135 79" fill="none" stroke="#52617A" stroke-width="7" stroke-linecap="round"/>
+ <rect x="46" y="122" width="31" height="57" rx="14" fill="url(#accent)"/>
+ <rect x="179" y="122" width="31" height="57" rx="14" fill="url(#accent)"/>
+ <rect x="53" y="130" width="7" height="32" rx="3.5" fill="#B0DAFF"/>
+ <ellipse cx="103" cy="151" rx="7" ry="12" fill="#263A55"/><ellipse cx="153" cy="151" rx="7" ry="12" fill="#263A55"/>
+ <path d="M116 178Q128 190 140 178" fill="none" stroke="#263A55" stroke-width="6" stroke-linecap="round"/>
+ <path d="M84 175H94M162 175H172" stroke="#EAAABD" stroke-width="6" stroke-linecap="round"/>
+ </svg>

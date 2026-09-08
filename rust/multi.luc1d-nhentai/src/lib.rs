@@ -41,6 +41,9 @@ impl Source for NHentai {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
+		if page < 1 {
+			return Err(error!("Invalid page"));
+		}
 		// If the query is a numeric ID, return the manga directly
 		if let Some(q) = &query
 			&& let Ok(id) = q.parse::<i32>()
