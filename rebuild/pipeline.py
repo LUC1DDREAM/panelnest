@@ -88,6 +88,26 @@ def preserve_published_package(package, name, baseline=ROOT/'rebuild/published-p
     shutil.copyfile(original, package)
 
 
+def retain_published_assets(out, baseline=ROOT/'rebuild/published-packages'):
+    """Keep old installed version URLs working when a new version is published."""
+    hashes = json.loads((baseline/'SHA256.json').read_text())
+    for name, digest in hashes.items():
+        if PurePosixPath(name).name != name or not name.endswith('.aix') or '\\' in name or ':' in name:
+            raise ValueError('Invalid published package name')
+        original = baseline/name
+        if not original.is_file() or hashlib.sha256(original.read_bytes()).hexdigest() != digest:
+            raise ValueError('Missing or corrupt published archive')
+        with zipfile.ZipFile(original) as archive:
+            assets = {'sources/'+name: original.read_bytes(),
+                      'icons/'+name[:-4]+'.png': archive.read('Payload/icon.png')}
+        for relative, data in assets.items():
+            target = out/relative
+            if target.exists() and target.read_bytes() != data:
+                raise ValueError('Versioned asset changed: '+relative)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+
+
 def run(*args, cwd=ROOT):
     subprocess.run(args, cwd=cwd, check=True)
 
@@ -142,6 +162,7 @@ def main():
         source_row = next(row for row in selected if row['id'] == item['id'])
         if icon_bytes != (ROOT/source_row['path']/'res/icon.png').read_bytes():
             raise ValueError('Catalog/source icon mismatch')
+    retain_published_assets(out)
     (out/'.nojekyll').touch()
     (out/'build-report.json').write_text(json.dumps(dict(release=args.release,requested=6,built=len(results),sources=results),indent=2)+'\n')
     checksums=[]

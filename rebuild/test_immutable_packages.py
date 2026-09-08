@@ -43,6 +43,21 @@ class ImmutablePackageTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Missing published archive'):
                 pipeline.preserve_published_package(rebuilt,original.name,copy)
 
+    def test_old_assets_retained_alongside_new_versions(self):
+        baseline=Path(__file__).parent/'published-packages'
+        with tempfile.TemporaryDirectory() as d:
+            out=Path(d); (out/'sources').mkdir()
+            new=out/'sources/new-v99.aix'; new.write_bytes(b'new-version')
+            pipeline.retain_published_assets(out,baseline)
+            self.assertEqual(new.read_bytes(),b'new-version')
+            for original in baseline.glob('*.aix'):
+                self.assertEqual((out/'sources'/original.name).read_bytes(),original.read_bytes())
+                with zipfile.ZipFile(original) as z:
+                    self.assertEqual((out/'icons'/original.with_suffix('.png').name).read_bytes(),z.read('Payload/icon.png'))
+            victim=next((out/'sources').glob('*v3.aix')); victim.write_bytes(b'changed')
+            with self.assertRaisesRegex(ValueError,'Versioned asset changed'):
+                pipeline.retain_published_assets(out,baseline)
+
     def test_new_version_is_allowed(self):
         baseline=Path(__file__).parent/'published-packages'
         original=next(baseline.glob('*.aix'))
