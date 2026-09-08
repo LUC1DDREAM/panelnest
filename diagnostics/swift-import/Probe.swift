@@ -27,7 +27,32 @@ import CryptoKit
         let sources = try JSONDecoder().decode([ExternalSourceInfo].self, from: legacyData)
         return SourceList(url: url, name: "Legacy Source List", sources: sources.map { $0.with(sourceUrl: url) }, legacy: true)
     }
+    // Exact predicate from Aidoku v0.9 AddSourceView.filterExternalSources.
+    // See rebuild/language-filter.md; surrounding UI/rating/install gates are not simulated.
+    static func languageVisible(_ info: ExternalSourceInfo, _ selectedLanguages: Set<String>) -> Bool {
+        selectedLanguages.contains(where: { info.languages?.contains($0) ?? (info.lang == $0) })
+    }
+    static func checkLocalLanguageMetadata() throws {
+        struct Manifest: Decodable { let info: ExternalSourceInfo }
+        let rust = URL(fileURLWithPath: "rust", isDirectory: true)
+        let directories = try FileManager.default.contentsOfDirectory(at: rust, includingPropertiesForKeys: nil)
+        let sources = try directories.compactMap { directory -> ExternalSourceInfo? in
+            let file = directory.appendingPathComponent("res/source.json")
+            guard FileManager.default.fileExists(atPath: file.path) else { return nil }
+            return try JSONDecoder().decode(Manifest.self, from: Data(contentsOf: file)).info
+        }
+        try require(sources.count == 6, "local six-source invariant")
+        let visible = sources.filter { languageVisible($0, ["multi", "en"]) }
+        try require(visible.count == 6, "language filter hid local source: \(sources.filter { !languageVisible($0, ["multi", "en"]) }.map(\.id))")
+        for (languages, expected) in [(["All"], false), (["multi"], true), (["MULTI"], false), (["en"], true)] {
+            let data = try JSONSerialization.data(withJSONObject: ["id": "control", "name": "control", "version": 1, "languages": languages])
+            let info = try JSONDecoder().decode(ExternalSourceInfo.self, from: data)
+            try require(languageVisible(info, ["multi", "en"]) == expected, "language negative control")
+        }
+        print("PASS NATIVE LANGUAGE FILTER count=\(visible.count) IDs=\(visible.map(\.id).sorted()) All-hidden/multi-visible controls passed")
+    }
     static func main() async throws {
+        try checkLocalLanguageMetadata()
         print("OS \(ProcessInfo.processInfo.operatingSystemVersionString); native Foundation JSONDecoder and URLSession; NOT iPhone proof")
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15
