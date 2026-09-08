@@ -1,11 +1,13 @@
 import Foundation
 import CryptoKit
+import Darwin
 
 @main struct Probe {
     static func require(_ value: Bool, _ message: String) throws {
         if !value { throw NSError(domain: "Probe", code: 1, userInfo: [NSLocalizedDescriptionKey: message]) }
     }
     static func fetch(_ url: URL, session: URLSession, head: Bool = false) async throws -> Data {
+        print("REQUEST \(head ? "HEAD" : "GET") \(url.absoluteString)"); fflush(stdout)
         var request = URLRequest(url: url)
         request.httpMethod = head ? "HEAD" : "GET"
         let (data, response) = try await session.data(for: request)
@@ -14,7 +16,7 @@ import CryptoKit
         if !head {
             print("SHA256 \(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()) prefix=\(String(decoding: data.prefix(160), as: UTF8.self))")
         }
-        try require(http.statusCode == 200, "HTTP status \(http.statusCode)")
+        try require(http.statusCode == 200, "HTTP status \(http.statusCode) at \(url.absoluteString)")
         return data
     }
     static func load(_ url: URL, session: URLSession) async throws -> SourceList {
@@ -57,14 +59,17 @@ import CryptoKit
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15
         let session = URLSession(configuration: config)
-        let base = "https://luc1ddream.github.io/my-aidoku-sources/experimental/"
-        let urls = [base + "index.min.json", base + "index.json", "https://aidoku-community.github.io/sources/index.min.json"] + Array(CommandLine.arguments.dropFirst())
+        let base = "https://luc1ddream.github.io/panelnest/experimental/"
+        let urls = [base + "index.min.json", base + "index.json", "https://aidoku-community.github.io/sources/index.min.json"] + ["https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json", "https://luc1ddream.github.io/my-aidoku-sources/experimental/index.json"] + Array(CommandLine.arguments.dropFirst())
         var ours: SourceList?
         for (index, text) in urls.enumerated() {
             let url = URL(string: text)!
             let list = try await load(url, session: session)
             print("PASS NATIVE list=\(list.name) count=\(list.sources.count) legacy=\(list.legacy)")
             if index < 2 { try require(list.sources.count == 6, "six-source invariant") }
+            if index == 3 || index == 4 {
+                try require(list.sources.map { $0.with(sourceUrl: ours!.url) } == ours!.sources, "canonical/legacy metadata mismatch")
+            }
             if index == 0 { ours = list }
             if index == 1 { try require(list.sources.map { $0.with(sourceUrl: ours!.url) } == ours!.sources, "pretty/minified metadata mismatch") }
             if index == 2 { try require(!list.sources.isEmpty, "Community empty") }
