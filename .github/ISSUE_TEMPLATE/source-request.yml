@@ -1,0 +1,24 @@
+name: Source or feature request
+description: Suggest a source or an improvement to PanelNest.
+title: "[Request] "
+body:
+  - type: markdown
+    attributes:
+      value: "PanelNest is independent and experimental. Please do not share passwords, cookies or access tokens. Requests cannot guarantee support or bypass paid access."
+  - type: input
+    id: source
+    attributes:
+      label: Source name and public website URL (if applicable)
+      placeholder: "Source name — https://example.com"
+  - type: textarea
+    id: request
+    attributes:
+      label: What would you like to add or improve?
+      description: Describe the feature and how it would help you.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Languages and relevant details
+      description: Mention the content languages you need. Do not attach adult imagery.

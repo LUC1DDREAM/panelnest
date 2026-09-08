@@ -137,9 +137,9 @@ class SiteTests(unittest.TestCase):
             self.assertEqual(json.loads((root/'index.json').read_text())['sources'],[])
             self.assertEqual(json.loads((root/'experimental/index.json').read_text())['sources'],[{'id':'test'}])
             html = (root/'index.html').read_text()
-            self.assertIn('not device-tested', html)
-            self.assertIn('https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json', html)
-            self.assertIn('<code>https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json</code>', html)
-            self.assertIn('Add experimental list to Aidoku', html)
+            self.assertIn('formal device verification is still pending', html)
+            self.assertIn('https://aidoku.app/add-source-list/?url=https%3A%2F%2Fluc1ddream.github.io%2Fmy-aidoku-sources%2Fexperimental%2Findex.min.json', html)
+            self.assertIn('https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json</code>', html)
+            self.assertIn('Add to Aidoku', html)
 
 if __name__=='__main__': unittest.main()
