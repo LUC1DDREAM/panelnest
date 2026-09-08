@@ -48,7 +48,7 @@ with sync_playwright() as p:
     page.evaluate("Object.defineProperty(navigator,'clipboard',{value:{writeText:()=>Promise.reject(new Error('blocked'))},configurable:true})")
     page.locator('#copy-url').click()
     assert 'Copy unavailable' in page.locator('#copy-status').inner_text()
-    page.locator('summary').click(); page.locator('[data-language=de]').click()
+    page.locator('.languages summary').click(); page.locator('[data-language=de]').click()
     assert page.locator('html').get_attribute('lang')=='de'
     assert page.evaluate("localStorage.getItem('panelnest.language')")=='de'
     page.goto(base); page.wait_for_url('**/de/')
