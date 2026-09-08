@@ -1,12 +1,12 @@
 {
-  "name": "LUC1D Independent Sources \u2014 EXPERIMENTAL (not device-tested)",
+  "name": "PanelNest import diagnostic",
   "sources": [
     {
       "id": "en.luc1d-asurascans",
-      "name": "Asura Scans (LUC1D)",
-      "version": 3,
-      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/en.luc1d-asurascans-v3.png",
-      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/en.luc1d-asurascans-v3.aix",
+      "name": "Asura Scans [PN]",
+      "version": 4,
+      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/en.luc1d-asurascans-v4.png",
+      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/en.luc1d-asurascans-v4.aix",
       "languages": [
         "en"
       ],
@@ -16,10 +16,10 @@
     },
     {
       "id": "en.luc1d-weebcentral",
-      "name": "Weeb Central (LUC1D)",
-      "version": 2,
-      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/en.luc1d-weebcentral-v2.png",
-      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/en.luc1d-weebcentral-v2.aix",
+      "name": "Weeb Central [PN]",
+      "version": 3,
+      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/en.luc1d-weebcentral-v3.png",
+      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/en.luc1d-weebcentral-v3.aix",
       "languages": [
         "en"
       ],
@@ -28,10 +28,10 @@
     },
     {
       "id": "multi.luc1d-hentaifox",
-      "name": "HentaiFox (LUC1D)",
-      "version": 4,
-      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-hentaifox-v4.png",
-      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-hentaifox-v4.aix",
+      "name": "HentaiFox [PN]",
+      "version": 5,
+      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-hentaifox-v5.png",
+      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-hentaifox-v5.aix",
       "languages": [
         "multi"
       ],
@@ -40,10 +40,10 @@
     },
     {
       "id": "multi.luc1d-imhentai",
-      "name": "IMHentai (LUC1D)",
-      "version": 4,
-      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-imhentai-v4.png",
-      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-imhentai-v4.aix",
+      "name": "IMHentai [PN]",
+      "version": 5,
+      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-imhentai-v5.png",
+      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-imhentai-v5.aix",
       "languages": [
         "multi"
       ],
@@ -52,10 +52,10 @@
     },
     {
       "id": "multi.luc1d-nhentai",
-      "name": "nhentai (LUC1D)",
-      "version": 3,
-      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-nhentai-v3.png",
-      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-nhentai-v3.aix",
+      "name": "nhentai [PN]",
+      "version": 4,
+      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-nhentai-v4.png",
+      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-nhentai-v4.aix",
       "languages": [
         "All",
         "en",
@@ -67,10 +67,10 @@
     },
     {
       "id": "multi.luc1d-webtoon",
-      "name": "WEBTOON (LUC1D)",
-      "version": 3,
-      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-webtoon-v3.png",
-      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-webtoon-v3.aix",
+      "name": "WEBTOON [PN]",
+      "version": 4,
+      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/multi.luc1d-webtoon-v4.png",
+      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/multi.luc1d-webtoon-v4.aix",
       "languages": [
         "en"
       ],

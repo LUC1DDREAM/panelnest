@@ -60,14 +60,14 @@ import Darwin
         config.timeoutIntervalForRequest = 15
         let session = URLSession(configuration: config)
         let base = "https://luc1ddream.github.io/panelnest/experimental/"
-        let urls = [base + "index.min.json", base + "index.json", "https://aidoku-community.github.io/sources/index.min.json"] + ["https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json", "https://luc1ddream.github.io/my-aidoku-sources/experimental/index.json"] + Array(CommandLine.arguments.dropFirst())
+        let urls = [base + "index.min.json", base + "index.json", "https://aidoku-community.github.io/sources/index.min.json"] + ["https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json", "https://luc1ddream.github.io/my-aidoku-sources/experimental/index.json"] + ["https://luc1ddream.github.io/panelnest/index.min.json", "https://luc1ddream.github.io/panelnest/index.json", "https://luc1ddream.github.io/my-aidoku-sources/index.min.json", "https://luc1ddream.github.io/my-aidoku-sources/index.json"] + Array(CommandLine.arguments.dropFirst())
         var ours: SourceList?
         for (index, text) in urls.enumerated() {
             let url = URL(string: text)!
             let list = try await load(url, session: session)
             print("PASS NATIVE list=\(list.name) count=\(list.sources.count) legacy=\(list.legacy)")
             if index < 2 { try require(list.sources.count == 6, "six-source invariant") }
-            if index == 3 || index == 4 {
+            if index >= 3 && index <= 8 {
                 try require(list.sources.map { $0.with(sourceUrl: ours!.url) } == ours!.sources, "canonical/legacy metadata mismatch")
             }
             if index == 0 { ours = list }
@@ -114,7 +114,7 @@ import Darwin
         catch let error as DecodingError { print("PASS ROOT REJECTED by legacy array fallback: \(error)") }
         // Own-source, fresh route, minimal optional metadata; generated only after full native pass.
         let selected = ours!.sources.first(where: { $0.id == "en.luc1d-asurascans" })!
-        let diagnostic: [String: Any] = ["name": "LUC1D EXPERIMENTAL import diagnostic (one source)", "sources": [["id": selected.id, "name": selected.name, "version": selected.version, "iconURL": URL(string: selected.iconURL!, relativeTo: ours!.url)!.absoluteString, "downloadURL": selected.fileURL!.absoluteURL.absoluteString]]]
+        let diagnostic: [String: Any] = ["name": "PanelNest import diagnostic (one source)", "sources": [["id": selected.id, "name": selected.name, "version": selected.version, "iconURL": URL(string: selected.iconURL!, relativeTo: ours!.url)!.absoluteString, "downloadURL": selected.fileURL!.absoluteURL.absoluteString]]]
         let data = try JSONSerialization.data(withJSONObject: diagnostic, options: [.prettyPrinted, .sortedKeys])
         let decoded = try JSONDecoder().decode(CodableSourceList.self, from: data)
         try require(decoded.sources.count == 1 && decoded.sources[0].id == selected.id, "diagnostic identity")

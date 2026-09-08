@@ -16,11 +16,12 @@
     ],
     "package_verified": true,
     "runtime_tested": false,
-    "publish": false,
+    "publish": true,
     "device_tested": false,
-    "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
+    "status": "public; release authorized; automated device certification not claimed",
     "live_evidence": "Worker live WASM metadata smoke passed for Home and week/month/all listings; no device test.",
-    "fixture_tests_passed": 12
+    "fixture_tests_passed": 12,
+    "release_authorized": true
   },
   {
     "id": "en.luc1d-weebcentral",
@@ -39,11 +40,12 @@
     ],
     "package_verified": true,
     "runtime_tested": false,
-    "publish": false,
+    "publish": true,
     "device_tested": false,
-    "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
+    "status": "public; release authorized; automated device certification not claimed",
     "live_evidence": "Worker public search sort evidence; live WASM blocked by Cloudflare HTTP 403.",
-    "fixture_tests_passed": 5
+    "fixture_tests_passed": 5,
+    "release_authorized": true
   },
   {
     "id": "multi.luc1d-nhentai",
@@ -62,11 +64,12 @@
     ],
     "package_verified": true,
     "runtime_tested": false,
-    "publish": false,
+    "publish": true,
     "device_tested": false,
-    "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
+    "status": "public; release authorized; automated device certification not claimed",
     "live_evidence": "Worker four sorts page 1/2 metadata passed; Home hit HTTP 429, suite failed; no device test.",
-    "fixture_tests_passed": 5
+    "fixture_tests_passed": 5,
+    "release_authorized": true
   },
   {
     "id": "multi.luc1d-webtoon",
@@ -81,13 +84,14 @@
     ],
     "package_verified": true,
     "runtime_tested": false,
-    "publish": false,
-    "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
+    "publish": true,
+    "status": "public; release authorized; automated device certification not claimed",
     "path": "rust/multi.luc1d-webtoon",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "Worker live-tests suite: 10 passed (including fixture tests); English Drama sorts and four additional genre listings; Canvas unverified.",
-    "fixture_tests_passed": 8
+    "fixture_tests_passed": 8,
+    "release_authorized": true
   },
   {
     "id": "multi.luc1d-imhentai",
@@ -102,13 +106,14 @@
     ],
     "package_verified": true,
     "runtime_tested": false,
-    "publish": false,
-    "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
+    "publish": true,
+    "status": "public; release authorized; automated device certification not claimed",
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "Worker public HTTP 403; offline discovery adaptation only, no bypass.",
-    "fixture_tests_passed": 7
+    "fixture_tests_passed": 7,
+    "release_authorized": true
   },
   {
     "id": "multi.luc1d-hentaifox",
@@ -123,12 +128,13 @@
     ],
     "package_verified": true,
     "runtime_tested": false,
-    "publish": false,
-    "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
+    "publish": true,
+    "status": "public; release authorized; automated device certification not claimed",
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "Worker homepage HTTP 200 and Top Rated sidebar metadata; no live WASM or device test.",
-    "fixture_tests_passed": 8
+    "fixture_tests_passed": 8,
+    "release_authorized": true
   }
 ]

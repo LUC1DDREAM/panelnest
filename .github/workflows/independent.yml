@@ -51,7 +51,7 @@ jobs:
       - name: Test, compile, verify and build independent list
         shell: bash
         run: |
-          python rebuild/pipeline.py
+          python rebuild/pipeline.py --release
           python rebuild/site_output.py
       - uses: actions/upload-artifact@v4
         with:

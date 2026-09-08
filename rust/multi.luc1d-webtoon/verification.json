@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-webtoon",
-  "version": 3,
-  "sha256": "b51fcae0646aba414da18ef743df3d8db7f794205e54a1b3c96195066934a120",
-  "bytes": 61566,
+  "version": 4,
+  "sha256": "5cf7d06591f4bef76c0456f662241bb49e63127e0d93c48a786d7f21e2ac2aaa",
+  "bytes": 61567,
   "languages": [
     "en"
   ],
@@ -21,6 +21,6 @@
     "home",
     "listings"
   ],
-  "package_hash_scope": "Local Windows integration package after generated icon replacement; CI package archive bytes may differ.",
+  "package_hash_scope": "Local Windows [PN] metadata release; CI archive bytes may differ.",
   "live_suite_scope": "Worker run including fixture tests; not repeated during integration."
 }

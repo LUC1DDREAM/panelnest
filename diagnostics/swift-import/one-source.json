@@ -1,12 +1,12 @@
 {
-  "name": "LUC1D EXPERIMENTAL import diagnostic (one source)",
+  "name": "PanelNest import diagnostic",
   "sources": [
     {
       "id": "en.luc1d-asurascans",
-      "name": "Asura Scans (LUC1D)",
-      "version": 3,
-      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/en.luc1d-asurascans-v3.aix",
-      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/en.luc1d-asurascans-v3.png"
+      "name": "Asura Scans [PN]",
+      "version": 4,
+      "downloadURL": "https://luc1ddream.github.io/panelnest/experimental/sources/en.luc1d-asurascans-v4.aix",
+      "iconURL": "https://luc1ddream.github.io/panelnest/experimental/icons/en.luc1d-asurascans-v4.png"
     }
   ]
 }

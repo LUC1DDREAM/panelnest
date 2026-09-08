@@ -2,7 +2,7 @@
   "en": {
     "native": "English",
     "title": "PanelNest · Independent Aidoku sources",
-    "description": "Add independent sources to Aidoku on iPhone and iPad. Browse the experimental catalog, follow the setup guide, and report issues.",
+    "description": "Add independent sources to Aidoku on iPhone and iPad. Browse the catalog, follow the setup guide, and report issues.",
     "skip": "Skip to content",
     "sources": "Sources",
     "guide": "Setup",
@@ -16,8 +16,7 @@
     "copyfail": "Copy unavailable. Select and copy the URL below.",
     "manual": "Manual list URL",
     "prereq": "Install Aidoku on your iPhone or iPad first. Reported working with Aidoku 0.9 (build 3); package minimum: 0.7.1.",
-    "experimental": "Experimental list",
-    "notice": "A user reports that all six sources work. This is not a compatibility guarantee: formal device verification is still pending and the supported catalog remains empty.",
+    "notice": "Independently maintained sources with automated package checks. Report any issues using the links below.",
     "step1": "Install Aidoku",
     "body1": "Get the app from the official Aidoku website. If you already have it, keep a backup of your library.",
     "step2": "Add the list",
@@ -38,12 +37,15 @@
     "evidence": "Build report",
     "empty": "No sources in this catalog yet.",
     "language": "Language",
-    "privacy": "No analytics, external fonts or tracking cookies. Your language choice is stored only in this browser."
+    "privacy": "No analytics, external fonts or tracking cookies. Your language choice is stored only in this browser.",
+    "list_label": "Source list",
+    "light_mode": "Light mode",
+    "dark_mode": "Dark mode"
   },
   "de": {
     "native": "Deutsch",
     "title": "PanelNest · Unabhängige Aidoku-Quellen",
-    "description": "Füge unabhängige Quellen zu Aidoku auf iPhone und iPad hinzu. Experimenteller Katalog, einfache Anleitung und Hilfe bei Problemen.",
+    "description": "Füge unabhängige Quellen zu Aidoku auf iPhone und iPad hinzu. Quellenkatalog, einfache Anleitung und Hilfe bei Problemen.",
     "skip": "Zum Inhalt",
     "sources": "Quellen",
     "guide": "Einrichtung",
@@ -57,8 +59,7 @@
     "copyfail": "Kopieren nicht möglich. Markiere und kopiere die URL unten.",
     "manual": "Listen-URL für die manuelle Einrichtung",
     "prereq": "Installiere zuerst Aidoku auf deinem iPhone oder iPad. Als funktionierend gemeldet mit Aidoku 0.9 (Build 3); Paket-Mindestversion: 0.7.1.",
-    "experimental": "Experimentelle Liste",
-    "notice": "Ein Nutzer meldet, dass alle sechs Quellen funktionieren. Das ist keine Kompatibilitätsgarantie: Die formale Geräteprüfung steht noch aus, der unterstützte Katalog bleibt leer.",
+    "notice": "Unabhängig gepflegte Quellen mit automatisierten Paketprüfungen. Melde Probleme über die Links unten.",
     "step1": "Aidoku installieren",
     "body1": "Hole dir die App auf der offiziellen Aidoku-Website. Sichere deine Bibliothek, wenn du Aidoku bereits nutzt.",
     "step2": "Liste hinzufügen",
@@ -79,12 +80,15 @@
     "evidence": "Build-Bericht",
     "empty": "Dieser Katalog enthält noch keine Quellen.",
     "language": "Sprache",
-    "privacy": "Keine Analyse-Tools, externen Schriftarten oder Tracking-Cookies. Deine Sprachwahl wird nur in diesem Browser gespeichert."
+    "privacy": "Keine Analyse-Tools, externen Schriftarten oder Tracking-Cookies. Deine Sprachwahl wird nur in diesem Browser gespeichert.",
+    "list_label": "Quellenliste",
+    "light_mode": "Heller Modus",
+    "dark_mode": "Dunkler Modus"
   },
   "es": {
     "native": "Español",
     "title": "PanelNest · Fuentes independientes para Aidoku",
-    "description": "Añade fuentes independientes a Aidoku en iPhone y iPad. Consulta el catálogo experimental, sigue la guía y comunica problemas.",
+    "description": "Añade fuentes independientes a Aidoku en iPhone y iPad. Consulta el catálogo, sigue la guía y comunica problemas.",
     "skip": "Saltar al contenido",
     "sources": "Fuentes",
     "guide": "Instalación",
@@ -98,8 +102,7 @@
     "copyfail": "No se pudo copiar. Selecciona y copia la URL de abajo.",
     "manual": "URL para añadir la lista manualmente",
     "prereq": "Instala primero Aidoku en tu iPhone o iPad. Un usuario informa de que funciona con Aidoku 0.9 (build 3); mínimo del paquete: 0.7.1.",
-    "experimental": "Lista experimental",
-    "notice": "Un usuario informa de que las seis fuentes funcionan. No es una garantía de compatibilidad: la verificación formal en dispositivos sigue pendiente y el catálogo compatible permanece vacío.",
+    "notice": "Fuentes con mantenimiento independiente y comprobaciones automáticas de paquetes. Comunica cualquier problema abajo.",
     "step1": "Instala Aidoku",
     "body1": "Descarga la app desde la web oficial de Aidoku. Si ya la usas, guarda una copia de seguridad de tu biblioteca.",
     "step2": "Añade la lista",
@@ -120,12 +123,15 @@
     "evidence": "Informe de compilación",
     "empty": "Este catálogo aún no tiene fuentes.",
     "language": "Idioma",
-    "privacy": "Sin analítica, fuentes tipográficas externas ni cookies de seguimiento. Tu idioma se guarda solo en este navegador."
+    "privacy": "Sin analítica, fuentes tipográficas externas ni cookies de seguimiento. Tu idioma se guarda solo en este navegador.",
+    "list_label": "Lista de fuentes",
+    "light_mode": "Modo claro",
+    "dark_mode": "Modo oscuro"
   },
   "fr": {
     "native": "Français",
     "title": "PanelNest · Sources indépendantes pour Aidoku",
-    "description": "Ajoutez des sources indépendantes à Aidoku sur iPhone et iPad. Catalogue expérimental, guide de configuration et signalement de problèmes.",
+    "description": "Ajoutez des sources indépendantes à Aidoku sur iPhone et iPad. Catalogue de sources, guide de configuration et signalement de problèmes.",
     "skip": "Aller au contenu",
     "sources": "Sources",
     "guide": "Installation",
@@ -139,8 +145,7 @@
     "copyfail": "Copie impossible. Sélectionnez et copiez l’URL ci-dessous.",
     "manual": "URL pour ajouter la liste manuellement",
     "prereq": "Installez d’abord Aidoku sur votre iPhone ou iPad. Fonctionnement signalé avec Aidoku 0.9 (build 3) ; minimum des paquets : 0.7.1.",
-    "experimental": "Liste expérimentale",
-    "notice": "Un utilisateur indique que les six sources fonctionnent. Ce n’est pas une garantie de compatibilité : la vérification formelle sur appareil reste à faire et le catalogue pris en charge reste vide.",
+    "notice": "Sources maintenues indépendamment avec des contrôles automatiques des paquets. Signalez les problèmes ci-dessous.",
     "step1": "Installez Aidoku",
     "body1": "Téléchargez l’app sur le site officiel d’Aidoku. Si vous l’utilisez déjà, sauvegardez votre bibliothèque.",
     "step2": "Ajoutez la liste",
@@ -161,12 +166,15 @@
     "evidence": "Rapport de compilation",
     "empty": "Ce catalogue ne contient pas encore de sources.",
     "language": "Langue",
-    "privacy": "Sans analyse d’audience, polices externes ni cookies de suivi. Votre langue est enregistrée uniquement dans ce navigateur."
+    "privacy": "Sans analyse d’audience, polices externes ni cookies de suivi. Votre langue est enregistrée uniquement dans ce navigateur.",
+    "list_label": "Liste de sources",
+    "light_mode": "Mode clair",
+    "dark_mode": "Mode sombre"
   },
   "pt": {
     "native": "Português",
     "title": "PanelNest · Fontes independentes para Aidoku",
-    "description": "Adicione fontes independentes ao Aidoku no iPhone e iPad. Explore o catálogo experimental, siga o guia e relate problemas.",
+    "description": "Adicione fontes independentes ao Aidoku no iPhone e iPad. Explore o catálogo, siga o guia e relate problemas.",
     "skip": "Ir para o conteúdo",
     "sources": "Fontes",
     "guide": "Configuração",
@@ -180,8 +188,7 @@
     "copyfail": "Não foi possível copiar. Selecione e copie a URL abaixo.",
     "manual": "URL para adicionar a lista manualmente",
     "prereq": "Instale primeiro o Aidoku no iPhone ou iPad. Um usuário relatou funcionamento com Aidoku 0.9 (build 3); mínimo dos pacotes: 0.7.1.",
-    "experimental": "Lista experimental",
-    "notice": "Um usuário relata que as seis fontes funcionam. Isso não garante compatibilidade: a verificação formal em dispositivos ainda está pendente e o catálogo com suporte continua vazio.",
+    "notice": "Fontes mantidas independentemente com verificações automáticas dos pacotes. Relate problemas abaixo.",
     "step1": "Instale o Aidoku",
     "body1": "Obtenha o app no site oficial do Aidoku. Se já usa o app, faça uma cópia de segurança da biblioteca.",
     "step2": "Adicione a lista",
@@ -202,6 +209,9 @@
     "evidence": "Relatório de compilação",
     "empty": "Este catálogo ainda não tem fontes.",
     "language": "Idioma",
-    "privacy": "Sem análise de audiência, fontes externas ou cookies de rastreamento. Seu idioma fica salvo apenas neste navegador."
+    "privacy": "Sem análise de audiência, fontes externas ou cookies de rastreamento. Seu idioma fica salvo apenas neste navegador.",
+    "list_label": "Lista de fontes",
+    "light_mode": "Modo claro",
+    "dark_mode": "Modo escuro"
   }
 }
