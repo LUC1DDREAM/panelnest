@@ -1,0 +1,49 @@
+name: Problem report
+description: Report a problem with a source, import or website.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Reports are public. Never include passwords, cookies, authorization headers, access tokens or private library data. Remove personal information from screenshots. No adult imagery."
+  - type: input
+    id: source
+    attributes:
+      label: Source and source version (or website/import)
+      placeholder: "WEBTOON (LUC1D), version 3"
+    validations:
+      required: true
+  - type: input
+    id: app
+    attributes:
+      label: Aidoku version and build
+      placeholder: "0.9 (build 3)"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: iOS/iPadOS version and device (or browser)
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include a public title or chapter URL only if needed. Do not share session URLs.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result or error
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Optional screenshots or redacted logs
+      description: Remove secrets, personal details and adult imagery before attaching.
