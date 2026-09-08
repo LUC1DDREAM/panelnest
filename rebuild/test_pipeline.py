@@ -36,6 +36,15 @@ class PipelineTests(unittest.TestCase):
             rows=self.rows(); rows[0]['path']=path
             with self.assertRaises(ValueError): pipeline.validate_manifest(rows, release=False)
 
+    def test_catalog_metadata_matches_package_and_source(self):
+        info = dict(id='multi.luc1d-imhentai', name='IMHentai (LUC1D)',
+                    version=2, languages=['multi'], contentRating=2)
+        pipeline.validate_catalog_metadata(info, info)
+        for field, value in [('languages', ['All']), ('version', 1), ('contentRating', 0),
+                             ('id', 'different.id'), ('name', 'wrong')]:
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                pipeline.validate_catalog_metadata(dict(info, **{field: value}), info)
+
     def test_package_identity_and_wasm_validation(self):
         with tempfile.TemporaryDirectory() as td:
             p=Path(td)/'package.aix'
@@ -50,6 +59,32 @@ class PipelineTests(unittest.TestCase):
             package('en.luc1d-asurascans',b'not wasm')
             with self.assertRaises(ValueError): pipeline.inspect_package(p,'en.luc1d-asurascans')
 
+class LanguageFilterTests(unittest.TestCase):
+    # Aidoku v0.9 AddSourceView.filterExternalSources: exact membership, not
+    # SourceLanguage.primaryCode/display normalization. See language-filter.md.
+    @staticmethod
+    def visible(info, selected):
+        return any(code in info['languages'] if info.get('languages') is not None
+                   else info.get('lang') == code for code in selected)
+
+    def test_all_six_visible_with_multilingual_and_english(self):
+        rows = json.loads((pipeline.ROOT/'rebuild/sources.json').read_text())
+        infos = [json.loads((pipeline.ROOT/row['path']/'res/source.json').read_text())['info']
+                 for row in rows]
+        visible = [info['id'] for info in infos if self.visible(info, {'multi', 'en'})]
+        self.assertEqual(set(visible), {row['id'] for row in rows})
+        self.assertEqual(len(visible), 6)
+
+    def test_exact_language_membership_controls(self):
+        self.assertFalse(self.visible({'languages': ['All']}, {'multi', 'en'}))
+        self.assertTrue(self.visible({'languages': ['multi']}, {'multi'}))
+        self.assertFalse(self.visible({'languages': ['multi']}, {'en'}))
+        self.assertFalse(self.visible({'languages': ['MULTI']}, {'multi'}))
+        self.assertTrue(self.visible({'languages': ['en']}, {'en'}))
+        self.assertTrue(self.visible({'lang': 'en'}, {'en'}))
+        self.assertFalse(self.visible({'languages': [], 'lang': 'en'}, {'en'}))
+        self.assertFalse(self.visible({'languages': ['en', 'ja']}, {'multi'}))
+
 class SiteTests(unittest.TestCase):
     def test_experimental_site_has_empty_supported_catalog(self):
         import site_output
@@ -63,7 +98,8 @@ class SiteTests(unittest.TestCase):
             self.assertEqual(json.loads((root/'experimental/index.json').read_text())['sources'],[{'id':'test'}])
             html = (root/'index.html').read_text()
             self.assertIn('not device-tested', html)
-            self.assertIn('https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/', html)
+            self.assertIn('https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json', html)
+            self.assertIn('<code>https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json</code>', html)
             self.assertIn('Add experimental list to Aidoku', html)
 
 if __name__=='__main__': unittest.main()

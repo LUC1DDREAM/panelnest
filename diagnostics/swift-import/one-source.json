@@ -1,0 +1,12 @@
+{
+  "name" : "LUC1D EXPERIMENTAL import diagnostic (one source)",
+  "sources" : [
+    {
+      "downloadURL" : "https:\/\/luc1ddream.github.io\/my-aidoku-sources\/experimental\/sources\/en.luc1d-asurascans-v1.aix",
+      "iconURL" : "https:\/\/luc1ddream.github.io\/my-aidoku-sources\/experimental\/icons\/en.luc1d-asurascans-v1.png",
+      "id" : "en.luc1d-asurascans",
+      "name" : "Asura Scans (LUC1D)",
+      "version" : 1
+    }
+  ]
+}

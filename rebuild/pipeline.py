@@ -43,6 +43,11 @@ def inspect_package(path, expected_id):
             raise ValueError('Missing icon')
         return info
 
+def validate_catalog_metadata(actual, expected):
+    for field in ('id', 'name', 'version', 'languages', 'contentRating'):
+        if actual.get(field) != expected.get(field):
+            raise ValueError(f'Catalog/package/source {field} mismatch for {expected["id"]}')
+
 def run(*args, cwd=ROOT):
     subprocess.run(args, cwd=cwd, check=True)
 
@@ -58,6 +63,7 @@ def main():
     if out.exists(): shutil.rmtree(out)
     packages=[]
     results=[]
+    source_infos={}
     for row in selected:
         directory = ROOT/row['path']
         # The CLI takes the first WASM in target/release. Isolate per source,
@@ -72,6 +78,9 @@ def main():
         run('aidoku','package',str(directory))
         run('aidoku','verify',str(package))
         info=inspect_package(package,row['id'])
+        source_info=json.loads((directory/'res/source.json').read_text())['info']
+        validate_catalog_metadata(info, source_info)
+        source_infos[row['id']]=source_info
         packages.append(str(package))
         results.append(dict(id=row['id'],version=info['version'],sha256=hashlib.sha256(package.read_bytes()).hexdigest(),package_verified=True,runtime_tested=row.get('runtime_tested',False)))
     run('aidoku','build','-o',str(out),'-n','LUC1D Independent Sources'+('' if args.release else ' — EXPERIMENTAL (not device-tested)'),*packages)
@@ -82,7 +91,9 @@ def main():
         raise ValueError('CLI omitted or duplicated a source')
     for item in index['sources']:
         package=out/item['downloadURL']
-        inspect_package(package,item['id'])
+        info=inspect_package(package,item['id'])
+        validate_catalog_metadata(info, source_infos[item['id']])
+        validate_catalog_metadata(item, info)
         if not (out/item['iconURL']).is_file(): raise ValueError('Missing generated icon')
     (out/'.nojekyll').touch()
     (out/'build-report.json').write_text(json.dumps(dict(release=args.release,requested=6,built=len(results),sources=results),indent=2)+'\n')

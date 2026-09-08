@@ -1,0 +1,28 @@
+name: Native Swift import diagnostic
+on:
+  push:
+    branches: [ci/native-swift-import]
+    paths: ['diagnostics/swift-import/**', '.github/workflows/native-import.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-decoder:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile exact pinned Codable models and run live probes
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p native-evidence
+          swift --version | tee native-evidence/swift-version.txt
+          swiftc -parse-as-library diagnostics/swift-import/PinnedModels.swift diagnostics/swift-import/Probe.swift -o native-evidence/probe
+          native-evidence/probe https://raw.githubusercontent.com/LUC1DDREAM/my-aidoku-sources/ci/native-swift-import/diagnostics/swift-import/one-source.json https://raw.githubusercontent.com/LUC1DDREAM/my-aidoku-sources/ci/native-swift-import/diagnostics/swift-import/six-source-control.json | tee native-evidence/results.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-swift-import-evidence
+          path: native-evidence/
+          if-no-files-found: error
