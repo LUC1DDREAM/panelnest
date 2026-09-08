@@ -22,8 +22,8 @@ def prepare(root):
     (root/'.nojekyll').touch()
     (root/'index.html').write_text('''<!doctype html><html lang="en"><meta charset="utf-8"><title>LUC1D Aidoku sources</title>
 <h1>Independent Aidoku sources: experimental</h1>
-<p><a href="https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/">Add experimental list to Aidoku</a></p>
-<p>Manual list URL: <code>https://luc1ddream.github.io/my-aidoku-sources/experimental/</code></p>
+<p><a href="https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json">Add experimental list to Aidoku</a></p>
+<p>Manual list URL: <code>https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json</code></p>
 <p>The supported catalog is empty. All six packages are not device-tested and are not advertised as release-ready.</p>
 <p><a href="experimental/index.json">Opt-in experimental catalog</a> | <a href="experimental/build-report.json">Build evidence and hashes</a> | <a href="https://github.com/LUC1DDREAM/my-aidoku-sources#verification">Feature matrix and limitations</a></p>
 <p>Requires Aidoku 0.7.1 or newer. Independent IDs do not update old sources automatically; retain a library backup before migrating. IMHentai live access returned 403; no bypass was attempted. WEBTOON is English-first, first search page only; Canvas is unverified. No source has an iOS reading/rendering verification.</p></html>''', encoding='utf-8')

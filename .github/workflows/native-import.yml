@@ -19,7 +19,7 @@ jobs:
           mkdir -p native-evidence
           swift --version | tee native-evidence/swift-version.txt
           swiftc -parse-as-library diagnostics/swift-import/PinnedModels.swift diagnostics/swift-import/Probe.swift -o native-evidence/probe
-          native-evidence/probe | tee native-evidence/results.txt
+          native-evidence/probe https://raw.githubusercontent.com/LUC1DDREAM/my-aidoku-sources/ci/native-swift-import/diagnostics/swift-import/one-source.json https://raw.githubusercontent.com/LUC1DDREAM/my-aidoku-sources/ci/native-swift-import/diagnostics/swift-import/six-source-control.json | tee native-evidence/results.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,0 +1,82 @@
+{
+  "name": "LUC1D EXPERIMENTAL import diagnostic (six-source control)",
+  "sources": [
+    {
+      "id": "en.luc1d-asurascans",
+      "name": "Asura Scans (LUC1D)",
+      "version": 1,
+      "iconURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/icons/en.luc1d-asurascans-v1.png",
+      "downloadURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/sources/en.luc1d-asurascans-v1.aix",
+      "languages": [
+        "en"
+      ],
+      "contentRating": 0,
+      "baseURL": "https://asurascans.com",
+      "minAppVersion": "0.7.1"
+    },
+    {
+      "id": "en.luc1d-weebcentral",
+      "name": "Weeb Central (LUC1D)",
+      "version": 1,
+      "iconURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/icons/en.luc1d-weebcentral-v1.png",
+      "downloadURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/sources/en.luc1d-weebcentral-v1.aix",
+      "languages": [
+        "en"
+      ],
+      "contentRating": 1,
+      "baseURL": "https://weebcentral.com"
+    },
+    {
+      "id": "multi.luc1d-hentaifox",
+      "name": "HentaiFox (LUC1D)",
+      "version": 1,
+      "iconURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/icons/multi.luc1d-hentaifox-v1.png",
+      "downloadURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/sources/multi.luc1d-hentaifox-v1.aix",
+      "languages": [
+        "All"
+      ],
+      "contentRating": 2,
+      "baseURL": "https://hentaifox.com"
+    },
+    {
+      "id": "multi.luc1d-imhentai",
+      "name": "IMHentai (LUC1D)",
+      "version": 1,
+      "iconURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/icons/multi.luc1d-imhentai-v1.png",
+      "downloadURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/sources/multi.luc1d-imhentai-v1.aix",
+      "languages": [
+        "All"
+      ],
+      "contentRating": 2,
+      "baseURL": "https://imhentai.xxx"
+    },
+    {
+      "id": "multi.luc1d-nhentai",
+      "name": "nhentai (LUC1D)",
+      "version": 1,
+      "iconURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/icons/multi.luc1d-nhentai-v1.png",
+      "downloadURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/sources/multi.luc1d-nhentai-v1.aix",
+      "languages": [
+        "All",
+        "en",
+        "ja",
+        "zh"
+      ],
+      "contentRating": 2,
+      "baseURL": "https://nhentai.net"
+    },
+    {
+      "id": "multi.luc1d-webtoon",
+      "name": "WEBTOON (LUC1D)",
+      "version": 1,
+      "iconURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/icons/multi.luc1d-webtoon-v1.png",
+      "downloadURL": "https://luc1ddream.github.io/my-aidoku-sources/experimental/sources/multi.luc1d-webtoon-v1.aix",
+      "languages": [
+        "en"
+      ],
+      "contentRating": 1,
+      "baseURL": "https://m.webtoons.com",
+      "minAppVersion": "0.7.1"
+    }
+  ]
+}
