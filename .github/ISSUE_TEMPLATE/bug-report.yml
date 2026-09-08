@@ -1,4 +1,4 @@
-name: Problem report
+name: PanelNest problem report
 description: Report a problem with a source, import or website.
 title: "[Bug] "
 body:
@@ -9,7 +9,7 @@ body:
     id: source
     attributes:
       label: Source and source version (or website/import)
-      placeholder: "WEBTOON (LUC1D), version 3"
+      placeholder: "WEBTOON [PN], version 4 (multi.luc1d-webtoon); or PanelNest website/import"
     validations:
       required: true
   - type: input
@@ -23,10 +23,16 @@ body:
     id: device
     attributes:
       label: iOS/iPadOS version and device (or browser)
+      placeholder: "Enter your device and OS version, or browser and version for https://luc1ddream.github.io/panelnest/"
   - type: textarea
     id: steps
     attributes:
       label: Steps to reproduce
+      placeholder: |
+        1. Open Aidoku and select Asura Scans [PN] (version 4).
+        2. Search for a public title.
+        3. Open its chapter list.
+        Tell us which step fails and whether it happens every time.
       description: Include a public title or chapter URL only if needed. Do not share session URLs.
     validations:
       required: true
@@ -34,12 +40,14 @@ body:
     id: expected
     attributes:
       label: Expected result
+      placeholder: "What should happen? Example: The chapter list appears and I can open a free chapter."
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
       label: Actual result or error
+      placeholder: "What happened instead? Example: The list stays empty after refreshing. Copy the error text, without tokens or private data."
     validations:
       required: true
   - type: textarea

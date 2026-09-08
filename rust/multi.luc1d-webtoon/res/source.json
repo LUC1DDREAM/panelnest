@@ -1,8 +1,8 @@
 {
   "info": {
     "id": "multi.luc1d-webtoon",
-    "name": "WEBTOON (LUC1D)",
-    "version": 3,
+    "name": "WEBTOON [PN]",
+    "version": 4,
     "url": "https://m.webtoons.com",
     "contentRating": 1,
     "languages": [
@@ -11,13 +11,34 @@
     "minAppVersion": "0.7.1"
   },
   "listings": [
-    { "id": "popular", "name": "Drama: By Popularity" },
-    { "id": "likes", "name": "Drama: By Likes" },
-    { "id": "date", "name": "Drama: By Date" },
-    { "id": "genre-fantasy", "name": "Fantasy: By Popularity" },
-    { "id": "genre-romance", "name": "Romance: By Popularity" },
-    { "id": "genre-action", "name": "Action: By Popularity" },
-    { "id": "genre-comedy", "name": "Comedy: By Popularity" }
+    {
+      "id": "popular",
+      "name": "Drama: By Popularity"
+    },
+    {
+      "id": "likes",
+      "name": "Drama: By Likes"
+    },
+    {
+      "id": "date",
+      "name": "Drama: By Date"
+    },
+    {
+      "id": "genre-fantasy",
+      "name": "Fantasy: By Popularity"
+    },
+    {
+      "id": "genre-romance",
+      "name": "Romance: By Popularity"
+    },
+    {
+      "id": "genre-action",
+      "name": "Action: By Popularity"
+    },
+    {
+      "id": "genre-comedy",
+      "name": "Comedy: By Popularity"
+    }
   ],
   "config": {}
 }

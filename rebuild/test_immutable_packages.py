@@ -18,7 +18,7 @@ class ImmutablePackageTests(unittest.TestCase):
                 self.assertNotEqual(original.read_bytes(),rebuilt.read_bytes())
                 pipeline.preserve_published_package(rebuilt,original.name,baseline)
                 self.assertEqual(original.read_bytes(),rebuilt.read_bytes())
-        self.assertEqual(len(list(baseline.glob('*.aix'))),6)
+        self.assertEqual(len(list(baseline.glob('*.aix'))),12)
 
     def test_content_change_is_rejected_without_modifying_rebuild(self):
         baseline=Path(__file__).parent/'published-packages'

@@ -1,44 +1,47 @@
 # PanelNest — independently maintained Aidoku sources
 
-Six local Rust adapters, built from source against Aidoku SDK commit `e1320b0a2e11afb59e4dee374883a2212d325699`. Not a forwarding catalog. Existing upstream-derived code retains attribution and licenses in `licenses/` and source directories. Old catalogs and scheduled mirror updates are retired; history is preserved.
+Six local Rust adapters, built against the pinned Aidoku SDK. Existing upstream attribution and licenses remain in `licenses/` and source directories.
 
-**Experimental, not release-ready. No iOS/device reading tests have been completed.** The supported root catalog is intentionally empty. Opt-in test packages are separate under `experimental/` on Pages and in CI artifacts. Do not interpret a successful compile, parser test, or package verification as proof a website works in Aidoku.
+## Install or refresh
 
-## Verification
+[Open PanelNest](https://luc1ddream.github.io/panelnest/) or [add the list to Aidoku](https://aidoku.app/add-source-list/?url=https%3A%2F%2Fluc1ddream.github.io%2Fpanelnest%2Findex.min.json).
 
-All six implement search, details, chapters and page URL retrieval; actual site compatibility remains subject to the following limitations.
+Manual URL: `https://luc1ddream.github.io/panelnest/index.min.json`. Requires Aidoku >=0.7.1.
 
-| Source / independent ID | Local WASM fixture tests | Live evidence | Device test / supported publication |
-|---|---:|---|---|
-| AsuraScans `en.luc1d-asurascans` | 9 passed | Public metadata fixture; refresh-based lock countdown and fail-closed reader guard; no live paid/device proof | Pending / blocked |
-| WeebCentral `en.luc1d-weebcentral` | 3 passed | Not independently verified in integration | Pending / blocked |
-| nhentai `multi.luc1d-nhentai` | 3 passed | Not independently verified in integration | Pending / blocked |
-| Official WEBTOON `multi.luc1d-webtoon` | 5 passed | Worker WASM-host live smoke passed: public search, details, cursor chapters, page URLs, popular | Pending / blocked |
-| IMHentai `multi.luc1d-imhentai` | 4 passed | Public HTTP 403; no bypass. Synthetic fixtures only | Pending / blocked |
-| HentaiFox `multi.luc1d-hentaifox` | 4 passed | Worker metadata HTTP 200; full Aidoku live integration unverified | Pending / blocked |
+All six sources are published in the root catalog. **Already installed? Refresh your existing list; do not reinstall.** The canonical and old `my-aidoku-sources` `/experimental/index.json` and `/experimental/index.min.json` subscriptions remain maintained aliases. IDs and installed version asset URLs are unchanged. The legacy directory name is a compatibility path, not a publication classification. The compatibility mirror runs every six hours and supports immediate manual dispatch.
 
-Independent integration rebuilt and package-verified all six. Generated build-report.json records package SHA256 and test/publication distinctions. `runtime_tested=false` is conservatively retained for every source: WASM fixture execution is not end-to-end Aidoku reading evidence. `publish=false` remains in the manifest. Strict `--release` mode still rejects incomplete approval.
+| Display name | Stable ID | Version |
+|---|---|---:|
+| Asura Scans [PN] | `en.luc1d-asurascans` | 4 |
+| Weeb Central [PN] | `en.luc1d-weebcentral` | 3 |
+| nhentai [PN] | `multi.luc1d-nhentai` | 4 |
+| WEBTOON [PN] | `multi.luc1d-webtoon` | 4 |
+| IMHentai [PN] | `multi.luc1d-imhentai` | 5 |
+| HentaiFox [PN] | `multi.luc1d-hentaifox` | 5 |
 
-WEBTOON: English advertised, first search page only; Canvas end-to-end and multilingual behavior unverified. No Fast Pass, Daily Pass, app-only or authentication support. Adult adapters: no login, advanced filters, home/listings or deep links; missing reader metadata fails explicitly. No explicit image bytes were downloaded for verification. Access controls are not bypassed.
+## Verification and approval
 
-## Install the experimental list
+The user explicitly authorized publication and removal of public test branding. This is **not automated end-to-end or independently recorded iPhone certification**. `release_authorized=true` records that authorization; `runtime_tested=false` and `device_tested=false` deliberately remain unchanged. Historical live results, including Cloudflare/HTTP 429 failures, remain in `rebuild/sources.json`; no automated result was forged.
 
-[Open PanelNest](https://luc1ddream.github.io/panelnest/) in English, Deutsch, Español, Français or Português. [Add experimental list to Aidoku](https://aidoku.app/add-source-list/?url=https%3A%2F%2Fluc1ddream.github.io%2Fpanelnest%2Fexperimental%2Findex.min.json) on a device with Aidoku installed. Or add `https://luc1ddream.github.io/panelnest/experimental/index.min.json` in Aidoku Settings > Source Lists. The root list intentionally contains zero supported sources.
+Publication requires complete source functionality, package verification, publication approval, and either recorded runtime evidence or explicit release authorization. Every release rebuilds and executes all six locked WASM fixture suites, verifies packages and exact source/package/catalog metadata, opaque 128×128 icons, languages, ratings, IDs and hashes. Same-version ZIP/member immutability fails closed; prior versioned packages remain available.
 
-Already installed the `my-aidoku-sources/experimental/index.min.json` URL? Keep it: the [compatibility publisher](https://github.com/LUC1DDREAM/my-aidoku-sources) maintains complete JSON, package and icon copies at the old Pages path. No source IDs change for this rename. Compatibility checks run every six hours (GitHub schedules may be delayed) and can be dispatched manually. Git/repository links must use `LUC1DDREAM/panelnest`; recreating the legacy name intentionally replaces GitHub rename redirects.
+Asura lock countdowns update on refresh. A passed deadline never grants access; current chapter metadata is checked before both reader paths. Unknown/premium chapters stay locked. WEBTOON Fast Pass, Daily Pass, app-only and authentication restrictions are not bypassed. No credentials, adult imagery or paid access tests were collected for this release.
 
-Asura locks show the site-provided release time in UTC and a countdown updated **at refresh**, not a ticking timer. Unknown/premium chapters stay locked; a passed deadline alone never grants access. Current chapter metadata is checked before either reader path. No access-control bypass or paid-account/device test is claimed.
+## Website defaults
 
-## Build and experimental distribution
+A fresh root visit is **English regardless of browser language**. Explicit `/en/`, `/de/`, `/es/`, `/fr/`, `/pt/` routes work without JavaScript; an explicitly chosen language is remembered for later root visits. English canonical/hreflang points to `/`; alias pages canonicalize rather than duplicate sitemap entries.
 
-Use Rust 1.98.1, `wasm32-unknown-unknown`, Python 3.11, and `aidoku-cli` / `aidoku-test-runner` installed from the pinned SDK revision with `--locked`.
+The website is **dark by default regardless of OS theme**. The accessible light/dark button stores an explicit preference. A small blocking head script applies the saved theme before CSS loads, preventing a wrong-theme flash. Storage is optional; no analytics or remote fonts are used.
+
+## Build
+
+Use Rust 1.98.1, `wasm32-unknown-unknown`, Python 3.11 and `aidoku-cli` / `aidoku-test-runner` from SDK `e1320b0a2e11afb59e4dee374883a2212d325699`, installed with `--locked`.
 
 ```sh
-python -m unittest discover -s rebuild -p test_pipeline.py
-python rebuild/pipeline.py
+python -m unittest discover -s rebuild -p 'test_*.py'
+python rebuild/pipeline.py --release
 python rebuild/site_output.py
+python rebuild/browser_smoke.py https://luc1ddream.github.io/panelnest/
 ```
 
-The pipeline runs every crate's locked WASM tests, release build, `aidoku package`, `aidoku verify`, exact six-ID checks and package hashing. The site step separates experimental downloads and emits an empty supported catalog. CI deployment requires a successful build; it does not assert device validation.
-
-Requires Aidoku >=0.7.1. Back up your library before migration: independent IDs are distinct from historical sources and will not silently update them. Test installation, search, details, chapter order, image rendering and pagination on-device before considering supported promotion. Record source version, device/Aidoku version, date and non-sensitive results; never toggle evidence gates just to make CI green.
+Native Swift diagnostics exercise pinned Aidoku Codable models, root/legacy JSON URLs, resolved assets and malformed controls on macOS. They are not physical iPhone proof. Report problems using the [PanelNest issue form](https://github.com/LUC1DDREAM/panelnest/issues/new?template=bug-report.yml); never include tokens, cookies or private library data.

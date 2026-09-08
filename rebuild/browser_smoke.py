@@ -35,8 +35,8 @@ with sync_playwright() as p:
             href=page.locator('#import-list').get_attribute('href')
             assert urlparse(href).netloc=='aidoku.app'
             list_url=parse_qs(urlparse(href).query)['url'][0]
-            assert list_url.endswith('/experimental/index.min.json')
-            assert page.locator('link[rel=canonical]').get_attribute('href').endswith('/'+lang+'/')
+            assert list_url.endswith('/panelnest/index.min.json')
+            assert page.locator('link[rel=canonical]').get_attribute('href').endswith('/panelnest/' if lang == 'en' else '/'+lang+'/')
             results.append({'lang':lang,'width':width,'title':page.title(),'import':href,'overflow':False})
             if width in [1440,390] and lang in ['en','de']:
                 page.screenshot(path=str(out/f'{urlparse(base).hostname}-{lang}-{width}.png'),full_page=True)
@@ -62,8 +62,16 @@ with sync_playwright() as p:
             assert context.request.get(url.split('#')[0]).status==200, url
     assert not errors, errors
     context.close()
-    german=browser.new_context(locale='de-DE'); fresh=german.new_page(); fresh.goto(base); fresh.wait_for_url('**/de/'); german.close()
+    german=browser.new_context(locale='de-DE', color_scheme='light'); fresh=german.new_page(); fresh.goto(base)
+    assert fresh.locator('html').get_attribute('lang')=='en'
+    assert fresh.locator('html').get_attribute('data-theme')=='dark'
+    toggle=fresh.locator('#theme-toggle'); toggle.focus(); fresh.keyboard.press('Enter')
+    assert fresh.locator('html').get_attribute('data-theme')=='light'
+    fresh.reload(); assert fresh.locator('html').get_attribute('data-theme')=='light'
+    toggle.focus(); fresh.keyboard.press('Space')
+    assert fresh.locator('html').get_attribute('data-theme')=='dark'
+    german.close()
     nojs=browser.new_context(java_script_enabled=False); plain=nojs.new_page(); plain.goto(base+'es/'); assert plain.locator('.source-card').count()==6; assert plain.locator('#import-list').get_attribute('href'); nojs.close()
     browser.close()
 (out/'browser-results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding='utf-8')
-print(json.dumps({'routes_and_viewports':len(results),'errors':errors,'copy':'success + denied fallback','locale':'persisted + browser default + explicit route','no_js':'passed','local_links':'passed','screenshots':str(out)}))
+print(json.dumps({'routes_and_viewports':len(results),'errors':errors,'copy':'success + denied fallback','locale':'persisted + English despite German browser + explicit route','no_js':'passed','local_links':'passed','screenshots':str(out)}))

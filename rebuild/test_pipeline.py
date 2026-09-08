@@ -126,20 +126,20 @@ class LanguageFilterTests(unittest.TestCase):
         self.assertFalse(self.visible({'languages': ['en', 'ja']}, {'multi'}))
 
 class SiteTests(unittest.TestCase):
-    def test_experimental_site_has_empty_supported_catalog(self):
+    def test_public_site_preserves_legacy_catalog(self):
         import site_output
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
             (root/'index.json').write_text(json.dumps({'name':'STAGING','sources':[{'id':'test'}]}))
             (root/'index.min.json').write_text('{}')
-            (root/'build-report.json').write_text('{"release":false}')
+            (root/'build-report.json').write_text('{"release":true}')
             site_output.prepare(root)
-            self.assertEqual(json.loads((root/'index.json').read_text())['sources'],[])
+            self.assertEqual(json.loads((root/'index.json').read_text())['sources'],[{'id':'test'}])
             self.assertEqual(json.loads((root/'experimental/index.json').read_text())['sources'],[{'id':'test'}])
             html = (root/'index.html').read_text()
-            self.assertIn('formal device verification is still pending', html)
-            self.assertIn('https://aidoku.app/add-source-list/?url=https%3A%2F%2Fluc1ddream.github.io%2Fpanelnest%2Fexperimental%2Findex.min.json', html)
-            self.assertIn('https://luc1ddream.github.io/panelnest/experimental/index.min.json</code>', html)
+            self.assertIn('Independently maintained', html)
+            self.assertIn('https://aidoku.app/add-source-list/?url=https%3A%2F%2Fluc1ddream.github.io%2Fpanelnest%2Findex.min.json', html)
+            self.assertIn('https://luc1ddream.github.io/panelnest/index.min.json</code>', html)
             self.assertIn('Add to Aidoku', html)
 
 if __name__=='__main__': unittest.main()

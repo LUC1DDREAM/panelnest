@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-nhentai",
-  "version": 3,
-  "sha256": "025f0845781f2a6da691e413dab6a82887e2ffab5b0f673c2e41d8cea654b435",
-  "bytes": 90046,
+  "version": 4,
+  "sha256": "c13c03d8e82272614cf2a0403c3d3325f69882ecdb74152d8f582ddb3566fe85",
+  "bytes": 90040,
   "languages": [
     "All",
     "en",
@@ -28,6 +28,6 @@
     "filters",
     "deep-links"
   ],
-  "package_hash_scope": "Local Windows integration package after generated icon replacement; CI package archive bytes may differ.",
+  "package_hash_scope": "Local Windows [PN] metadata release; CI archive bytes may differ.",
   "live_suite_scope": "Worker run including fixture tests; not repeated during integration."
 }

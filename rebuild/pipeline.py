@@ -28,7 +28,7 @@ def validate_manifest(rows, release=False):
         if path is not None and (not path.startswith('rust/') or '..' in PurePosixPath(path).parts or ':' in path or '\\' in path):
             raise ValueError('Only repository-local rust/ paths are accepted')
         complete = FEATURES <= set(row.get('implemented',[])) and path is not None
-        if release and not (complete and row.get('publish') and row.get('package_verified') and row.get('runtime_tested')):
+        if release and not (complete and row.get('publish') and row.get('package_verified') and (row.get('runtime_tested') or row.get('release_authorized') is True)):
             raise ValueError(f"Release blocked: {row['id']} is not verified and approved")
         if complete:
             selected.append(row)
@@ -143,8 +143,8 @@ def main():
         preserve_published_package(package, f"{info['id']}-v{info['version']}.aix")
         source_infos[row['id']]=source_info
         packages.append(str(package))
-        results.append(dict(id=row['id'],version=info['version'],sha256=hashlib.sha256(package.read_bytes()).hexdigest(),package_verified=True,runtime_tested=row.get('runtime_tested',False)))
-    run('aidoku','build','-o',str(out),'-n','LUC1D Independent Sources'+('' if args.release else ' — EXPERIMENTAL (not device-tested)'),*packages)
+        results.append(dict(id=row['id'],version=info['version'],sha256=hashlib.sha256(package.read_bytes()).hexdigest(),package_verified=True,runtime_tested=row.get('runtime_tested',False),device_tested=row.get('device_tested',False),release_authorized=row.get('release_authorized',False)))
+    run('aidoku','build','-o',str(out),'-n','PanelNest'+('' if args.release else ' — staging'),*packages)
     index=json.loads((out/'index.json').read_text())
     actual=[r['id'] for r in index['sources']]
     expected={r['id'] for r in selected}
