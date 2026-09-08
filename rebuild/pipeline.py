@@ -53,6 +53,61 @@ def validate_catalog_metadata(actual, expected):
         if actual.get(field) != expected.get(field):
             raise ValueError(f'Catalog/package/source {field} mismatch for {expected["id"]}')
 
+def preserve_published_package(package, name, baseline=ROOT/'rebuild/published-packages'):
+    """Keep published ZIP bytes only when every rebuilt member is identical.
+
+    Aidoku's packager timestamps ZIP entries, so equivalent builds otherwise
+    mutate unchanged version URLs. Content changes require a version bump.
+    """
+    if PurePosixPath(name).name != name or '\\' in name or ':' in name:
+        raise ValueError('Invalid published package name')
+    with zipfile.ZipFile(package) as archive:
+        names = archive.namelist()
+        if len(names) != len(set(names)):
+            raise ValueError('Duplicate package members')
+        for member in names:
+            path = PurePosixPath(member)
+            if path.is_absolute() or '..' in path.parts or '\\' in member or ':' in member:
+                raise ValueError('Unsafe package member')
+    original = baseline/name
+    hashes = json.loads((baseline/'SHA256.json').read_text())
+    if name not in hashes:
+        if original.exists():
+            raise ValueError('Published archive missing checksum pin')
+        return  # A genuinely new version is not pinned yet.
+    if not original.is_file():
+        raise ValueError('Missing published archive')
+    if hashlib.sha256(original.read_bytes()).hexdigest() != hashes.get(name):
+        raise ValueError('Published archive checksum mismatch')
+    with zipfile.ZipFile(original) as old, zipfile.ZipFile(package) as new:
+        old_names, new_names = old.namelist(), new.namelist()
+        if len(old_names) != len(set(old_names)) or len(new_names) != len(set(new_names)) or set(old_names) != set(new_names):
+            raise ValueError('Published package member set changed; bump version')
+        if any(old.read(member) != new.read(member) for member in old_names):
+            raise ValueError('Published package content changed; bump version')
+    shutil.copyfile(original, package)
+
+
+def retain_published_assets(out, baseline=ROOT/'rebuild/published-packages'):
+    """Keep old installed version URLs working when a new version is published."""
+    hashes = json.loads((baseline/'SHA256.json').read_text())
+    for name, digest in hashes.items():
+        if PurePosixPath(name).name != name or not name.endswith('.aix') or '\\' in name or ':' in name:
+            raise ValueError('Invalid published package name')
+        original = baseline/name
+        if not original.is_file() or hashlib.sha256(original.read_bytes()).hexdigest() != digest:
+            raise ValueError('Missing or corrupt published archive')
+        with zipfile.ZipFile(original) as archive:
+            assets = {'sources/'+name: original.read_bytes(),
+                      'icons/'+name[:-4]+'.png': archive.read('Payload/icon.png')}
+        for relative, data in assets.items():
+            target = out/relative
+            if target.exists() and target.read_bytes() != data:
+                raise ValueError('Versioned asset changed: '+relative)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+
+
 def run(*args, cwd=ROOT):
     subprocess.run(args, cwd=cwd, check=True)
 
@@ -85,6 +140,7 @@ def main():
         info=inspect_package(package,row['id'])
         source_info=json.loads((directory/'res/source.json').read_text())['info']
         validate_catalog_metadata(info, source_info)
+        preserve_published_package(package, f"{info['id']}-v{info['version']}.aix")
         source_infos[row['id']]=source_info
         packages.append(str(package))
         results.append(dict(id=row['id'],version=info['version'],sha256=hashlib.sha256(package.read_bytes()).hexdigest(),package_verified=True,runtime_tested=row.get('runtime_tested',False)))
@@ -106,6 +162,7 @@ def main():
         source_row = next(row for row in selected if row['id'] == item['id'])
         if icon_bytes != (ROOT/source_row['path']/'res/icon.png').read_bytes():
             raise ValueError('Catalog/source icon mismatch')
+    retain_published_assets(out)
     (out/'.nojekyll').touch()
     (out/'build-report.json').write_text(json.dumps(dict(release=args.release,requested=6,built=len(results),sources=results),indent=2)+'\n')
     checksums=[]
