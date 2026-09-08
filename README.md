@@ -1,4 +1,4 @@
-# Independently maintained Aidoku sources
+# PanelNest — independently maintained Aidoku sources
 
 Six local Rust adapters, built from source against Aidoku SDK commit `e1320b0a2e11afb59e4dee374883a2212d325699`. Not a forwarding catalog. Existing upstream-derived code retains attribution and licenses in `licenses/` and source directories. Old catalogs and scheduled mirror updates are retired; history is preserved.
 
@@ -23,7 +23,9 @@ WEBTOON: English advertised, first search page only; Canvas end-to-end and multi
 
 ## Install the experimental list
 
-[Add experimental list to Aidoku](https://aidoku.app/add-source-list/?url=https://luc1ddream.github.io/my-aidoku-sources/experimental/) on a device with Aidoku installed. Or add `https://luc1ddream.github.io/my-aidoku-sources/experimental/` in Aidoku Settings > Source Lists. Catalog JSON: [experimental/index.json](https://luc1ddream.github.io/my-aidoku-sources/experimental/index.json). The root list intentionally contains zero supported sources.
+[Open PanelNest](https://luc1ddream.github.io/panelnest/) in English, Deutsch, Español, Français or Português. [Add experimental list to Aidoku](https://aidoku.app/add-source-list/?url=https%3A%2F%2Fluc1ddream.github.io%2Fpanelnest%2Fexperimental%2Findex.min.json) on a device with Aidoku installed. Or add `https://luc1ddream.github.io/panelnest/experimental/index.min.json` in Aidoku Settings > Source Lists. The root list intentionally contains zero supported sources.
+
+Already installed the `my-aidoku-sources/experimental/index.min.json` URL? Keep it: the [compatibility publisher](https://github.com/LUC1DDREAM/my-aidoku-sources) maintains complete JSON, package and icon copies at the old Pages path. No source IDs change for this rename. Compatibility checks run every six hours (GitHub schedules may be delayed) and can be dispatched manually. Git/repository links must use `LUC1DDREAM/panelnest`; recreating the legacy name intentionally replaces GitHub rename redirects.
 
 Asura locks show the site-provided release time in UTC and a countdown updated **at refresh**, not a ticking timer. Unknown/premium chapters stay locked; a passed deadline alone never grants access. Current chapter metadata is checked before either reader path. No access-control bypass or paid-account/device test is claimed.
 

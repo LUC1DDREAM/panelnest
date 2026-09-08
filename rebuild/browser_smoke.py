@@ -7,7 +7,7 @@ import sys
 from urllib.parse import urlparse, parse_qs
 from playwright.sync_api import sync_playwright
 
-base = (sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:8765/my-aidoku-sources/').rstrip('/')+'/'
+base = (sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:8765/panelnest/').rstrip('/')+'/'
 out = Path('output/playwright'); out.mkdir(parents=True, exist_ok=True)
 results=[]
 with sync_playwright() as p:
@@ -26,7 +26,12 @@ with sync_playwright() as p:
             assert page.locator('meta[name=description]').get_attribute('content')
             assert page.title().startswith('PanelNest')
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), (lang,width,'overflow')
+            # Lazy images need to enter the viewport before load is expected.
+            for image in page.locator('img').all():
+                image.scroll_into_view_if_needed()
+                image.evaluate('(img)=>img.decode()')
             assert page.locator('img').evaluate_all('(imgs)=>imgs.every(i=>i.complete && i.naturalWidth>0)')
+            page.evaluate('window.scrollTo(0, 0)')
             href=page.locator('#import-list').get_attribute('href')
             assert urlparse(href).netloc=='aidoku.app'
             list_url=parse_qs(urlparse(href).query)['url'][0]
