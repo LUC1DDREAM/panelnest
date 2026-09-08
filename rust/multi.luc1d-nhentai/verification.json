@@ -1,0 +1,33 @@
+{
+  "id": "multi.luc1d-nhentai",
+  "version": 3,
+  "sha256": "025f0845781f2a6da691e413dab6a82887e2ffab5b0f673c2e41d8cea654b435",
+  "bytes": 90046,
+  "languages": [
+    "All",
+    "en",
+    "ja",
+    "zh"
+  ],
+  "contentRating": 2,
+  "package_verified": true,
+  "runtime_tested": false,
+  "ios_tested": false,
+  "fixture_tests_passed": 5,
+  "live_suite_tests_passed": 5,
+  "live_suite_tests_failed": 1,
+  "live_suite_failed": true,
+  "live_blocker": "HTTP 429 during home, after all four sorts passed first/second-page metadata assertions. Website HTML 403.",
+  "implemented": [
+    "search",
+    "details",
+    "chapters",
+    "pages",
+    "home",
+    "listings",
+    "filters",
+    "deep-links"
+  ],
+  "package_hash_scope": "Local Windows integration package after generated icon replacement; CI package archive bytes may differ.",
+  "live_suite_scope": "Worker run including fixture tests; not repeated during integration."
+}

@@ -2,7 +2,7 @@
   "info": {
     "id": "en.luc1d-asurascans",
     "name": "Asura Scans (LUC1D)",
-    "version": 2,
+    "version": 3,
     "url": "https://asurascans.com",
     "contentRating": 0,
     "languages": [
@@ -14,6 +14,18 @@
     {
       "id": "Ranking",
       "kind": 1
+    },
+    {
+      "id": "popular-week",
+      "name": "Popular This Week"
+    },
+    {
+      "id": "popular-month",
+      "name": "Popular This Month"
+    },
+    {
+      "id": "popular-all",
+      "name": "Popular All Time"
     }
   ],
   "config": {}

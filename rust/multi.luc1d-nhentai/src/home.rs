@@ -10,6 +10,26 @@ use aidoku::{
 	prelude::*,
 };
 
+pub(crate) fn today_component(entries: Vec<Manga>) -> HomeComponent {
+	HomeComponent {
+		title: Some("Popular Today".into()),
+		subtitle: None,
+		value: aidoku::HomeComponentValue::MangaList {
+			ranking: true,
+			page_size: Some(3),
+			entries: entries.into_iter().map(Into::into).collect(),
+			listing: Some(Listing {
+				id: "popular-today".into(),
+				name: "Popular Today".into(),
+				kind: if settings::get_list_viewer() {
+					ListingKind::List
+				} else {
+					ListingKind::Default
+				},
+			}),
+		},
+	}
+}
 fn send_component(component: HomeComponent) {
 	send_partial_result(&HomePartialResult::Component(component));
 }
@@ -22,7 +42,7 @@ impl Home for NHentai {
 				HomeComponent {
 					title: Some("Popular Today".into()),
 					subtitle: None,
-					value: aidoku::HomeComponentValue::empty_big_scroller(),
+					value: aidoku::HomeComponentValue::empty_manga_list(),
 				},
 				HomeComponent {
 					title: Some("Popular This Week".into()),
@@ -94,14 +114,7 @@ impl Home for NHentai {
 		let recent = recent?;
 
 		if !popular_today.is_empty() {
-			send_component(HomeComponent {
-				title: Some("Popular Today".into()),
-				subtitle: None,
-				value: aidoku::HomeComponentValue::BigScroller {
-					entries: popular_today,
-					auto_scroll_interval: Some(8.0),
-				},
-			});
+			send_component(today_component(popular_today));
 		}
 
 		if !popular_week.is_empty() {

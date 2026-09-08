@@ -14,6 +14,9 @@ hashbrown = "0.13.2"
 aidoku = { git = "https://github.com/Aidoku/aidoku-rs.git", rev = "e1320b0a2e11afb59e4dee374883a2212d325699", features = ["test"] }
 aidoku-test = { git = "https://github.com/Aidoku/aidoku-rs.git", rev = "e1320b0a2e11afb59e4dee374883a2212d325699" }
 
+[features]
+live-tests = []
+
 [lib]
 crate-type = ["cdylib"]
 

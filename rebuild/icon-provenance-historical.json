@@ -1,0 +1,255 @@
+[
+  {
+    "id": "en.luc1d-asurascans",
+    "requested_url": "https://asurascans.com/",
+    "navigation": {
+      "site": "asurascans",
+      "requested_url": "https://asurascans.com/",
+      "status": 200,
+      "final_url": "https://asurascans.com/",
+      "title": "Asura Scans - Read Manga, Manhwa & Manhua Online",
+      "links": [
+        {
+          "rel": "icon",
+          "href": "https://asurascans.com/images/logo.webp",
+          "sizes": ""
+        },
+        {
+          "rel": "apple-touch-icon",
+          "href": "https://asurascans.com/icons/apple-touch-icon.png",
+          "sizes": ""
+        },
+        {
+          "rel": "manifest",
+          "href": "https://asurascans.com/manifest.json",
+          "sizes": ""
+        }
+      ],
+      "brand": [
+        {
+          "alt": "Asura Scans",
+          "src": "https://asurascans.com/images/logo.webp"
+        }
+      ]
+    },
+    "icon_url": "https://asurascans.com/icons/icon-512.png",
+    "resolved_download_url": "https://asurascans.com/icons/icon-512.png",
+    "original_size": [
+      512,
+      512
+    ],
+    "original_format": "PNG",
+    "original_sha256": "eb04400cb706c7278d37d750781cb322349f5e7b76f413acc0a2a8c2e6e0e277",
+    "result_size": [
+      128,
+      128
+    ],
+    "result_mode": "RGB",
+    "result_sha256": "ed985dc3c241a841057343c86beac2a07114dc15a6f5e37a5c14a79859b75707",
+    "transformation": "Selected usable branding raster; LANCZOS contain without crop/stretch; alpha composite on #13111a; opaque RGB PNG.",
+    "attribution": "asurascans website branding belongs to its respective rights holders. Retained for source identification; no trademark ownership claimed or branding relicensed.",
+    "confidence": "high: live browser homepage metadata; linked manifest icon-512.png",
+    "visual_review": "Branding-only images visually inspected; square composition without added crop or stretching. Small favicons remain soft when enlarged.",
+    "previous_version": 1,
+    "version": 2,
+    "asset_changed": true
+  },
+  {
+    "id": "en.luc1d-weebcentral",
+    "requested_url": "https://weebcentral.com/",
+    "navigation": {
+      "site": "weebcentral",
+      "requested_url": "https://weebcentral.com/",
+      "status": 403,
+      "final_url": "https://weebcentral.com/",
+      "title": "Attention Required! | Cloudflare",
+      "links": [],
+      "brand": []
+    },
+    "icon_url": "https://weebcentral.com/favicon.ico",
+    "resolved_download_url": "https://raw.githubusercontent.com/LUC1DDREAM/my-aidoku-sources/0b876249be3238a87f6e4fb4057397530994de65/rust/en.luc1d-weebcentral/res/icon.png",
+    "original_size": [
+      128,
+      128
+    ],
+    "original_format": "PNG",
+    "original_sha256": "681c43f91d1f02815a9db0fc1fa8b87f2bc80f90bbe2bd434310ce62880fa3ab",
+    "result_size": [
+      128,
+      128
+    ],
+    "result_mode": "RGB",
+    "result_sha256": "681c43f91d1f02815a9db0fc1fa8b87f2bc80f90bbe2bd434310ce62880fa3ab",
+    "transformation": "No transformation: retain existing crisp 128x128 opaque repository icon rather than replace with unverified 32x32 third-party cache.",
+    "attribution": "weebcentral website branding belongs to its respective rights holders. Retained for source identification; no trademark ownership claimed or branding relicensed.",
+    "confidence": "retained existing repository branding: official homepage and both direct icon URLs return 403; official origin bytes unverified",
+    "metadata_evidence": "https://favicon.im/domain/weebcentral.com",
+    "cache_note": "Third-party 32x32 cached mascot rejected for publication; existing higher-detail matching mascot retained.",
+    "visual_review": "Branding-only images visually inspected; square composition without added crop or stretching. Small favicons remain soft when enlarged.",
+    "selection_note": "Exception: not a newly extracted official website image. Official favicon URL is a metadata candidate, not verified download provenance.",
+    "previous_version": 1,
+    "version": 1,
+    "asset_changed": false
+  },
+  {
+    "id": "multi.luc1d-nhentai",
+    "requested_url": "https://nhentai.net/",
+    "navigation": {
+      "site": "nhentai",
+      "requested_url": "https://nhentai.net/",
+      "status": 403,
+      "final_url": "https://nhentai.net/",
+      "title": "Nur einen Moment\u2026",
+      "links": [],
+      "brand": []
+    },
+    "icon_url": "https://nhentai.net/favicon.png",
+    "resolved_download_url": "https://nhentai.net/favicon.png",
+    "original_size": [
+      32,
+      32
+    ],
+    "original_format": "PNG",
+    "original_sha256": "d8c2c1c235f52a8491011299df0e7d8ff71b8db4804cb412687b57540c6f59a0",
+    "result_size": [
+      128,
+      128
+    ],
+    "result_mode": "RGB",
+    "result_sha256": "eb4400bbed288899dd181f6901e1f3129f158f70a9676e45e561f553b9e25ec6",
+    "transformation": "Selected usable branding raster; LANCZOS contain without crop/stretch; alpha composite on #202020; opaque RGB PNG.",
+    "attribution": "nhentai website branding belongs to its respective rights holders. Retained for source identification; no trademark ownership claimed or branding relicensed.",
+    "confidence": "medium: homepage blocked (403); rel=icon extracted from official /favicon.ico 404 HTML; official favicon.png downloaded (200)",
+    "metadata_evidence": "https://nhentai.net/favicon.ico",
+    "visual_review": "Branding-only images visually inspected; square composition without added crop or stretching. Small favicons remain soft when enlarged.",
+    "previous_version": 1,
+    "version": 2,
+    "asset_changed": true
+  },
+  {
+    "id": "multi.luc1d-webtoon",
+    "requested_url": "https://m.webtoons.com/?webtoon-platform-redirect=true",
+    "navigation": {
+      "site": "webtoon",
+      "requested_url": "https://m.webtoons.com/?webtoon-platform-redirect=true",
+      "status": 200,
+      "final_url": "https://www.webtoons.com/de/",
+      "title": "WEBTOON - Comics online lesen",
+      "links": [
+        {
+          "rel": "shortcut icon",
+          "href": "https://webtoons-static.pstatic.net/image/favicon/favicon.ico?dt=2017082301",
+          "sizes": ""
+        }
+      ],
+      "brand": [
+        {
+          "alt": "",
+          "src": "https://webtoon-phinf.pstatic.net/20230308_101/1678266290703JSPBP_PNG/7GNB.png"
+        }
+      ]
+    },
+    "icon_url": "https://webtoons-static.pstatic.net/image/favicon/favicon.ico?dt=2017082301",
+    "resolved_download_url": "https://webtoons-static.pstatic.net/image/favicon/favicon.ico?dt=2017082301",
+    "original_size": [
+      32,
+      32
+    ],
+    "original_format": "ICO",
+    "original_sha256": "a16550a521bb1fe6b72c8b4a299800399a4b357277248fe6fe735bbdad36125e",
+    "result_size": [
+      128,
+      128
+    ],
+    "result_mode": "RGB",
+    "result_sha256": "041a7016778c3adf90d426d0bde78173963bb18c1ccde829d6696c2210027182",
+    "transformation": "Selected usable branding raster; LANCZOS contain without crop/stretch; alpha composite on #ffffff; opaque RGB PNG.",
+    "attribution": "webtoon website branding belongs to its respective rights holders. Retained for source identification; no trademark ownership claimed or branding relicensed.",
+    "confidence": "high: live browser homepage metadata",
+    "visual_review": "Branding-only images visually inspected; square composition without added crop or stretching. Small favicons remain soft when enlarged.",
+    "previous_version": 1,
+    "version": 2,
+    "asset_changed": true
+  },
+  {
+    "id": "multi.luc1d-imhentai",
+    "requested_url": "https://imhentai.xxx/",
+    "navigation": {
+      "site": "imhentai",
+      "requested_url": "https://imhentai.xxx/",
+      "status": 403,
+      "final_url": "https://imhentai.xxx/",
+      "title": "Nur einen Moment\u2026",
+      "links": [],
+      "brand": []
+    },
+    "icon_url": "https://imhentai.xxx/images/logo.png",
+    "resolved_download_url": "https://imhentai.xxx/images/logo.png",
+    "original_size": [
+      45,
+      45
+    ],
+    "original_format": "PNG",
+    "original_sha256": "edd0152aa5c440b673e121aaa79fda41e1716f1f2d56e9cb5cdfe82bb3cb37de",
+    "result_size": [
+      128,
+      128
+    ],
+    "result_mode": "RGB",
+    "result_sha256": "6e00e366decbd025e666d09ea71c8b8f422a9782f396b8ad0c0579155142c2d5",
+    "transformation": "Selected usable branding raster; LANCZOS contain without crop/stretch; alpha composite on #202020; opaque RGB PNG.",
+    "attribution": "imhentai website branding belongs to its respective rights holders. Retained for source identification; no trademark ownership claimed or branding relicensed.",
+    "confidence": "medium: homepage blocked (403); official static square header logo downloaded (200); URL observed in historical network report. Preferred crisp logo over blurred favicon.",
+    "metadata_evidence": "https://tria.ge/230318-wvvmlsdc34/behavioral1",
+    "visual_review": "Branding-only images visually inspected; square composition without added crop or stretching. Small favicons remain soft when enlarged.",
+    "previous_version": 2,
+    "version": 3,
+    "asset_changed": true
+  },
+  {
+    "id": "multi.luc1d-hentaifox",
+    "requested_url": "https://hentaifox.com/",
+    "navigation": {
+      "site": "hentaifox",
+      "requested_url": "https://hentaifox.com/",
+      "status": 200,
+      "final_url": "https://hentaifox.com/",
+      "title": "HentaiFox - Free Hentai Manga, Doujinshi and Anime Porn",
+      "links": [
+        {
+          "rel": "icon",
+          "href": "https://hentaifox.com/images/favicon.ico",
+          "sizes": ""
+        },
+        {
+          "rel": "apple-touch-icon",
+          "href": "https://hentaifox.com/images/custom.png",
+          "sizes": ""
+        }
+      ],
+      "brand": []
+    },
+    "icon_url": "https://hentaifox.com/images/favicon.ico",
+    "resolved_download_url": "https://hentaifox.com/images/favicon.ico",
+    "original_size": [
+      16,
+      16
+    ],
+    "original_format": "PNG",
+    "original_sha256": "d530175a2b8fbf07fd0c80ee471619a7c91792f65abed42703ab96eebbcf6ee3",
+    "result_size": [
+      128,
+      128
+    ],
+    "result_mode": "RGB",
+    "result_sha256": "2635898d96a68daec7ee290cd5a01db5c82df38aa76f47ebab967412e23d8f80",
+    "transformation": "Selected usable branding raster; LANCZOS contain without crop/stretch; alpha composite on #202020; opaque RGB PNG.",
+    "attribution": "hentaifox website branding belongs to its respective rights holders. Retained for source identification; no trademark ownership claimed or branding relicensed.",
+    "confidence": "high: live browser homepage metadata",
+    "visual_review": "Branding-only images visually inspected; square composition without added crop or stretching. Small favicons remain soft when enlarged.",
+    "selection_note": "Advertised 57x57 apple-touch custom.png is fully transparent and rejected. Actual 16x16 favicon selected; enlargement necessarily soft.",
+    "previous_version": 2,
+    "version": 3,
+    "asset_changed": true
+  }
+]

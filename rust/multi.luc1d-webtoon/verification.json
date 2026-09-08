@@ -1,15 +1,26 @@
 {
   "id": "multi.luc1d-webtoon",
-  "version": 1,
+  "version": 3,
+  "sha256": "b51fcae0646aba414da18ef743df3d8db7f794205e54a1b3c96195066934a120",
+  "bytes": 61566,
+  "languages": [
+    "en"
+  ],
+  "contentRating": 1,
   "package_verified": true,
-  "fixture_tests_passed": 5,
-  "live_wasm_tests_passed": 6,
+  "runtime_tested": false,
   "ios_tested": false,
-  "package_sha256": "da2b26c6c232184af03da4844266c4fa73854357ddec2c74435be801521cb357",
+  "fixture_tests_passed": 8,
+  "live_suite_tests_passed": 10,
+  "live_suite_failed": false,
   "implemented": [
     "search",
     "details",
     "chapters",
-    "pages"
-  ]
+    "pages",
+    "home",
+    "listings"
+  ],
+  "package_hash_scope": "Local Windows integration package after generated icon replacement; CI package archive bytes may differ.",
+  "live_suite_scope": "Worker run including fixture tests; not repeated during integration."
 }

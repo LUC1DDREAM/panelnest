@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Webtoon: original inspired icon">
+<title>Conversation stack</title><desc>Two original overlapping emerald conversation panels with offset tails and bold white dialogue strokes. Not an official source asset.</desc>
+<defs><linearGradient id="bg" x2="0.8" y2="1"><stop stop-color="#F3FFF8"/><stop offset="1" stop-color="#DDF4E8"/></linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#09D884"/><stop offset="1" stop-color="#00B568"/></linearGradient></defs>
+<rect width="256" height="256" fill="url(#bg)"/>
+ <path d="M41 65 170 44Q179 43 180 53L189 137 142 145 115 171 109 151 54 161Z" fill="#008B55"/>
+ <path d="M71 91 210 73 196 192 147 199 113 225 114 202 61 209Z" fill="url(#accent)"/>
+ <path d="M89 123 178 112M85 148 155 139" fill="none" stroke="#F4FFF8" stroke-width="11" stroke-linecap="round"/>
+ <path d="M57 69 158 53" fill="none" stroke="#5CE7A5" stroke-width="5" stroke-linecap="round"/>
+ </svg>

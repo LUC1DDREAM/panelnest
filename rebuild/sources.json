@@ -10,14 +10,17 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings"
     ],
     "package_verified": true,
     "runtime_tested": false,
     "publish": false,
     "device_tested": false,
     "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
-    "live_evidence": "not independently verified in integration"
+    "live_evidence": "Worker live WASM metadata smoke passed for Home and week/month/all listings; no device test.",
+    "fixture_tests_passed": 12
   },
   {
     "id": "en.luc1d-weebcentral",
@@ -30,14 +33,17 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings"
     ],
     "package_verified": true,
     "runtime_tested": false,
     "publish": false,
     "device_tested": false,
     "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
-    "live_evidence": "not independently verified in integration"
+    "live_evidence": "Worker public search sort evidence; live WASM blocked by Cloudflare HTTP 403.",
+    "fixture_tests_passed": 5
   },
   {
     "id": "multi.luc1d-nhentai",
@@ -50,14 +56,17 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings"
     ],
     "package_verified": true,
     "runtime_tested": false,
     "publish": false,
     "device_tested": false,
     "status": "experimental; locked WASM fixture tests and package verification passed; device validation pending",
-    "live_evidence": "not independently verified in integration"
+    "live_evidence": "Worker four sorts page 1/2 metadata passed; Home hit HTTP 429, suite failed; no device test.",
+    "fixture_tests_passed": 5
   },
   {
     "id": "multi.luc1d-webtoon",
@@ -66,7 +75,9 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings"
     ],
     "package_verified": true,
     "runtime_tested": false,
@@ -75,7 +86,8 @@
     "path": "rust/multi.luc1d-webtoon",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "worker WASM-host live smoke passed; English first search page only; Canvas unverified"
+    "live_evidence": "Worker live-tests suite: 10 passed (including fixture tests); English Drama sorts and four additional genre listings; Canvas unverified.",
+    "fixture_tests_passed": 8
   },
   {
     "id": "multi.luc1d-imhentai",
@@ -84,7 +96,9 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings"
     ],
     "package_verified": true,
     "runtime_tested": false,
@@ -93,7 +107,8 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "public HTTP 403; no bypass; synthetic tests only"
+    "live_evidence": "Worker public HTTP 403; offline discovery adaptation only, no bypass.",
+    "fixture_tests_passed": 7
   },
   {
     "id": "multi.luc1d-hentaifox",
@@ -102,7 +117,9 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings"
     ],
     "package_verified": true,
     "runtime_tested": false,
@@ -111,6 +128,7 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "worker metadata-only HTTP 200; no live Aidoku integration"
+    "live_evidence": "Worker homepage HTTP 200 and Top Rated sidebar metadata; no live WASM or device test.",
+    "fixture_tests_passed": 8
   }
 ]

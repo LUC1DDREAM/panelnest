@@ -15,6 +15,7 @@ use aidoku::{
 
 mod auth;
 mod chapters;
+mod discovery;
 mod helpers;
 mod models;
 
@@ -304,7 +305,7 @@ impl Home for AsuraScans {
 			let title = trending_today
 				.select_first("h2")
 				.and_then(|el| el.text())
-				.unwrap_or("Trending Today".into());
+				.unwrap_or("Trending Comics".into());
 			let entries: Vec<Link> = trending_today
 				.select("div.embla-trending > div > div > a")
 				.map(|els| {
@@ -388,6 +389,30 @@ impl Home for AsuraScans {
 			}
 		}
 
+		for (id, title) in [
+			("popular-week", "Popular This Week"),
+			("popular-month", "Popular This Month"),
+			("popular-all", "Popular All Time"),
+		] {
+			let listing = Listing {
+				id: id.into(),
+				name: title.into(),
+				..Default::default()
+			};
+			// A failed period must never be replaced with another period's ranking.
+			if let Ok(result) = self.get_manga_list(listing.clone(), 1) {
+				if !result.entries.is_empty() {
+					components.push(HomeComponent {
+						title: Some(title.into()),
+						subtitle: None,
+						value: HomeComponentValue::Scroller {
+							entries: result.entries.into_iter().map(Into::into).collect(),
+							listing: Some(listing),
+						},
+					});
+				}
+			}
+		}
 		Ok(HomeLayout { components })
 	}
 }
@@ -422,6 +447,19 @@ impl MigrationHandler for AsuraScans {
 
 impl ListingProvider for AsuraScans {
 	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult> {
+		if page < 1 {
+			bail!("Invalid page");
+		}
+		if let Some(period) = discovery::popularity_period(&listing.id) {
+			if page > 1 {
+				return Ok(MangaPageResult {
+					entries: Vec::new(),
+					has_next_page: false,
+				});
+			}
+			let json = Request::get(format!("{API_URL}/trending/{period}?limit=10"))?.string()?;
+			return discovery::parse_popularity(&json);
+		}
 		match listing.id.as_str() {
 			"Ranking" => {
 				let html = Request::get(format!("{BASE_URL}/series-ranking"))?.html()?;

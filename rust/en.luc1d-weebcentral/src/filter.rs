@@ -1,11 +1,22 @@
 use crate::helper;
 use crate::model::SortOptions;
 use aidoku::{
-	alloc::{borrow::ToOwned, String, Vec},
+	FilterValue,
+	alloc::{String, Vec, borrow::ToOwned},
 	helpers::uri::QueryParameters,
 	prelude::*,
-	FilterValue,
 };
+
+// Website Advanced Search sorts, deliberately without time-window aliases.
+pub fn listing_sort(id: &str) -> Option<i32> {
+	match id {
+		"popular" => Some(2),
+		"subscribers" => Some(3),
+		"new" => Some(4),
+		"latest" => Some(5),
+		_ => None,
+	}
+}
 
 pub fn get_filters(query: Option<String>, filters: Vec<FilterValue>) -> String {
 	let mut qs = QueryParameters::new();
