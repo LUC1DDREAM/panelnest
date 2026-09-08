@@ -1,7 +1,9 @@
 """Build only local Rust; fail closed on incomplete release or missing artifacts."""
 import argparse
 import hashlib
+import io
 import json
+from PIL import Image
 from pathlib import Path, PurePosixPath
 import re
 import shutil
@@ -39,8 +41,11 @@ def inspect_package(path, expected_id):
             raise ValueError('Package ID mismatch')
         if not archive.read('Payload/main.wasm').startswith(b'\0asm\x01\0\0\0'):
             raise ValueError('Invalid wasm header')
-        if not archive.read('Payload/icon.png'):
-            raise ValueError('Missing icon')
+        with Image.open(io.BytesIO(archive.read('Payload/icon.png'))) as icon:
+            if icon.format != 'PNG' or icon.size != (128, 128):
+                raise ValueError('Icon must be 128x128 PNG')
+            if icon.convert('RGBA').getchannel('A').getextrema() != (255, 255):
+                raise ValueError('Icon must be fully opaque')
         return info
 
 def validate_catalog_metadata(actual, expected):
@@ -94,7 +99,13 @@ def main():
         info=inspect_package(package,item['id'])
         validate_catalog_metadata(info, source_infos[item['id']])
         validate_catalog_metadata(item, info)
-        if not (out/item['iconURL']).is_file(): raise ValueError('Missing generated icon')
+        icon_bytes = (out/item['iconURL']).read_bytes()
+        with zipfile.ZipFile(package) as archive:
+            if icon_bytes != archive.read('Payload/icon.png'):
+                raise ValueError('Catalog/package icon mismatch')
+        source_row = next(row for row in selected if row['id'] == item['id'])
+        if icon_bytes != (ROOT/source_row['path']/'res/icon.png').read_bytes():
+            raise ValueError('Catalog/source icon mismatch')
     (out/'.nojekyll').touch()
     (out/'build-report.json').write_text(json.dumps(dict(release=args.release,requested=6,built=len(results),sources=results),indent=2)+'\n')
     checksums=[]

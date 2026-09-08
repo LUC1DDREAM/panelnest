@@ -45,6 +45,42 @@ class PipelineTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 pipeline.validate_catalog_metadata(dict(info, **{field: value}), info)
 
+    def test_package_rejects_non_square_or_transparent_icons(self):
+        import io
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td)/'package.aix'
+            for size, color in [((64, 128), (0, 0, 0, 255)), ((128, 128), (0, 0, 0, 0))]:
+                icon = io.BytesIO()
+                Image.new('RGBA', size, color).save(icon, format='PNG')
+                with zipfile.ZipFile(p, 'w') as z:
+                    z.writestr('Payload/source.json', json.dumps({'info': {'id': 'test'}}))
+                    z.writestr('Payload/main.wasm', b'\0asm\x01\0\0\0')
+                    z.writestr('Payload/icon.png', icon.getvalue())
+                with self.subTest(size=size, color=color), self.assertRaises(ValueError):
+                    pipeline.inspect_package(p, 'test')
+
+    def test_all_six_source_icons_match_provenance(self):
+        import hashlib
+        from PIL import Image
+        records = json.loads((pipeline.ROOT/'rebuild/icon-provenance.json').read_text())
+        rows = json.loads((pipeline.ROOT/'rebuild/sources.json').read_text())
+        self.assertEqual(len(records), 6)
+        self.assertEqual({r['id'] for r in records}, {r['id'] for r in rows})
+        for row in rows:
+            record = next(r for r in records if r['id'] == row['id'])
+            icon = pipeline.ROOT/row['path']/'res/icon.png'
+            info = json.loads(icon.with_name('source.json').read_text())['info']
+            self.assertEqual(info['version'], record['version'])
+            self.assertEqual(hashlib.sha256(icon.read_bytes()).hexdigest(), record['result_sha256'])
+            with Image.open(icon) as image:
+                self.assertEqual(image.format, 'PNG')
+                self.assertEqual(image.size, (128, 128))
+                self.assertEqual(image.convert('RGBA').getchannel('A').getextrema(), (255, 255))
+            if row['id'] in ('multi.luc1d-imhentai', 'multi.luc1d-hentaifox'):
+                self.assertEqual(info['languages'], ['multi'])
+                self.assertEqual(info['contentRating'], 2)
+
     def test_package_identity_and_wasm_validation(self):
         with tempfile.TemporaryDirectory() as td:
             p=Path(td)/'package.aix'
@@ -52,7 +88,11 @@ class PipelineTests(unittest.TestCase):
                 with zipfile.ZipFile(p,'w') as z:
                     z.writestr('Payload/source.json',json.dumps({'info':{'id':identifier,'version':1}}))
                     z.writestr('Payload/main.wasm',wasm)
-                    z.writestr('Payload/icon.png',b'fixture')
+                    import io
+                    from PIL import Image
+                    icon = io.BytesIO()
+                    Image.new('RGB', (128, 128), 'white').save(icon, format='PNG')
+                    z.writestr('Payload/icon.png',icon.getvalue())
             package('en.luc1d-asurascans',b'\0asm\x01\0\0\0')
             self.assertEqual(pipeline.inspect_package(p,'en.luc1d-asurascans')['version'],1)
             with self.assertRaises(ValueError): pipeline.inspect_package(p,'wrong.id')

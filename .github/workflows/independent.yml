@@ -45,7 +45,9 @@ jobs:
           command -v aidoku || cargo install --git https://github.com/Aidoku/aidoku-rs --rev e1320b0a2e11afb59e4dee374883a2212d325699 --locked aidoku-cli
           command -v aidoku-test-runner || cargo install --git https://github.com/Aidoku/aidoku-rs --rev e1320b0a2e11afb59e4dee374883a2212d325699 --locked aidoku-test-runner
       - name: Publication contract tests
-        run: python -m unittest discover -s rebuild -p test_pipeline.py
+        run: |
+          python -m pip install Pillow==11.3.0
+          python -m unittest discover -s rebuild -p test_pipeline.py
       - name: Test, compile, verify and build independent list
         shell: bash
         run: |
