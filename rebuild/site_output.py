@@ -9,7 +9,7 @@ from urllib.parse import quote, urlparse
 
 HERE = Path(__file__).resolve().parent
 LOCALES = json.loads((HERE/'site-locales.json').read_text(encoding='utf-8'))
-DEFAULT_URL = 'https://luc1ddream.github.io/my-aidoku-sources/'
+DEFAULT_URL = 'https://luc1ddream.github.io/panelnest/'
 
 
 def render(root, base, repository):
@@ -64,7 +64,7 @@ def render(root, base, repository):
 
 def prepare(root, base=None, repository=None):
     base = (base or os.getenv('PANELNEST_SITE_URL', DEFAULT_URL)).rstrip('/')+'/'
-    repository = repository or os.getenv('GITHUB_REPOSITORY', 'LUC1DDREAM/my-aidoku-sources')
+    repository = repository or os.getenv('GITHUB_REPOSITORY', 'LUC1DDREAM/panelnest')
     if urlparse(base).scheme != 'https' or not urlparse(base).netloc:
         raise ValueError('Canonical site URL must be HTTPS')
     report = json.loads((root/'build-report.json').read_text())

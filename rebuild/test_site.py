@@ -29,7 +29,7 @@ class LocalizedSiteTests(unittest.TestCase):
                 self.assertEqual(sum(a.get('rel')=='alternate' for t,a in tags),6)
                 cta=next(a['href'] for t,a in tags if a.get('id')=='import-list')
                 self.assertEqual(urlparse(cta).netloc,'aidoku.app')
-                self.assertEqual(parse_qs(urlparse(cta).query)['url'],['https://luc1ddream.github.io/my-aidoku-sources/experimental/index.min.json'])
+                self.assertEqual(parse_qs(urlparse(cta).query)['url'],['https://luc1ddream.github.io/panelnest/experimental/index.min.json'])
                 self.assertIn('source-request.yml',text); self.assertIn('bug-report.yml',text)
             self.assertEqual(json.loads((root/'index.json').read_text())['sources'],[])
             self.assertTrue((root/'sitemap.xml').exists())
