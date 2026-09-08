@@ -15,7 +15,8 @@ class PublicReleaseTests(unittest.TestCase):
         installed={}
         for path in (pipeline.ROOT/'rebuild/published-packages').glob('*.aix'):
             with zipfile.ZipFile(path) as archive:
-                previous=json.loads(archive.read('Payload/source.json'))['info'];installed[previous['id']]=previous
+                previous=json.loads(archive.read('Payload/source.json'))['info']
+                if previous['id'] not in installed or previous['version']<installed[previous['id']]['version']: installed[previous['id']]=previous
         for info in infos:
             previous=installed[info['id']]
             self.assertEqual(info['version'],previous['version']+1)
