@@ -12,7 +12,7 @@ LOCALES = json.loads((HERE/'site-locales.json').read_text(encoding='utf-8'))
 DEFAULT_URL = 'https://luc1ddream.github.io/panelnest/'
 FEATURE_LABELS = ('search', 'details', 'chapters', 'pages', 'home', 'listings',
                   'dynamic-listings', 'dynamic-filters', 'deep-links', 'image-request',
-                  'alternate-covers', 'web-login', 'migration', 'notifications')
+                  'alternate-covers', 'page-descriptions', 'web-login', 'migration', 'notifications')
 
 
 def render(root, base, repository):

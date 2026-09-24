@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FEATURES = {'search', 'details', 'chapters', 'pages'}
 CATALOG_FEATURES = {
     'home', 'listings', 'dynamic-listings', 'dynamic-filters', 'deep-links',
-    'image-request', 'alternate-covers', 'web-login', 'migration', 'notifications',
+    'image-request', 'alternate-covers', 'page-descriptions', 'web-login', 'migration', 'notifications',
 }
 SLUGS = {'asurascans', 'weebcentral', 'nhentai', 'webtoon', 'imhentai', 'hentaifox'}
 

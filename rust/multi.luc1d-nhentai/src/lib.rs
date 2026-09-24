@@ -2,7 +2,7 @@
 use aidoku::{
 	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter,
 	FilterValue, Listing, ListingProvider, Manga, MangaPageResult, MultiSelectFilter, Page,
-	PageContent, Result, Source,
+	PageContent, PageDescriptionProvider, Result, Source,
 	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	helpers::uri::encode_uri_component,
 	imports::{
@@ -240,12 +240,34 @@ impl Source for NHentai {
 
 				Page {
 					content: PageContent::url(path),
+					has_description: true,
 					..Default::default()
 				}
 			})
 			.collect::<Vec<Page>>();
 
 		Ok(pages)
+	}
+}
+
+impl PageDescriptionProvider for NHentai {
+	fn get_page_description(&self, page: Page) -> Result<String> {
+		let PageContent::Url(url, _) = page.content else {
+			return Err(error!("Page does not contain an image URL"));
+		};
+
+		let filename = url.rsplit('/').next().unwrap_or_default();
+		let (number, extension) = filename
+			.split_once('.')
+			.ok_or_else(|| error!("Invalid page image URL"))?;
+		if number.is_empty()
+			|| !number.bytes().all(|byte| byte.is_ascii_digit())
+			|| !matches!(extension, "jpg" | "png" | "gif" | "webp")
+		{
+			return Err(error!("Invalid page image URL"));
+		}
+
+		Ok(format!("Page {number}"))
 	}
 }
 
@@ -430,5 +452,6 @@ register_source!(
 	ListingProvider,
 	DeepLinkHandler,
 	AlternateCoverProvider,
+	PageDescriptionProvider,
 	DynamicFilters
 );

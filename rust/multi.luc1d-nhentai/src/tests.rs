@@ -105,6 +105,30 @@ fn fixture_image_paths_preserve_host_and_slashes() {
 }
 
 #[aidoku_test]
+fn page_descriptions_use_the_validated_official_image_filename() {
+	use aidoku::{PageContent, PageDescriptionProvider, Source};
+	let source = super::NHentai::new();
+	let page = aidoku::Page {
+		content: PageContent::url("https://i.nhentai.net/galleries/fixture/17.jpg"),
+		has_description: true,
+		..Default::default()
+	};
+	assert_eq!(source.get_page_description(page).unwrap(), "Page 17");
+
+	for url in [
+		"https://i.nhentai.net/galleries/fixture/1.jpg/extra",
+		"https://i.nhentai.net/galleries/fixture/x.jpg",
+		"https://i.nhentai.net/galleries/fixture/1.exe",
+	] {
+		let page = aidoku::Page {
+			content: PageContent::url(url),
+			..Default::default()
+		};
+		assert!(source.get_page_description(page).is_err(), "{url}");
+	}
+}
+
+#[aidoku_test]
 fn alternate_cover_variants_are_safe_and_use_official_image_hosts() {
 	let covers = super::models::cover_variants("12345", "fixturemedia123", "cover.jpg");
 	assert_eq!(covers.len(), 2);

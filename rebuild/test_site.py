@@ -39,3 +39,19 @@ class LocalizedSiteTests(unittest.TestCase):
                 self.assertIn('Remote site may block requests.',text)
             self.assertEqual(len(json.loads((root/'index.json').read_text())['sources']),1)
             self.assertTrue((root/'sitemap.xml').exists())
+
+    def test_extended_capabilities_render_in_every_locale(self):
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)
+            (root/'index.json').write_text(json.dumps({'sources':[{'id':'fixture','name':'Fixture','version':7,'languages':['en'],'contentRating':0,'features':['page-descriptions','image-request']}]}))
+            (root/'build-report.json').write_text('{"release":true}')
+            site_output.prepare(root)
+            expected={
+                'en':'Image requests · Page descriptions',
+                'de':'Bildanfragen · Seitenbeschreibungen',
+                'es':'Solicitudes de imagen · Descripciones de página',
+                'fr':'Requêtes d’image · Descriptions des pages',
+                'pt':'Pedidos de imagem · Descrições das páginas',
+            }
+            for lang, labels in expected.items():
+                self.assertIn(labels,(root/lang/'index.html').read_text(encoding='utf-8'))

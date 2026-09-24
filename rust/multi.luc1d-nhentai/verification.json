@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-nhentai",
-  "version": 14,
+  "version": 15,
   "sha256": "310be51f5d08be9b29e7b3394cbb19c1e135f77153efe0bc706026be5ba1af50",
   "bytes": 95967,
   "languages": [
@@ -13,7 +13,7 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 14,
+  "fixture_tests_passed": 15,
   "official_site_checks": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). Runtime filters select unique entries of each taxonomy type; freeform artist, group, parody and character fields now map to their official search operators. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
@@ -25,7 +25,8 @@
     "listings",
     "alternate-covers",
     "deep-links",
-    "dynamic-filters"
+    "dynamic-filters",
+    "page-descriptions"
   ],
   "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
 }
