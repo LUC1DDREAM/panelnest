@@ -16,9 +16,21 @@
       "dynamic-listings",
       "dynamic-filters"
     ],
-    "features": ["search", "details", "chapters", "pages"],
-    "listings": ["Ranking", "Popular This Week", "Popular This Month", "Popular All Time"],
-    "dynamic_listings": ["Bookmarks"],
+    "features": [
+      "search",
+      "details",
+      "chapters",
+      "pages"
+    ],
+    "listings": [
+      "Ranking",
+      "Popular This Week",
+      "Popular This Month",
+      "Popular All Time"
+    ],
+    "dynamic_listings": [
+      "Bookmarks"
+    ],
     "limitations": "The Bookmarks listing requires web login.",
     "package_verified": true,
     "runtime_tested": false,
@@ -46,8 +58,19 @@
       "deep-links",
       "image-request"
     ],
-    "features": ["search", "details", "chapters", "pages"],
-    "listings": ["Hot Updates", "Popular", "Most Subscribed", "Recently Added", "Latest Updates"],
+    "features": [
+      "search",
+      "details",
+      "chapters",
+      "pages"
+    ],
+    "listings": [
+      "Hot Updates",
+      "Popular",
+      "Most Subscribed",
+      "Recently Added",
+      "Latest Updates"
+    ],
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -75,8 +98,18 @@
       "alternate-covers",
       "deep-links"
     ],
-    "features": ["search", "details", "chapters", "pages"],
-    "listings": ["Popular Today", "Popular Week", "Popular All", "Latest"],
+    "features": [
+      "search",
+      "details",
+      "chapters",
+      "pages"
+    ],
+    "listings": [
+      "Popular Today",
+      "Popular Week",
+      "Popular All",
+      "Latest"
+    ],
     "limitations": "Rate limiting (HTTP 429) interrupted one live check; retry later if unavailable.",
     "package_verified": true,
     "runtime_tested": false,
@@ -100,8 +133,21 @@
       "dynamic-filters",
       "deep-links"
     ],
-    "features": ["search", "details", "chapters", "pages"],
-    "listings": ["Drama: By Popularity", "Drama: By Likes", "Drama: By Date", "Fantasy", "Romance", "Action", "Comedy"],
+    "features": [
+      "search",
+      "details",
+      "chapters",
+      "pages"
+    ],
+    "listings": [
+      "Drama: By Popularity",
+      "Drama: By Likes",
+      "Drama: By Date",
+      "Fantasy",
+      "Romance",
+      "Action",
+      "Comedy"
+    ],
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -127,8 +173,18 @@
       "dynamic-filters",
       "deep-links"
     ],
-    "features": ["search", "details", "chapters", "pages"],
-    "listings": ["Latest", "Popular", "Top Rated", "Downloaded"],
+    "features": [
+      "search",
+      "details",
+      "chapters",
+      "pages"
+    ],
+    "listings": [
+      "Latest",
+      "Popular",
+      "Top Rated",
+      "Downloaded"
+    ],
     "limitations": "Public requests returned HTTP 403 during worker checks; availability is not guaranteed. Popular, Top Rated and Downloaded routes have been checked on the public site; search sort filters are not live-verified.",
     "package_verified": true,
     "runtime_tested": false,
@@ -155,9 +211,21 @@
       "deep-links",
       "dynamic-filters"
     ],
-    "features": ["search", "details", "chapters", "pages"],
-    "listings": ["Latest", "Top Rated"],
-    "dynamic_listings": ["Most Faved", "Most Fapped", "Most Downloaded"],
+    "features": [
+      "search",
+      "details",
+      "chapters",
+      "pages"
+    ],
+    "listings": [
+      "Latest",
+      "Top Rated"
+    ],
+    "dynamic_listings": [
+      "Most Faved",
+      "Most Fapped",
+      "Most Downloaded"
+    ],
     "limitations": "Sidebar rankings are finite; no temporal popularity listings or language selector. Artist, character, parody and group filters expose the current 50 most popular entries per category; tag filter exposes the popular tag directory.",
     "package_verified": true,
     "runtime_tested": false,

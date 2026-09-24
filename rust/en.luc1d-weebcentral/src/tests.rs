@@ -148,3 +148,21 @@ fn image_requests_include_the_site_referer_and_provider_is_registered() {
 		"register_source!( WeebCentral, ListingProvider, Home, ImageRequestProvider, DeepLinkHandler );"
 	));
 }
+
+#[aidoku_test]
+fn deep_links_require_exact_https_host_and_supported_path() {
+	use aidoku::{DeepLinkHandler, DeepLinkResult};
+	let source = WeebCentral::new();
+	assert!(matches!(
+		source.handle_deep_link("https://weebcentral.com/series/01J76XYEZYBE7Y3MEY7AEQ8MQN/Test".into()).unwrap(),
+		Some(DeepLinkResult::Manga { .. })
+	));
+	for url in [
+		"https://weebcentral.com.evil/series/01J76XYEZYBE7Y3MEY7AEQ8MQN/Test",
+		"http://weebcentral.com/series/01J76XYEZYBE7Y3MEY7AEQ8MQN/Test",
+		"https://weebcentral.com.evil.example/chapters/01JXNANGY619TDR9F4FST2M5E8",
+		"https://weebcentral.com/account/login",
+	] {
+		assert!(source.handle_deep_link(url.into()).unwrap().is_none(), "{url}");
+	}
+}

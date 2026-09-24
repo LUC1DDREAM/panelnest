@@ -1,6 +1,6 @@
 # Weeb Central (LUC1D)
 
-## Discovery (package version 7)
+## Discovery (package version 8)
 
 Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
 the existing Advanced Search endpoint, its website sort values and explicit
@@ -32,12 +32,14 @@ aidoku package
 aidoku verify package.aix
 ```
 
-Default tests: 9 passed, 1 ignored. Live smoke: failed with explicit website
+Default tests: 10 passed, 1 ignored. Live smoke: failed with explicit website
 access-blocked error. Release build and package/schema/icon/WASM verification
 passed. Tests preserve the existing synthetic nonexplicit HTML fixtures and
 add sort mapping and challenge rejection. No iOS/device proof.
 
 Search rejects page numbers below 1 before calculating the offset, matching the
-listing handler and avoiding invalid negative-offset requests. The public
-capability index also records the existing image request provider, which sets
-the site Referer for chapter page requests.
+listing handler and avoiding invalid negative-offset requests. Deep links require
+the exact HTTPS hostname and a series or chapter path, rejecting lookalike hosts
+and unrelated account URLs. The public capability index also records the
+existing image request provider, which sets the site Referer for chapter page
+requests.

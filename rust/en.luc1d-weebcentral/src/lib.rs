@@ -507,18 +507,26 @@ impl ImageRequestProvider for WeebCentral {
 
 impl DeepLinkHandler for WeebCentral {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
-		if !url.starts_with(BASE_URL) {
+		let Some(rest) = url.strip_prefix("https://") else {
+			return Ok(None);
+		};
+		let Some((host, path)) = rest.split_once('/') else {
+			return Ok(None);
+		};
+		if host != BASE_URL.trim_start_matches("https://")
+			|| !(path.starts_with("series/") || path.starts_with("chapters/"))
+		{
 			return Ok(None);
 		}
 
-		let key = &url[BASE_URL.len()..]; // remove base url prefix
+		let key = format!("/{path}");
 
 		const SERIES_PATH: &str = "/series";
 		const CHAPTER_PATH: &str = "/chapters";
 
 		if key.starts_with(SERIES_PATH) {
 			// ex: https://weebcentral.com/series/01J76XYEZYBE7Y3MEY7AEQ8MQN/Solo-Max-Level-Newbie
-			Ok(Some(DeepLinkResult::Manga { key: key.into() }))
+			Ok(Some(DeepLinkResult::Manga { key }))
 		} else if key.starts_with(CHAPTER_PATH) {
 			// ex: https://weebcentral.com/chapters/01JXNANGY619TDR9F4FST2M5E8
 			let html = Request::get(&url)?.html()?;
