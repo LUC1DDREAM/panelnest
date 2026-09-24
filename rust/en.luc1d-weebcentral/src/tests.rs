@@ -64,14 +64,9 @@ fn reader_pages_keep_order_and_expose_page_descriptions() {
 	let pages = parse_reader_pages(&html);
 	assert_eq!(pages.len(), 2);
 	assert!(pages.iter().all(|page| page.has_description));
-	assert_eq!(
-		WeebCentral.get_page_description(pages[0].clone()).unwrap(),
-		"Page 1"
-	);
-	assert_eq!(
-		WeebCentral.get_page_description(pages[1].clone()).unwrap(),
-		"Page 2"
-	);
+	let mut pages = pages;
+	assert_eq!(WeebCentral.get_page_description(pages.remove(0)).unwrap(), "Page 1");
+	assert_eq!(WeebCentral.get_page_description(pages.remove(0)).unwrap(), "Page 2");
 	let source = include_str!("lib.rs");
 	let normalized = source.split_whitespace().collect::<Vec<_>>().join(" ");
 	assert!(normalized.contains("PageDescriptionProvider"));

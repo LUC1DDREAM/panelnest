@@ -5,9 +5,9 @@ use aidoku::{
 	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MultiSelectFilter, Page, PageContent, Result, SortFilter, SortFilterDefault, Source, TextFilter,
 	Viewer, PageContext, PageDescriptionProvider,
-	alloc::{String, Vec, borrow::{Cow, ToOwned}, vec},
+	alloc::{String, Vec, borrow::{Cow, ToOwned}, string::ToString, vec},
 	imports::{
-		html::Element,
+		html::{Document, Element},
 		net::{Request, TimeUnit, set_rate_limit},
 		std::send_partial_result,
 	},
@@ -36,7 +36,7 @@ fn numbered_reader_page(url: String, number: usize) -> Page {
 	}
 }
 
-fn parse_reader_pages(html: &aidoku::imports::html::Html) -> Vec<Page> {
+fn parse_reader_pages(html: &Document) -> Vec<Page> {
 	let mut pages = Vec::new();
 	if let Some(elements) = html.select("section[x-data*=scroll] > img") {
 		for element in elements {
