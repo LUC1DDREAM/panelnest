@@ -243,8 +243,8 @@ fn dynamic_taxonomy_filter_ids_match_search_syntax() {
 #[aidoku_test]
 fn freeform_parody_and_character_filters_reach_the_matching_query_taxonomy() {
 	for (id, value, expected) in [
-		("parodies", "Star Series", "parody:Star Series"),
-		("characters", "Hero One", "character:Hero One"),
+		("parody", "Star Series", "parody:Star Series"),
+		("character", "Hero One", "character:Hero One"),
 	] {
 		assert_eq!(
 			super::text_filter_query(id, value.into()).as_deref(),
@@ -252,6 +252,10 @@ fn freeform_parody_and_character_filters_reach_the_matching_query_taxonomy() {
 		);
 	}
 	assert!(super::text_filter_query("other", "term".into()).is_none());
+	assert_eq!(super::taxonomy_type("parodies"), Some("parody"));
+	assert_eq!(super::taxonomy_type("characters"), Some("character"));
+	assert!(super::text_filter_query("parodies", "term".into()).is_none());
+	assert!(super::text_filter_query("characters", "term".into()).is_none());
 }
 
 #[aidoku_test]

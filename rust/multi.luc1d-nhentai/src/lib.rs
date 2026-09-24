@@ -49,8 +49,8 @@ fn text_filter_query(id: &str, value: String) -> Option<String> {
 		"author" => Some(value),
 		"artist" => Some(format!("artist:{value}")),
 		"groups" => Some(format!("group:{value}")),
-		"parodies" => Some(format!("parody:{value}")),
-		"characters" => Some(format!("character:{value}")),
+		"parody" => Some(format!("parody:{value}")),
+		"character" => Some(format!("character:{value}")),
 		_ => None,
 	}
 }
@@ -383,8 +383,8 @@ impl DynamicFilters for NHentai {
 			}
 		}
 		for (id, title, placeholder) in [
-			("parodies", "Parody", "Parody name"),
-			("characters", "Character", "Character name"),
+			("parody", "Parody", "Parody name"),
+			("character", "Character", "Character name"),
 		] {
 			let mut filter = aidoku::TextFilter::default();
 			filter.id = Cow::Borrowed(id);

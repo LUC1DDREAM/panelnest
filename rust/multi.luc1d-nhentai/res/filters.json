@@ -13,13 +13,13 @@
 	},
 	{
 		"type": "text",
-		"id": "parodies",
+		"id": "parody",
 		"title": "Parody",
 		"placeholder": "Parody name"
 	},
 	{
 		"type": "text",
-		"id": "characters",
+		"id": "character",
 		"title": "Character",
 		"placeholder": "Character name"
 	},
