@@ -156,6 +156,7 @@
       "home",
       "listings",
       "dynamic-filters",
+      "dynamic-listings",
       "deep-links",
       "image-request"
     ],
@@ -167,6 +168,7 @@
       "home",
       "listings",
       "dynamic-filters",
+      "dynamic-listings",
       "deep-links",
       "image-request"
     ],
@@ -200,7 +202,7 @@
     "device_tested": false,
     "limitations": "The combined, Originals and CANVAS search routes have separate pagination behavior; All-results has no HTML next link, so pagination ends when the response contains no series. Canvas rendering is not verified in Aidoku.",
     "live_evidence": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. All-results pagination now follows page numbers and stops on empty results. This was direct official-site HTTP validation, not a live Aidoku/device run. Runtime menu parsing now reads genres and supported sorts from official locale-specific genre navigation, with bundled fallback on request or parse failure.",
-    "fixture_tests_passed": 19,
+    "fixture_tests_passed": 21,
     "release_authorized": true
   },
   {

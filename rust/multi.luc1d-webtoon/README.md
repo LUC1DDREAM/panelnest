@@ -1,6 +1,6 @@
 # Official WEBTOON (LUC1D)
 
-Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 11).
+Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 13).
 SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
 ## Support and limits
@@ -10,6 +10,7 @@ SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 - Official mobile episode API; HTML requests use the official desktop site with its documented-in-URLs platform redirect switch because mobile search is JS-only. This is not an authentication or payment workaround.
 - Full live WASM-host smoke: Space Boy search, details, all API episode batches, public episode 1 image URL parsing, default browse.
 - Discovery reads genres and sort links from each selected locale’s current genre page, with bundled fallbacks on request or parse failure. Filters and home links stay current as WEBTOON changes its genre catalog. Named listings cover each known genre in all three official sort orders while preserving existing IDs.
+- Newly introduced official genres are now accepted by search filters and added as dynamic Aidoku listings in the current locale, without duplicating the existing bundled listing IDs.
 - Important: the site's bare `/en/genre` redirects to a Drama-selected page, NOT a global popularity chart. New discovery uses explicit `/en/genres/drama` routes and labels. No WEBTOON Popular Today or invented ranking period.
 - The Aidoku language selector supports English (`en`), Traditional Chinese (`zh-hant`), Thai (`th`), Indonesian (`id`), Spanish (`es`), French (`fr`), and German (`de`). Search and genre routes use the selected locale; unknown values fall back to English. All three search scopes paginate. Optional-page filtering, season-title normalization, and Canvas end-to-end reader verification remain unavailable or unverified.
 - Canonical mobile and desktop WEBTOON series links resolve to manga entries after validating the host, path and numeric `title_no`.

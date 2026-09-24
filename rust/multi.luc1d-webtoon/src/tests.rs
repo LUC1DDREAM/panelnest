@@ -50,6 +50,62 @@ fn dynamic_genre_routes_accept_new_official_genres_but_reject_bad_sorts() {
 }
 
 #[aidoku_test]
+fn newly_discovered_genres_are_searchable_and_get_dynamic_listings() {
+	let path = filtered_discovery_path_for_language(
+		&[
+			FilterValue::Select {
+				id: "genre".into(),
+				value: "new_site_genre".into(),
+			},
+			FilterValue::Sort {
+				id: "sort".into(),
+				index: 1,
+				ascending: false,
+			},
+		],
+		"en",
+	)
+	.unwrap();
+	assert_eq!(path, "/en/genres/new_site_genre?sortOrder=LIKEIT");
+	assert!(
+		filtered_discovery_path_for_language(
+			&[FilterValue::Select {
+				id: "genre".into(),
+				value: "../evil".into(),
+			}],
+			"en",
+		)
+		.is_err()
+	);
+
+	let listings = dynamic_genre_listings(
+		vec![
+			("drama".into(), "Drama".into()),
+			("new_site_genre".into(), "New Genre".into()),
+		],
+		vec![
+			("MANA".into(), "Popularity".into()),
+			("LIKEIT".into(), "Likes".into()),
+			("UPDATE".into(), "Date".into()),
+		],
+	);
+	assert_eq!(listings.len(), 3);
+	assert_eq!(listings[0].id, "genre-sort-new_site_genreMANA");
+	assert_eq!(listings[0].name, "New Genre: By Popularity");
+	assert_eq!(listings[1].id, "genre-sort-new_site_genreLIKEIT");
+	assert_eq!(listings[2].id, "genre-sort-new_site_genreUPDATE");
+}
+
+#[aidoku_test]
+fn dynamic_listings_keep_existing_genres_in_the_static_catalog() {
+	let listings = dynamic_genre_listings(
+		vec![("drama".into(), "Drama".into())],
+		vec![("MANA".into(), "Popularity".into())],
+	);
+	assert!(listings.is_empty());
+}
+
+#[aidoku_test]
 fn discovery_components_keep_listings_and_site_order() {
 	let component = discovery_component(
 		"popular",

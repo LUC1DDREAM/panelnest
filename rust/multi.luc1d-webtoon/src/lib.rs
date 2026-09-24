@@ -1,8 +1,8 @@
 #![no_std]
 use aidoku::{
-	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterValue,
-	ImageRequestProvider, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
-	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
+	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
+	ImageRequestProvider, Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page,
+	PageContent, PageContext, Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
 	alloc::{String, Vec, borrow::Cow, vec},
 	imports::{
 		defaults::defaults_get,
@@ -165,6 +165,34 @@ fn discovery_options(language: &str) -> (Vec<(String, String)>, Vec<(String, Str
 				.collect(),
 		)
 	})
+}
+
+fn dynamic_genre_listings(
+	genres: Vec<(String, String)>,
+	sorts: Vec<(String, String)>,
+) -> Vec<Listing> {
+	let mut listings = Vec::new();
+	for (slug, name) in genres {
+		if GENRES.iter().any(|(known, _)| *known == slug) || !valid_genre_slug(&slug) {
+			continue;
+		}
+		for (sort, _) in &sorts {
+			if !SORTS.iter().any(|(known, _)| *known == sort.as_str()) {
+				continue;
+			}
+			let display_sort = SORTS
+				.iter()
+				.find(|(known, _)| *known == sort.as_str())
+				.map(|(_, label)| *label)
+				.expect("validated WEBTOON sort");
+			listings.push(Listing {
+				id: format!("genre-sort-{slug}{sort}"),
+				name: format!("{name}: By {display_sort}"),
+				kind: ListingKind::Default,
+			});
+		}
+	}
+	listings
 }
 fn parameter<'a>(path: &'a str, name: &str) -> Option<&'a str> {
 	path.split_once('?')?
@@ -495,6 +523,12 @@ impl DynamicFilters for Webtoon {
 		])
 	}
 }
+impl DynamicListings for Webtoon {
+	fn get_dynamic_listings(&self) -> Result<Vec<Listing>> {
+		let (genres, sorts) = discovery_options(selected_language());
+		Ok(dynamic_genre_listings(genres, sorts))
+	}
+}
 impl aidoku::ListingProvider for Webtoon {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
 		let path = discovery_path(&listing.id).ok_or_else(|| error!("Unknown WEBTOON listing"))?;
@@ -561,7 +595,7 @@ fn filtered_discovery_path_for_language(filters: &[FilterValue], language: &str)
 	for filter in filters {
 		match filter {
 			FilterValue::Select { id, value } if id == "genre" => {
-				if !GENRES.iter().any(|(slug, _)| *slug == value.as_str()) {
+				if !valid_genre_slug(value) {
 					return Err(error!("Unknown WEBTOON genre"));
 				}
 				genre = value.as_str();
@@ -649,7 +683,8 @@ aidoku::register_source!(
 	ListingProvider,
 	Home,
 	DeepLinkHandler,
-	DynamicFilters
+	DynamicFilters,
+	DynamicListings
 );
 #[cfg(test)]
 mod tests;
