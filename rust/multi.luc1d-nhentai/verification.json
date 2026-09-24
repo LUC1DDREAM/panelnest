@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-nhentai",
-  "version": 6,
-  "sha256": "",
-  "bytes": 0,
+  "version": 14,
+  "sha256": "2bb7aab12e09478c878bb4c79fa925bfd0452ff95aaef530eea65838a8a845d5",
+  "bytes": 95967,
   "languages": [
     "All",
     "en",
@@ -12,12 +12,10 @@
   "contentRating": 2,
   "package_verified": true,
   "runtime_tested": false,
-  "ios_tested": false,
-  "fixture_tests_passed": 8,
-  "live_suite_tests_passed": 5,
-  "live_suite_tests_failed": 1,
-  "live_suite_failed": true,
-  "live_blocker": "HTTP 429 during home, after all four sorts passed first/second-page metadata assertions. Website HTML 403.",
+  "device_tested": false,
+  "fixture_tests_passed": 14,
+  "official_site_checks": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). Runtime filters select unique entries of each taxonomy type; freeform artist, group, parody and character fields now map to their official search operators. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
+  "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",
     "details",
@@ -25,9 +23,9 @@
     "pages",
     "home",
     "listings",
+    "alternate-covers",
     "deep-links",
-    "alternate-covers"
+    "dynamic-filters"
   ],
-  "package_hash_scope": "Local Windows [PN] metadata release; CI archive bytes may differ.",
-  "live_suite_scope": "Worker run including fixture tests; not repeated during integration."
+  "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
 }

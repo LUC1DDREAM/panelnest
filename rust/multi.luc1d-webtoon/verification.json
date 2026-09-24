@@ -1,26 +1,33 @@
 {
   "id": "multi.luc1d-webtoon",
-  "version": 4,
-  "sha256": "5cf7d06591f4bef76c0456f662241bb49e63127e0d93c48a786d7f21e2ac2aaa",
-  "bytes": 61567,
+  "version": 11,
+  "sha256": "107174f2fea8dba501efa25838768cecd736f95c4eb29b2e02927c1a008d1def",
+  "bytes": 65972,
   "languages": [
-    "en"
+    "en",
+    "zh",
+    "th",
+    "id",
+    "es",
+    "fr",
+    "de"
   ],
   "contentRating": 1,
   "package_verified": true,
   "runtime_tested": false,
-  "ios_tested": false,
-  "fixture_tests_passed": 8,
-  "live_suite_tests_passed": 10,
-  "live_suite_failed": false,
+  "device_tested": false,
+  "fixture_tests_passed": 17,
+  "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. All-results pagination now follows page numbers and stops on empty results. This was direct official-site HTTP validation, not a live Aidoku/device run.",
+  "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",
     "details",
     "chapters",
     "pages",
     "home",
-    "listings"
+    "listings",
+    "dynamic-filters",
+    "deep-links"
   ],
-  "package_hash_scope": "Local Windows [PN] metadata release; CI archive bytes may differ.",
-  "live_suite_scope": "Worker run including fixture tests; not repeated during integration."
+  "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
 }
