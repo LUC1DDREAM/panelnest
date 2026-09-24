@@ -101,8 +101,12 @@ pub fn cover_variants(id: &str, media_id: &str, path: &str) -> Vec<String> {
 		return Vec::new();
 	}
 	let mut covers = Vec::new();
-	covers.push(format!("https://i.nhentai.net/galleries/{media_id}/cover.{extension}"));
-	covers.push(format!("https://t.nhentai.net/galleries/{media_id}/cover.{extension}"));
+	covers.push(format!(
+		"https://i.nhentai.net/galleries/{media_id}/cover.{extension}"
+	));
+	covers.push(format!(
+		"https://t.nhentai.net/galleries/{media_id}/cover.{extension}"
+	));
 	covers
 }
 

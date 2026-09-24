@@ -108,8 +108,14 @@ fn fixture_image_paths_preserve_host_and_slashes() {
 fn alternate_cover_variants_are_safe_and_use_official_image_hosts() {
 	let covers = super::models::cover_variants("12345", "fixturemedia123", "cover.jpg");
 	assert_eq!(covers.len(), 2);
-	assert_eq!(covers[0], "https://i.nhentai.net/galleries/fixturemedia123/cover.jpg");
-	assert_eq!(covers[1], "https://t.nhentai.net/galleries/fixturemedia123/cover.jpg");
+	assert_eq!(
+		covers[0],
+		"https://i.nhentai.net/galleries/fixturemedia123/cover.jpg"
+	);
+	assert_eq!(
+		covers[1],
+		"https://t.nhentai.net/galleries/fixturemedia123/cover.jpg"
+	);
 	assert!(super::models::cover_variants("../123", "fixture", "cover.jpg").is_empty());
 	assert!(super::models::cover_variants("123", "fixture/../../host", "cover.jpg").is_empty());
 	assert!(super::models::cover_variants("123", "fixture", "cover.unknown").is_empty());
@@ -129,10 +135,26 @@ fn details_include_language_metadata() {
 }
 
 #[aidoku_test]
+fn blocklist_setting_starts_empty_without_excluding_a_placeholder_tag() {
+	let settings: serde_json::Value =
+		serde_json::from_str(include_str!("../res/settings.json")).unwrap();
+	let blocklist = settings
+		.as_array()
+		.unwrap()
+		.iter()
+		.flat_map(|group| group["items"].as_array().unwrap())
+		.find(|item| item["key"] == "blocklist")
+		.unwrap();
+	assert_eq!(blocklist["default"], serde_json::json!([]));
+}
+
+#[aidoku_test]
 fn deep_links_accept_only_numeric_gallery_paths_on_canonical_host() {
 	use aidoku::{DeepLinkHandler, DeepLinkResult, Source};
 	let source = super::NHentai::new();
-	let valid = source.handle_deep_link("https://nhentai.net/g/12345/title/".into()).unwrap();
+	let valid = source
+		.handle_deep_link("https://nhentai.net/g/12345/title/".into())
+		.unwrap();
 	assert!(matches!(valid, Some(DeepLinkResult::Manga { key }) if key == "12345"));
 	for url in [
 		"https://evil.example/nhentai.net/g/12345/",
@@ -140,6 +162,9 @@ fn deep_links_accept_only_numeric_gallery_paths_on_canonical_host() {
 		"https://nhentai.net/g/nope/",
 		"https://nhentai.net/g//",
 	] {
-		assert!(source.handle_deep_link(url.into()).unwrap().is_none(), "{url}");
+		assert!(
+			source.handle_deep_link(url.into()).unwrap().is_none(),
+			"{url}"
+		);
 	}
 }

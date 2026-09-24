@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
-	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Listing, ListingProvider, Manga,
-	MangaPageResult, Page, PageContent, Result, Source,
+	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Listing,
+	ListingProvider, Manga, MangaPageResult, Page, PageContent, Result, Source,
 	alloc::{String, Vec, string::ToString, vec},
 	helpers::uri::encode_uri_component,
 	imports::{error::AidokuError, net::Request},
@@ -325,4 +325,10 @@ impl DeepLinkHandler for NHentai {
 	}
 }
 
-register_source!(NHentai, Home, ListingProvider, DeepLinkHandler, AlternateCoverProvider);
+register_source!(
+	NHentai,
+	Home,
+	ListingProvider,
+	DeepLinkHandler,
+	AlternateCoverProvider
+);
