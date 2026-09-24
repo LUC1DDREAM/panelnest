@@ -1,13 +1,13 @@
 {
   "id": "multi.luc1d-imhentai",
   "version": 19,
-  "sha256": null,
-  "bytes": 0,
+  "sha256": "d7467fad596f919c17c2796852b6ad87c7826779d5a0afcaaed6a60b65c10faf",
+  "bytes": 82898,
   "languages": [
     "multi"
   ],
   "contentRating": 2,
-  "package_verified": false,
+  "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
   "fixture_tests_passed": 17,
