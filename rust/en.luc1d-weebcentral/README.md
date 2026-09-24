@@ -62,3 +62,5 @@ the exact HTTPS hostname and a series or chapter path, rejecting lookalike hosts
 and unrelated account URLs. The public capability index also records the
 existing image request provider, which sets the site Referer for chapter page
 requests.
+
+Version 18 populates chapter thumbnails with the existing series cover when available.

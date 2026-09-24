@@ -385,6 +385,16 @@ fn image_requests_include_the_site_referer_and_provider_is_registered() {
 }
 
 #[aidoku_test]
+fn chapters_reuse_the_existing_series_cover_as_thumbnail() {
+	let chapter = with_series_thumbnail(
+		Chapter::default(),
+		&Some("https://weebcentral.com/cover.jpg".into()),
+	);
+	assert_eq!(chapter.thumbnail.as_deref(), Some("https://weebcentral.com/cover.jpg"));
+	assert!(with_series_thumbnail(Chapter::default(), &None).thumbnail.is_none());
+}
+
+#[aidoku_test]
 fn deep_links_require_exact_https_host_and_supported_path() {
 	use aidoku::{DeepLinkHandler, DeepLinkResult};
 	let source = WeebCentral::new();

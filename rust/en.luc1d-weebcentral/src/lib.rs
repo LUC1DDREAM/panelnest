@@ -34,6 +34,11 @@ fn library_update_strategy(status: MangaStatus) -> UpdateStrategy {
 	}
 }
 
+fn with_series_thumbnail(mut chapter: Chapter, cover: &Option<String>) -> Chapter {
+	chapter.thumbnail = cover.clone();
+	chapter
+}
+
 fn numbered_reader_page(url: String, number: usize) -> Page {
 	let mut context = PageContext::new();
 	context.insert("page_number".into(), number.to_string());
@@ -526,6 +531,7 @@ impl Source for WeebCentral {
 							..Default::default()
 						})
 					})
+					.map(|chapter| with_series_thumbnail(chapter, &manga.cover))
 					.collect::<Vec<_>>()
 			});
 		}
