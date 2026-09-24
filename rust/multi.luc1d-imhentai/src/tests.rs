@@ -57,6 +57,34 @@ fn search_urls_escape_query_and_validate_page() {
 	);
 }
 #[aidoku_test]
+fn discovery_filters_map_to_official_intermediate_search_parameters() {
+	let filters = vec![
+		FilterValue::Sort {
+			id: "sort".into(),
+			index: 3,
+			ascending: false,
+		},
+		FilterValue::MultiSelect {
+			id: "categories".into(),
+			included: vec!["m".into(), "g".into()],
+			excluded: vec![],
+		},
+		FilterValue::MultiSelect {
+			id: "languages".into(),
+			included: vec!["en".into(), "jp".into()],
+			excluded: vec![],
+		},
+	];
+	let url = search_url_with_filters(Some("two words"), 4, &filters).unwrap();
+	assert!(url.contains("pp=0&lt=0&dl=0&tr=1"));
+	assert!(url.contains("m=1&d=0&w=0&i=0&a=0&g=1"));
+	assert!(url.contains("en=1&jp=1&es=0&fr=0&kr=0&de=0&ru=0"));
+	assert!(url.ends_with("key=two%20words&page=4"));
+	let browse = search_url_with_filters(None, 1, &filters).unwrap();
+	assert!(browse.starts_with(&format!("{BASE_URL}/search/?")));
+	assert_eq!(discovery_filters().len(), 3);
+}
+#[aidoku_test]
 fn synthetic_pages_order_formats_and_validation() {
 	let doc=Html::parse_with_url(r#"<input id="load_id" value="81"><input id="load_dir" value="001"><input id="load_server" value="2"><input id="load_pages" value="2"><script>var images=$.parseJSON('{"2":"w,10,20","1":"p,30,40"}');</script>"#,BASE_URL).unwrap();
 	let pages = parse_pages(&doc).unwrap();
@@ -130,7 +158,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 5);
+	assert_eq!(manifest["info"]["version"], 6);
 	assert!(manifest["info"]["name"].as_str().unwrap().ends_with(" [PN]"));
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());

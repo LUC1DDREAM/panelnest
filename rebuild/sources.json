@@ -113,7 +113,8 @@
       "chapters",
       "pages",
       "home",
-      "listings"
+      "listings",
+      "dynamic-filters"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Latest"],
@@ -125,8 +126,8 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Worker public HTTP 403; offline discovery adaptation only, no bypass.",
-    "fixture_tests_passed": 7,
+    "live_evidence": "Worker public HTTP 403; offline discovery and filter parameter mapping are validated against provider source and synthetic fixtures, no bypass.",
+    "fixture_tests_passed": 8,
     "release_authorized": true
   },
   {

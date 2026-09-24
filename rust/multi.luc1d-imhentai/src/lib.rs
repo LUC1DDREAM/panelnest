@@ -1,7 +1,8 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, FilterValue, ImageRequestProvider, Manga, MangaPageResult, MangaStatus,
-	Page, PageContent, Result, Source, Viewer,
+	Chapter, ContentRating, DynamicFilters, Filter, FilterValue, ImageRequestProvider, Manga,
+	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, Result, SortFilter, Source,
+	Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -63,9 +64,29 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 	}
 }
 fn search_url(query: Option<&str>, page: i32) -> Result<String> {
+	search_url_with_filters(query, page, &[])
+}
+fn search_url_with_filters(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result<String> {
 	ensure!(page > 0, "Invalid page");
 	let query = query.unwrap_or("").trim();
-	if query.is_empty() {
+	let mut sort = 1usize; // Latest matches the source's unfiltered search order.
+	let mut categories: Option<Vec<String>> = None;
+	let mut languages: Option<Vec<String>> = None;
+	for filter in filters {
+		match filter {
+			FilterValue::Sort { id, index, .. } if id.as_str() == "sort" => {
+				sort = usize::try_from(*index).unwrap_or(1).min(3);
+			}
+			FilterValue::MultiSelect { id, included, .. } if id.as_str() == "categories" => {
+				categories = Some(included.clone());
+			}
+			FilterValue::MultiSelect { id, included, .. } if id.as_str() == "languages" => {
+				languages = Some(included.clone());
+			}
+			_ => {}
+		}
+	}
+	if query.is_empty() && filters.is_empty() {
 		return Ok(if IS_IM {
 			format!("{BASE_URL}/?page={page}")
 		} else if page == 1 {
@@ -83,12 +104,59 @@ fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 		}
 	}
 	Ok(if IS_IM {
-		format!(
-			"{BASE_URL}/search/?lt=1&pp=0&dl=0&tr=0&m=1&d=1&w=1&i=1&a=1&g=1&en=1&jp=1&es=1&fr=1&kr=1&de=1&ru=1&key={escaped}&page={page}"
-		)
+		let mut flags = String::new();
+		for (index, name) in ["pp", "lt", "dl", "tr"].iter().enumerate() {
+			if !flags.is_empty() {
+				flags.push('&');
+			}
+			flags.push_str(name);
+			flags.push('=');
+			flags.push(if index == sort { '1' } else { '0' });
+		}
+		for (id, default) in [("m", true), ("d", true), ("w", true), ("i", true), ("a", true), ("g", true)] {
+			let enabled = categories
+				.as_ref()
+				.map_or(default, |values| values.iter().any(|value| value.as_str() == id));
+			flags.push('&');
+			flags.push_str(id);
+			flags.push('=');
+			flags.push(if enabled { '1' } else { '0' });
+		}
+		for id in ["en", "jp", "es", "fr", "kr", "de", "ru"] {
+			let enabled = languages
+				.as_ref()
+				.map_or(true, |values| values.iter().any(|value| value.as_str() == id));
+			flags.push('&');
+			flags.push_str(id);
+			flags.push('=');
+			flags.push(if enabled { '1' } else { '0' });
+		}
+		format!("{BASE_URL}/search/?{flags}&key={escaped}&page={page}")
 	} else {
 		format!("{BASE_URL}/search/?q={escaped}&page={page}")
 	})
+}
+
+fn discovery_filters() -> Vec<Filter> {
+	let mut sort = SortFilter::default();
+	sort.id = "sort".into();
+	sort.title = Some("Sort".into());
+	sort.can_ascend = false;
+	sort.options = vec!["Popular".into(), "Latest".into(), "Downloads".into(), "Top Rated".into()];
+	sort.default = Some(aidoku::SortFilterDefault { index: 1, ascending: false });
+	let mut categories = MultiSelectFilter::default();
+	categories.id = "categories".into();
+	categories.title = Some("Categories".into());
+	categories.options = vec!["Manga".into(), "Doujinshi".into(), "Western".into(), "Image Set".into(), "Artist CG".into(), "Game CG".into()];
+	categories.ids = Some(vec!["m".into(), "d".into(), "w".into(), "i".into(), "a".into(), "g".into()]);
+	categories.default_included = Some(vec!["m".into(), "d".into(), "w".into(), "i".into(), "a".into(), "g".into()]);
+	let mut languages = MultiSelectFilter::default();
+	languages.id = "languages".into();
+	languages.title = Some("Languages".into());
+	languages.options = vec!["English".into(), "Japanese".into(), "Spanish".into(), "French".into(), "Korean".into(), "German".into(), "Russian".into()];
+	languages.ids = Some(vec!["en".into(), "jp".into(), "es".into(), "fr".into(), "kr".into(), "de".into(), "ru".into()]);
+	languages.default_included = Some(vec!["en".into(), "jp".into(), "es".into(), "fr".into(), "kr".into(), "de".into(), "ru".into()]);
+	vec![sort.into(), categories.into(), languages.into()]
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
 	ensure!(
@@ -293,6 +361,11 @@ impl aidoku::Home for GallerySource {
 		parse_home(&Request::get(listing_url("latest", 1)?)?.html()?)
 	}
 }
+impl DynamicFilters for GallerySource {
+	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
+		Ok(discovery_filters())
+	}
+}
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
 		let url = listing_url(&listing.id, page)?;
@@ -317,9 +390,9 @@ impl Source for GallerySource {
 		&self,
 		query: Option<String>,
 		page: i32,
-		_filters: Vec<FilterValue>,
+		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
-		let doc = Request::get(search_url(query.as_deref(), page)?)?.html()?;
+		let doc = Request::get(search_url_with_filters(query.as_deref(), page, &filters)?)?.html()?;
 		ensure!(
 			doc.select_first("div.thumb, .pagination, .content, .container")
 				.is_some(),
@@ -362,7 +435,7 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider);
+aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicFilters);
 
 #[cfg(test)]
 mod tests;
