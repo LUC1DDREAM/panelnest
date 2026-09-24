@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-imhentai",
-  "version": 21,
+  "version": 22,
   "sha256": "d77977197b12dfc6fa34fbf3ce2827873ece955b5c7f203b59f22a854d93a436",
   "bytes": 83388,
   "languages": [
@@ -10,8 +10,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 19,
-  "official_site_checks": "Fixtures verify that gallery chapter keys preserve the validated canonical IMHentai /view/<gallery>/<page>/ URL, get_page_list requests that exact reader URL, and malformed or cross-gallery URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified. Dynamic listings expose six category and seven language browse feeds through the existing filtered search route; fixtures verify exact flag selection, pagination and rejection of unknown IDs. Version 19 marks completed, one-gallery manga as UpdateStrategy::Never through search, detail and update paths, avoiding unnecessary automatic library refreshes. Version 20 adds a normal mobile Safari User-Agent and the matching gallery-page Referer to reader HTML and CDN image requests; a live gallery and reader were checked in a browser on 2026-09-24, and a fixture validates the constructed gallery Referer. Version 21 applies a mobile Safari User-Agent and site Referer to Home, search, listings, gallery details and reader HTML requests; fixtures exercise the shared request builder.",
+  "fixture_tests_passed": 20,
+  "official_site_checks": "Fixtures verify that gallery chapter records preserve the validated canonical IMHentai /view/<gallery>/<page>/ URL and that reader image manifests yield ordered, validated page requests. Version 22 maps a single known gallery language tag to the chapter's BCP 47 language code; translated-only, unrecognized and mixed-language entries are left unset. A live gallery inspected on 2026-09-25 exposes its language tags under Languages: (for example, french), which grounds the parser; device rendering remains unverified. Dynamic listings expose six category and seven language browse feeds through the existing filtered search route; fixtures verify exact flag selection, pagination and rejection of unknown IDs. Version 19 marks completed, one-gallery manga as UpdateStrategy::Never through search, detail and update paths. Version 20 adds a mobile Safari User-Agent and matching gallery-page Referer to reader HTML and CDN image requests. Version 21 applies those browser headers to Home, search, listings, gallery details and reader HTML. Device rendering remains unverified.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

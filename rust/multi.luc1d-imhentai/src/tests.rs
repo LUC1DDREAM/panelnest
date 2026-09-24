@@ -1,6 +1,6 @@
 #[aidoku_test]
 fn synthetic_details_and_chapter_flags() {
-	let doc=Html::parse_with_url(r#"<div class="gallery_top gallery_first"><h1>Sample 2</h1><div class="cover left_cover"><img src="/cover.png"></div><ul class="artists"><li><a>Artist 7</a></li></ul><ul><li><span class="tags_text">Artists:</span><a class="tag">Artist 7</a></li></ul></div>"#,BASE_URL).unwrap();
+	let doc=Html::parse_with_url(r#"<div class="gallery_top gallery_first"><h1>Sample 2</h1><div class="cover left_cover"><img src="/cover.png"></div><ul class="artists"><li><a>Artist 7</a></li></ul><ul><li><span class="tags_text">Artists:</span><a class="tag">Artist 7</a></li><li><span class="tags_text">Languages:</span><a class="tag">french</a><a class="tag">translated</a></li></ul></div>"#,BASE_URL).unwrap();
 	let m = update(
 		&doc,
 		Manga {
@@ -13,7 +13,9 @@ fn synthetic_details_and_chapter_flags() {
 	.unwrap();
 	assert_eq!(m.title, "Sample 2");
 	assert_eq!(m.authors.unwrap()[0], "Artist 7");
-	assert_eq!(m.chapters.unwrap()[0].key, "42");
+	let chapters = m.chapters.unwrap();
+	assert_eq!(chapters[0].key, "42");
+	assert_eq!(chapters[0].language.as_deref(), Some("fr"));
 	assert_eq!(m.update_strategy, UpdateStrategy::Never);
 	let with_reader = Html::parse_with_url(
 		r#"<div class="gallery_top"><h1>Reader sample</h1><a href="/view/42/3/">Read</a></div>"#,
@@ -58,6 +60,30 @@ fn synthetic_details_and_chapter_flags() {
 		)
 		.is_err()
 	);
+}
+
+#[aidoku_test]
+fn chapter_language_uses_only_one_recognized_gallery_language() {
+	let french = Html::parse_with_url(
+		r#"<ul><li><span class="tags_text">Languages:</span><a class="tag">french</a><a class="tag">translated</a></li></ul>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert_eq!(gallery_language(&french).as_deref(), Some("fr"));
+
+	let multiple = Html::parse_with_url(
+		r#"<ul><li><span class="tags_text">Languages:</span><a class="tag">english</a><a class="tag">french</a></li></ul>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert_eq!(gallery_language(&multiple), None);
+
+	let unknown = Html::parse_with_url(
+		r#"<ul><li><span class="tags_text">Languages:</span><a class="tag">translated</a></li></ul>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert_eq!(gallery_language(&unknown), None);
 }
 
 #[aidoku_test]
@@ -567,7 +593,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 21);
+	assert_eq!(manifest["info"]["version"], 22);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -577,7 +603,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 21);
+	assert_eq!(manifest["info"]["version"], 22);
 }
 
 use super::*;

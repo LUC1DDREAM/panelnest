@@ -244,7 +244,7 @@
       "Top Rated",
       "Downloaded"
     ],
-    "limitations": "HTTP requests from the worker environment returned 403. Dynamic category and language listing routes derive from the existing filtered search mapping, not an independently live-tested response. Reader URL, manifest, image host and Aidoku PageContext propagation are validated with official site evidence and fixtures; native runtime/device rendering remain unverified.",
+    "limitations": "Dynamic category and language listing routes derive from the existing filtered search mapping, not an independently live-tested response. Gallery and reader HTML plus CDN images returned HTTP 200 via direct requests with mobile Safari headers on 2026-09-25. Native Aidoku runtime and device rendering remain unverified.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -252,8 +252,8 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Fixtures verify that gallery chapter records preserve the stable gallery ID key and validated canonical IMHentai /view/<gallery>/<page>/ URL, and get_page_list requests that exact reader URL. Malformed and cross-gallery reader URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified. Dynamic listings map the six supported category flags and seven language flags to the already implemented and fixture-verified intermediate-search route, with pagination and fail-closed ID validation. Version 19 marks completed single-gallery titles as static for Aidoku library refreshes across search and details. Version 20 sends a mobile Safari User-Agent and the actual gallery-page Referer on reader HTML and CDN image requests. Browser inspection confirmed the live /gallery/<id>/ links to /view/<id>/1/ and the current #gimg plus g_th manifest; the reader Referer builder has offline fixture coverage. Version 21 applies a mobile Safari User-Agent and same-site Referer to Home, search, listing, gallery-detail and reader HTML requests; fixtures exercise the shared request builder.",
-    "fixture_tests_passed": 19,
+    "live_evidence": "Fixtures verify gallery chapter keys and the canonical IMHentai /view/<gallery>/<page>/ URL, reader manifest parsing, image hosts and Aidoku page context. The live gallery inspected on 2026-09-25 exposes language tags under Languages:; version 22 maps exactly one recognized language tag to a BCP 47 chapter language code and avoids guessing for mixed or unknown tags. Device rendering remains unverified. Dynamic listings map the six supported category flags and seven language flags to the fixture-verified intermediate-search route. Version 19 marks completed single-gallery titles static for Aidoku library refreshes. Version 20 applies mobile Safari headers and the actual gallery-page Referer to reader and CDN requests. Version 21 applies browser headers to Home, search, listings and detail requests.",
+    "fixture_tests_passed": 20,
     "release_authorized": true,
     "dynamic_listings": [
       "Category: Manga",
