@@ -82,8 +82,8 @@ fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResul
 fn append_detail_metadata(details: &Element, description: Option<String>) -> Option<String> {
 	let mut sections = Vec::new();
 	for (label, selector) in [
-		("Associated Name(s)", "li:has(strong:contains(Associated Name)) li"),
-		("Related Series(s)", "li:has(strong:contains(Related Series)) li"),
+		("Associated Name(s)", "li:has(strong:contains(Associated)) li"),
+		("Related Series(s)", "li:has(strong:contains(Related)) li"),
 	] {
 		let entries = details
 			.select(selector)
