@@ -2,7 +2,7 @@
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterValue,
 	ImageRequestProvider, Manga, MangaPageResult, MangaStatus, MultiSelectFilter, Page,
-	PageContent, Result, SortFilter, Source, Viewer,
+	PageContent, Result, SortFilter, Source, TextFilter, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -85,6 +85,7 @@ fn search_url_with_filters(
 	let mut sort = 1usize; // Latest matches the source's unfiltered search order.
 	let mut categories: Option<Vec<String>> = None;
 	let mut languages: Option<Vec<String>> = None;
+	let mut advanced_terms: Vec<(bool, &str, String)> = Vec::new();
 	for filter in filters {
 		match filter {
 			FilterValue::Sort { id, index, .. } if id.as_str() == "sort" => {
@@ -96,10 +97,43 @@ fn search_url_with_filters(
 			FilterValue::MultiSelect { id, included, .. } if id.as_str() == "languages" => {
 				languages = Some(included.clone());
 			}
+			FilterValue::Text { id, value } => {
+				let kind = match id.as_str() {
+					"tags" => "tag",
+					"artists" => "artist",
+					"groups" => "group",
+					"parodies" => "parody",
+					"characters" => "character",
+					_ => continue,
+				};
+				for raw_term in value.split(',') {
+					let raw_term = raw_term.trim();
+					let (excluded, raw_term) = raw_term
+						.strip_prefix('-')
+						.map_or((false, raw_term), |term| (true, term.trim()));
+					let term = raw_term
+						.chars()
+						.filter(|character| !matches!(character, '"' | '\\') && !character.is_control())
+						.collect::<String>();
+					let term = term.split_whitespace().collect::<Vec<_>>().join("+");
+					if !term.is_empty() {
+						advanced_terms.push((excluded, kind, term));
+					}
+				}
+			}
 			_ => {}
 		}
 	}
-	if query.is_empty() && sort == 1 && categories.is_none() && languages.is_none() {
+	ensure!(
+		query.is_empty() || advanced_terms.is_empty(),
+		"Use title search or advanced tag filters, not both"
+	);
+	if query.is_empty()
+		&& sort == 1
+		&& categories.is_none()
+		&& languages.is_none()
+		&& advanced_terms.is_empty()
+	{
 		return Ok(if IS_IM {
 			format!("{BASE_URL}/?page={page}")
 		} else if page == 1 {
@@ -151,7 +185,38 @@ fn search_url_with_filters(
 			flags.push('=');
 			flags.push(if enabled { '1' } else { '0' });
 		}
-		format!("{BASE_URL}/search/?{flags}&key={escaped}&page={page}")
+		let path = if advanced_terms.is_empty() {
+			"search"
+		} else {
+			"advsearch"
+		};
+		let search_key = if advanced_terms.is_empty() {
+			escaped
+		} else {
+			let mut key = String::new();
+			for (index, (excluded, kind, term)) in advanced_terms.iter().enumerate() {
+				if index > 0 {
+					key.push('+');
+				}
+				if *excluded {
+					key.push('-');
+				} else {
+					key.push_str("%2B");
+				}
+				key.push_str(kind);
+				key.push_str("%3A%22");
+				for b in term.bytes() {
+					if b.is_ascii_alphanumeric() || b"-._~".contains(&b) {
+						key.push(b as char);
+					} else {
+						key.push_str(&format!("%{b:02X}"));
+					}
+				}
+				key.push_str("%22");
+			}
+			key
+		};
+		format!("{BASE_URL}/{path}/?{flags}&key={search_key}&page={page}")
 	} else {
 		format!("{BASE_URL}/search/?q={escaped}&page={page}")
 	})
@@ -229,7 +294,23 @@ fn discovery_filters() -> Vec<Filter> {
 		"de".into(),
 		"ru".into(),
 	]);
-	vec![sort.into(), categories.into(), languages.into()]
+	let mut advanced = Vec::new();
+	for (id, title) in [
+		("tags", "Tags"),
+		("artists", "Artists"),
+		("groups", "Groups"),
+		("parodies", "Parodies"),
+		("characters", "Characters"),
+	] {
+		let mut filter = TextFilter::default();
+		filter.id = id.into();
+		filter.title = Some(title.into());
+		filter.placeholder = Some(format!("Comma-separated; prefix - to exclude {title}"));
+		advanced.push(filter.into());
+	}
+	let mut filters = vec![sort.into(), categories.into(), languages.into()];
+	filters.extend(advanced);
+	filters
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
 	ensure!(

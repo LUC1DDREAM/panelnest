@@ -82,7 +82,11 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 	assert!(url.ends_with("key=two%20words&page=4"));
 	let browse = search_url_with_filters(None, 1, &filters).unwrap();
 	assert!(browse.starts_with(&format!("{BASE_URL}/search/?")));
-	assert_eq!(discovery_filters().len(), 3);
+	let filters = discovery_filters();
+	assert_eq!(filters.len(), 8);
+	for (index, id) in ["tags", "artists", "groups", "parodies", "characters"].iter().enumerate() {
+		assert_eq!(filters[index + 3].id.as_ref(), *id);
+	}
 	let popular_only = search_url_with_filters(
 		None,
 		1,
@@ -116,6 +120,68 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 	)
 	.unwrap();
 	assert_eq!(latest_only, format!("{BASE_URL}/?page=1"));
+	let advanced = search_url_with_filters(
+		None,
+		2,
+		&[
+			FilterValue::Sort {
+				id: "sort".into(),
+				index: 2,
+				ascending: false,
+			},
+			FilterValue::MultiSelect {
+				id: "categories".into(),
+				included: vec!["w".into()],
+				excluded: vec![],
+			},
+			FilterValue::MultiSelect {
+				id: "languages".into(),
+				included: vec!["en".into()],
+				excluded: vec![],
+			},
+			FilterValue::Text {
+				id: "tags".into(),
+				value: "maid,school life,-mind control".into(),
+			},
+			FilterValue::Text {
+				id: "artists".into(),
+				value: "artist name".into(),
+			},
+			FilterValue::Text {
+				id: "groups".into(),
+				value: "group".into(),
+			},
+			FilterValue::Text {
+				id: "parodies".into(),
+				value: "series".into(),
+			},
+			FilterValue::Text {
+				id: "characters".into(),
+				value: "hero".into(),
+			},
+		],
+	)
+	.unwrap();
+	assert!(advanced.starts_with(&format!("{BASE_URL}/advsearch/?")));
+	assert!(advanced.contains("pp=0&lt=0&dl=1&tr=0"));
+	assert!(advanced.contains("m=0&d=0&w=1&i=0&a=0&g=0"));
+	assert!(advanced.contains("en=1&jp=0&es=0&fr=0&kr=0&de=0&ru=0"));
+	assert!(advanced.contains(
+		"key=%2Btag%3A%22maid%22+%2Btag%3A%22school%2Blife%22+-tag%3A%22mind%2Bcontrol%22"
+	));
+	assert!(advanced.contains("+%2Bartist%3A%22artist%2Bname%22"));
+	assert!(advanced.contains("+%2Bgroup%3A%22group%22"));
+	assert!(advanced.contains("+%2Bparody%3A%22series%22"));
+	assert!(advanced.contains("+%2Bcharacter%3A%22hero%22"));
+	assert!(search_url_with_filters(
+		Some("title"),
+		1,
+		&[FilterValue::Text {
+			id: "tags".into(),
+			value: "maid".into(),
+		}]
+	)
+	.is_err());
 }
 #[aidoku_test]
 fn synthetic_pages_order_formats_and_validation() {
@@ -220,7 +286,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 10);
+	assert_eq!(manifest["info"]["version"], 11);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -230,7 +296,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 10);
+	assert_eq!(manifest["info"]["version"], 11);
 }
 
 use super::*;

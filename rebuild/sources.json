@@ -197,7 +197,7 @@
       "Top Rated",
       "Downloaded"
     ],
-    "limitations": "Public requests returned HTTP 403 during worker checks; availability is not guaranteed. Popular, Top Rated and Downloaded routes have been checked on the public site; search sort filters are not live-verified.",
+    "limitations": "Public requests returned HTTP 403 during worker checks; runtime availability and advanced-search behavior are unverified. Advanced filters follow the public GalleryAdults provider implementation and offline tests.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -205,7 +205,7 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Public Home, Popular, Top Rated and Downloaded pages expose browseable paginated galleries; route families are wired as listings. Worker live checks returned HTTP 403; offline search filter parameter mapping is validated against provider source and synthetic fixtures, no bypass.",
+    "live_evidence": "The current public GalleryAdults provider confirms IMHentai supports /advsearch/ with tag, artist, group, parody and character terms in key, alongside the same sort/category/language flags. WASM regression tests verify generated parameters and exclusions. Site requests remain HTTP 403 in worker checks; no live runtime is claimed.",
     "fixture_tests_passed": 9,
     "release_authorized": true
   },
