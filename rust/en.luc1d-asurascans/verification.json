@@ -1,17 +1,17 @@
 {
   "id": "en.luc1d-asurascans",
-  "version": 10,
-  "sha256": "0fe4668967f4df9bbe307d8b22eeab83c61f18367645f506e6e14f835d8e74b8",
-  "bytes": 124911,
+  "version": 11,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "en"
   ],
   "contentRating": 0,
-  "package_verified": true,
+  "package_verified": false,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 17,
-  "official_site_checks": "Official trending API /api/trending/day?limit=10 returned HTTP 200 with ten ranked entries on 2026-09-24; /api/trending/{week|month|all}?limit=10 are exposed as well. Regression fixtures preserve the server order for the daily feed. Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Dynamic genre names/slugs continue to come from the BrowseFilters payload. Version 10 registers ImageRequestProvider for cdn.asurascans.com, adds the source-site Referer, and validates the official HTTPS host offline; no image bytes or device runtime were checked.",
+  "fixture_tests_passed": 18,
+  "official_site_checks": "Official trending API /api/trending/day?limit=10 returned HTTP 200 with ten ranked entries on 2026-09-24; /api/trending/{week|month|all}?limit=10 are exposed as well. Regression fixtures preserve the server order for the daily feed. Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Dynamic genre names/slugs continue to come from the BrowseFilters payload. Version 10 registers ImageRequestProvider for cdn.asurascans.com, adds the source-site Referer, and validates the official HTTPS host offline; no image bytes or device runtime were checked. Version 11 registers PageDescriptionProvider and annotates both authenticated API and public HTML reader pages with their one-based original order; offline fixtures verify labels without extra requests.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",
@@ -25,7 +25,8 @@
     "deep-links",
     "web-login",
     "migration",
-    "notifications"
+    "notifications",
+    "page-descriptions"
   ],
   "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
 }

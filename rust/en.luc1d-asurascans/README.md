@@ -1,6 +1,6 @@
 # Asura Scans
 
-## Discovery (package version 10)
+## Discovery (package version 11)
 
 The official trending API exposes Day, Week, Month and All Time at
 `https://api.asurascans.com/api/trending/{day|week|month|all}?limit=10`.
@@ -16,7 +16,7 @@ Genre names and slugs are read from the public
 BrowseFilters payload, so new and renamed genres do not rely on a stale copy.
 Search emits the same query parameter names and values as the site's browse
 page. If that payload is unavailable, the other browse filters remain usable.
-Deep links and chapter/authentication guards are unchanged.
+Reader pages in both the authenticated API response and the public HTML fallback carry one-based page descriptions in their original image order. No additional requests are needed. Deep links and chapter/authentication guards are unchanged.
 
 Version 10 registers Aidoku's image request provider for chapter and cover images on the official `cdn.asurascans.com` host, adding the Asura Scans site Referer. It rejects HTTP URLs and other hosts before creating an image request.
 

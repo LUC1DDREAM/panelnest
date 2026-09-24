@@ -1,38 +1,36 @@
 {
-    "info":  {
-                 "id":  "en.luc1d-asurascans",
-                 "name":  "Asura Scans [PN]",
-                 "version":  10,
-                 "url":  "https://asurascans.com",
-                 "contentRating":  0,
-                 "languages":  [
-                                   "en"
-                               ],
-                 "minAppVersion":  "0.7.1"
-             },
-    "listings":  [
-                     {
-                         "id":  "Ranking",
-                         "kind":  1
-                     },
-                     {
-                         "id":  "popular-today",
-                         "name":  "Popular Today"
-                     },
-                     {
-                         "id":  "popular-week",
-                         "name":  "Popular This Week"
-                     },
-                     {
-                         "id":  "popular-month",
-                         "name":  "Popular This Month"
-                     },
-                     {
-                         "id":  "popular-all",
-                         "name":  "Popular All Time"
-                     }
-                 ],
-    "config":  {
-
-               }
+  "info": {
+    "id": "en.luc1d-asurascans",
+    "name": "Asura Scans [PN]",
+    "version": 11,
+    "url": "https://asurascans.com",
+    "contentRating": 0,
+    "languages": [
+      "en"
+    ],
+    "minAppVersion": "0.7.1"
+  },
+  "listings": [
+    {
+      "id": "Ranking",
+      "kind": 1
+    },
+    {
+      "id": "popular-today",
+      "name": "Popular Today"
+    },
+    {
+      "id": "popular-week",
+      "name": "Popular This Week"
+    },
+    {
+      "id": "popular-month",
+      "name": "Popular This Month"
+    },
+    {
+      "id": "popular-all",
+      "name": "Popular All Time"
+    }
+  ],
+  "config": {}
 }

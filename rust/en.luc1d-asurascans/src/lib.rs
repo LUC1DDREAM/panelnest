@@ -4,7 +4,7 @@ use aidoku::{
 	Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue, HomeLayout, Link,
 	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent, RangeFilter,
-	Result, Source, TextFilter, Viewer, WebLoginHandler,
+	PageContext, PageDescriptionProvider, Result, Source, TextFilter, Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	helpers::uri::QueryParameters,
 	imports::{
@@ -33,6 +33,16 @@ fn is_trusted_image_url(url: &str) -> bool {
 		.split(['/', '?', '#'])
 		.next()
 		.is_some_and(|host| host == "cdn.asurascans.com")
+}
+
+fn numbered_reader_page(url: String, number: usize) -> Page {
+	let mut context = PageContext::new();
+	context.insert("page_number".into(), number.to_string());
+	Page {
+		content: PageContent::url_context(url, context),
+		has_description: true,
+		..Default::default()
+	}
 }
 
 struct AsuraScans;
@@ -265,19 +275,17 @@ impl Source for AsuraScans {
 		if let Ok(json) = api_req.json_owned::<serde_json::Value>()
 			&& let Some(page_arr) = json["data"]["chapter"]["pages"].as_array()
 		{
-			let pages: Vec<Page> = page_arr
-				.iter()
-				.filter_map(|obj| {
-					let url = obj
-						.as_str()
-						.or_else(|| obj["url"].as_str())
-						.or_else(|| obj["url"][1].as_str())?;
-					Some(Page {
-						content: PageContent::url(url),
-						..Default::default()
-					})
-				})
-				.collect();
+			let mut pages = Vec::new();
+			for obj in page_arr {
+				let Some(url) = obj
+					.as_str()
+					.or_else(|| obj["url"].as_str())
+					.or_else(|| obj["url"][1].as_str())
+				else {
+					continue;
+				};
+				pages.push(numbered_reader_page(url.into(), pages.len() + 1));
+			}
 			if !pages.is_empty() {
 				return Ok(pages);
 			}
@@ -310,16 +318,28 @@ impl Source for AsuraScans {
 			.as_array()
 			.ok_or_else(|| error!("Missing pages"))?;
 
-		Ok(page_arr
-			.iter()
-			.filter_map(|obj| {
-				let url = obj[1]["url"][1].as_str()?;
-				Some(Page {
-					content: PageContent::url(url),
-					..Default::default()
-				})
-			})
-			.collect())
+		let mut pages = Vec::new();
+		for obj in page_arr {
+			let Some(url) = obj[1]["url"][1].as_str() else {
+				continue;
+			};
+			pages.push(numbered_reader_page(url.into(), pages.len() + 1));
+		}
+		Ok(pages)
+	}
+}
+
+impl PageDescriptionProvider for AsuraScans {
+	fn get_page_description(&self, page: Page) -> Result<String> {
+		let PageContent::Url(_, Some(context)) = page.content else {
+			return Err(error!("Page number context missing"));
+		};
+		let number = context
+			.get("page_number")
+			.and_then(|value| value.parse::<usize>().ok())
+			.filter(|number| *number > 0)
+			.ok_or_else(|| error!("Invalid page number context"))?;
+		Ok(format!("Page {number}"))
 	}
 }
 
@@ -667,15 +687,28 @@ register_source!(
 	DynamicListings,
 	WebLoginHandler,
 	NotificationHandler,
-	ImageRequestProvider
+	ImageRequestProvider,
+	PageDescriptionProvider
 );
 
 #[cfg(test)]
-mod filter_tests {
+	mod filter_tests {
 	use super::*;
 	use aidoku::alloc::vec;
 	use aidoku::{FilterKind, FilterValue};
 	use aidoku_test::aidoku_test;
+
+	#[aidoku_test]
+	fn reader_page_descriptions_follow_both_supported_page_contexts() {
+		use aidoku::PageDescriptionProvider;
+		let source = AsuraScans;
+		let first = numbered_reader_page("https://cdn.asurascans.com/chapter/1.jpg".into(), 1);
+		let ninth = numbered_reader_page("https://cdn.asurascans.com/chapter/9.jpg".into(), 9);
+		assert!(first.has_description && ninth.has_description);
+		assert_eq!(source.get_page_description(first).unwrap(), "Page 1");
+		assert_eq!(source.get_page_description(ninth).unwrap(), "Page 9");
+		assert!(source.get_page_description(Page::default()).is_err());
+	}
 
 	#[aidoku_test]
 	fn browse_props_decode_current_genre_names_and_slugs() {
