@@ -159,6 +159,8 @@ fn deep_links_accept_only_numeric_gallery_paths_on_canonical_host() {
 	for url in [
 		"https://evil.example/nhentai.net/g/12345/",
 		"https://nhentai.net.evil.example/g/12345/",
+		"http://nhentai.net/g/12345/",
+		"https://nhentai.net/archive/g/12345/",
 		"https://nhentai.net/g/nope/",
 		"https://nhentai.net/g//",
 	] {

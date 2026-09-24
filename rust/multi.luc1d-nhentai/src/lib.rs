@@ -299,29 +299,29 @@ impl AlternateCoverProvider for NHentai {
 
 impl DeepLinkHandler for NHentai {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
-		let Some(path) = url.strip_prefix(BASE_URL) else {
+		let Some(rest) = url.strip_prefix("https://") else {
 			return Ok(None);
 		};
-		if !path.starts_with("/") || path.starts_with("//") {
+		let Some((host, path)) = rest.split_once('/') else {
+			return Ok(None);
+		};
+		if host != BASE_URL.trim_start_matches("https://") {
 			return Ok(None);
 		}
 
 		const GALLERY_PATH: &str = "/g/";
-
-		if let Some(id_start) = path.find(GALLERY_PATH) {
-			let id_part = &path[id_start + GALLERY_PATH.len()..];
-			let end = id_part.find('/').unwrap_or(id_part.len());
-			let manga_id = &id_part[..end];
-			if manga_id.is_empty() || !manga_id.bytes().all(|byte| byte.is_ascii_digit()) {
-				return Ok(None);
-			}
-
-			Ok(Some(DeepLinkResult::Manga {
-				key: manga_id.into(),
-			}))
-		} else {
+		let Some(id_part) = path.strip_prefix(GALLERY_PATH.trim_start_matches('/')) else {
 			Ok(None)
+		};
+		let end = id_part.find('/').unwrap_or(id_part.len());
+		let manga_id = &id_part[..end];
+		if manga_id.is_empty() || !manga_id.bytes().all(|byte| byte.is_ascii_digit()) {
+			return Ok(None);
 		}
+
+		Ok(Some(DeepLinkResult::Manga {
+			key: manga_id.into(),
+		}))
 	}
 }
 
