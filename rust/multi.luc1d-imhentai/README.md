@@ -1,8 +1,8 @@
 # imhentai (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery and reader requests (source version 20)
-Version 20 sends a standard mobile Safari User-Agent and the gallery page as Referer when requesting reader HTML and CDN pages. This matches the official browser navigation path and supports servers that validate request context.
+## Discovery and reader requests (source version 21)
+Version 21 applies a mobile Safari User-Agent and same-site Referer consistently to Home, search, listing, gallery detail and reader HTML requests. Reader and CDN requests retain the actual gallery-page Referer.
 Version 19 uses Aidoku’s UpdateStrategy::Never for completed single-gallery titles so routine library refreshes skip their immutable one-chapter list.
 Version 18 adds 13 dynamic browse feeds for six content categories and seven languages.
 Version 18 adds 13 dynamic browse feeds: one for each of the six supported content categories and seven supported languages. They use the existing search flags and keep page navigation; existing Latest, Popular, Top Rated and Downloaded listings are unchanged.

@@ -22,6 +22,11 @@ macro_rules! ensure {
 const BASE_URL: &str = "https://imhentai.xxx";
 const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1";
 const IS_IM: bool = true;
+fn site_request(url: String, referer: &str) -> Result<Request> {
+	Ok(Request::get(url)?
+		.header("Referer", referer)
+		.header("User-Agent", USER_AGENT))
+}
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
 	let path = path.split(['?', '#']).next()?;
@@ -896,7 +901,7 @@ impl aidoku::Home for GallerySource {
 		let requests = ["latest", "popular", "top-rated", "downloaded"]
 			.map(|id| {
 				let url = listing_url(id, 1)?;
-				Request::get(url).map_err(Into::into)
+				site_request(url, &format!("{BASE_URL}/"))
 			})
 			.into_iter()
 			.collect::<Result<Vec<_>>>()?;
@@ -947,7 +952,7 @@ impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
 		let url = listing_url(&listing.id, page)?;
 
-		let doc = Request::get(url)?.html()?;
+		let doc = site_request(url, &format!("{BASE_URL}/"))?.html()?;
 		let result = parse_search(&doc);
 		ensure!(
 			!result.entries.is_empty(),
@@ -969,8 +974,11 @@ impl Source for GallerySource {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
-		let doc =
-			Request::get(search_url_with_filters(query.as_deref(), page, &filters)?)?.html()?;
+		let doc = site_request(
+			search_url_with_filters(query.as_deref(), page, &filters)?,
+			&format!("{BASE_URL}/"),
+		)?
+		.html()?;
 		ensure!(
 			doc.select_first("div.thumb, .pagination, .content, .container")
 				.is_some(),
@@ -992,17 +1000,18 @@ impl Source for GallerySource {
 			!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()),
 			"Invalid gallery key"
 		);
-		let doc = Request::get(format!("{BASE_URL}/gallery/{}/", manga.key))?.html()?;
+		let doc = site_request(
+			format!("{BASE_URL}/gallery/{}/", manga.key),
+			&format!("{BASE_URL}/"),
+		)?
+		.html()?;
 		update(&doc, manga, needs_details, needs_chapters)
 	}
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
 		ensure!(!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()), "Invalid gallery key");
 		let reader_url = reader_url_for_chapter(&manga.key, &chapter)?;
 		let referer = gallery_referer(&manga.key)?;
-		let reader_doc = Request::get(reader_url.clone())?
-			.header("Referer", referer.as_str())
-			.header("User-Agent", USER_AGENT)
-			.html()?;
+		let reader_doc = site_request(reader_url.clone(), referer.as_str())?.html()?;
 		ensure!(reader_doc.select_first("#gimg, input#load_id").is_some(), "Reader unavailable or site layout changed");
 		parse_pages_with_referer(&reader_doc, &reader_url)
 	}
