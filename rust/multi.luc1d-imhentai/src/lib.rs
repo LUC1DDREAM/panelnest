@@ -1,6 +1,6 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterValue,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
 	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider, Manga,
 	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, PageDescriptionProvider,
 	Result, SortFilter, Source, TextFilter, Viewer,
@@ -316,6 +316,39 @@ fn discovery_filters() -> Vec<Filter> {
 	let mut filters = vec![sort.into(), categories.into(), languages.into()];
 	filters.extend(advanced);
 	filters
+}
+fn discovery_listings() -> Vec<aidoku::Listing> {
+	let mut listings = Vec::new();
+	for (id, name) in [
+		("m", "Manga"),
+		("d", "Doujinshi"),
+		("w", "Western"),
+		("i", "Image Set"),
+		("a", "Artist CG"),
+		("g", "Game CG"),
+	] {
+		listings.push(aidoku::Listing {
+			id: format!("category-{id}"),
+			name: format!("Category: {name}"),
+			..Default::default()
+		});
+	}
+	for (id, name) in [
+		("en", "English"),
+		("jp", "Japanese"),
+		("es", "Spanish"),
+		("fr", "French"),
+		("kr", "Korean"),
+		("de", "German"),
+		("ru", "Russian"),
+	] {
+		listings.push(aidoku::Listing {
+			id: format!("language-{id}"),
+			name: format!("Language: {name}"),
+			..Default::default()
+		});
+	}
+	listings
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
 	ensure!(
@@ -733,8 +766,35 @@ fn listing_url(id: &str, page: i32) -> Result<String> {
 		} else {
 			format!("{BASE_URL}/downloaded/{page}/")
 		}),
-		_ => bail!("Unsupported listing"),
+		_ => dynamic_listing_url(id, page),
 	}
+}
+fn dynamic_listing_url(id: &str, page: i32) -> Result<String> {
+	ensure!(page > 0, "Invalid page");
+	let filters = if let Some(category) = id.strip_prefix("category-") {
+		ensure!(
+			["m", "d", "w", "i", "a", "g"].contains(&category),
+			"Unsupported listing"
+		);
+		vec![FilterValue::MultiSelect {
+			id: "categories".into(),
+			included: vec![category.into()],
+			excluded: Vec::new(),
+		}]
+	} else if let Some(language) = id.strip_prefix("language-") {
+		ensure!(
+			["en", "jp", "es", "fr", "kr", "de", "ru"].contains(&language),
+			"Unsupported listing"
+		);
+		vec![FilterValue::MultiSelect {
+			id: "languages".into(),
+			included: vec![language.into()],
+			excluded: Vec::new(),
+		}]
+	} else {
+		bail!("Unsupported listing")
+	};
+	search_url_with_filters(None, page, &filters)
 }
 fn listing_component_from_result(
 	id: &str,
@@ -931,6 +991,11 @@ impl Source for GallerySource {
 		parse_pages_with_referer(&reader_doc, &reader_url)
 	}
 }
+impl DynamicListings for GallerySource {
+	fn get_dynamic_listings(&self) -> Result<Vec<aidoku::Listing>> {
+		Ok(discovery_listings())
+	}
+}
 impl ImageRequestProvider for GallerySource {
 	fn get_image_request(
 		&self,
@@ -947,6 +1012,7 @@ aidoku::register_source!(
 	Home,
 	ListingProvider,
 	DynamicFilters,
+	DynamicListings,
 	DeepLinkHandler,
 	PageDescriptionProvider
 );

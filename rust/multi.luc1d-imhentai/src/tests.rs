@@ -242,6 +242,36 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 	)
 	.is_err());
 }
+
+#[aidoku_test]
+fn dynamic_listings_expose_all_supported_categories_and_languages() {
+	use aidoku::DynamicListings;
+	let listings = GallerySource.get_dynamic_listings().unwrap();
+	assert_eq!(listings.len(), 13);
+	assert_eq!(listings[0].id, "category-m");
+	assert_eq!(listings[0].name, "Category: Manga");
+	assert_eq!(listings[5].id, "category-g");
+	assert_eq!(listings[6].id, "language-en");
+	assert_eq!(listings[6].name, "Language: English");
+	assert_eq!(listings[12].id, "language-ru");
+}
+
+#[aidoku_test]
+fn dynamic_category_and_language_listings_use_filtered_paginated_routes() {
+	let category = dynamic_listing_url("category-w", 2).unwrap();
+	assert!(category.starts_with(&format!("{BASE_URL}/search/?pp=0&lt=1&dl=0&tr=0")));
+	assert!(category.contains("m=0&d=0&w=1&i=0&a=0&g=0"));
+	assert!(category.contains("en=1&jp=1&es=1&fr=1&kr=1&de=1&ru=1"));
+	assert!(category.ends_with("key=&page=2"));
+	let language = dynamic_listing_url("language-jp", 3).unwrap();
+	assert!(language.contains("m=1&d=1&w=1&i=1&a=1&g=1"));
+	assert!(language.contains("en=0&jp=1&es=0&fr=0&kr=0&de=0&ru=0"));
+	assert!(language.ends_with("key=&page=3"));
+	for id in ["category-unknown", "language-unknown", "category-m/../latest", "latest"] {
+		assert!(dynamic_listing_url(id, 1).is_err(), "{id}");
+	}
+	assert!(dynamic_listing_url("category-m", 0).is_err());
+}
 #[aidoku_test]
 fn synthetic_pages_order_formats_and_validation() {
 	let doc=Html::parse_with_url(r#"<input id="load_id" value="81"><input id="load_dir" value="001"><input id="load_server" value="2"><input id="load_pages" value="2"><script>var images=$.parseJSON('{"2":"w,10,20","1":"p,30,40"}');</script>"#,BASE_URL).unwrap();
@@ -520,7 +550,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 17);
+	assert_eq!(manifest["info"]["version"], 18);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -530,7 +560,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 17);
+	assert_eq!(manifest["info"]["version"], 18);
 }
 
 use super::*;

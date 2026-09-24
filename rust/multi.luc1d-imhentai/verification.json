@@ -1,17 +1,17 @@
 {
   "id": "multi.luc1d-imhentai",
-  "version": 17,
-  "sha256": "5017597c2bc11e8260e62b2af3526b7013158c9a1b184ba611d068dc03e8255c",
-  "bytes": 81882,
+  "version": 18,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "multi"
   ],
   "contentRating": 2,
-  "package_verified": true,
+  "package_verified": false,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 15,
-  "official_site_checks": "Fixtures verify that gallery chapter keys preserve the validated canonical IMHentai /view/<gallery>/<page>/ URL, get_page_list requests that exact reader URL, and malformed or cross-gallery URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified.",
+  "fixture_tests_passed": 17,
+  "official_site_checks": "Fixtures verify that gallery chapter keys preserve the validated canonical IMHentai /view/<gallery>/<page>/ URL, get_page_list requests that exact reader URL, and malformed or cross-gallery URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified. Dynamic listings expose six category and seven language browse feeds through the existing filtered search route; fixtures verify exact flag selection, pagination and rejection of unknown IDs.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",
@@ -21,6 +21,7 @@
     "home",
     "listings",
     "dynamic-filters",
+    "dynamic-listings",
     "deep-links",
     "image-request",
     "page-descriptions"
