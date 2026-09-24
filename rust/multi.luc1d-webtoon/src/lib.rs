@@ -344,7 +344,7 @@ impl ImageRequestProvider for Webtoon {
 fn discovery_component(id: &str, title: &str, entries: Vec<Manga>) -> aidoku::HomeComponent {
 	aidoku::HomeComponent {
 		title: Some(title.into()),
-		subtitle: Some("English Drama genre; site order (not a daily chart)".into()),
+		subtitle: Some("Drama genre; site order (not a daily chart)".into()),
 		value: aidoku::HomeComponentValue::Scroller {
 			entries: entries.into_iter().take(20).map(Into::into).collect(),
 			listing: Some(aidoku::Listing {

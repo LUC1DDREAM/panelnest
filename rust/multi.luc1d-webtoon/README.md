@@ -1,6 +1,6 @@
 # Official WEBTOON (LUC1D)
 
-Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ.
+Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 10).
 SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
 ## Support and limits

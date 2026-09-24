@@ -19,6 +19,10 @@ fn discovery_components_keep_listings_and_site_order() {
 		}],
 	);
 	assert_eq!(component.title.as_deref(), Some("Popular"));
+	assert_eq!(
+		component.subtitle.as_deref(),
+		Some("Drama genre; site order (not a daily chart)")
+	);
 	match component.value {
 		aidoku::HomeComponentValue::Scroller { entries, listing } => {
 			assert_eq!(entries.len(), 1);
