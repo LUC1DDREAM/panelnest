@@ -1,17 +1,17 @@
 {
   "id": "multi.luc1d-imhentai",
-  "version": 13,
-  "sha256": "b7f2e0a08189335997f331506e6327f17c62bbe7c00f83ee75fc6fd6cae237e2",
-  "bytes": 73918,
+  "version": 14,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "multi"
   ],
   "contentRating": 2,
-  "package_verified": true,
+  "package_verified": false,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 11,
-  "official_site_checks": "The current public GalleryAdults provider confirms IMHentai supports /advsearch/ with tag, artist, group, parody and character terms in key, alongside the same sort/category/language flags. WASM regression tests verify generated parameters and exclusions. Site requests remain HTTP 403 in worker checks; no live runtime is claimed.",
+  "fixture_tests_passed": 12,
+  "official_site_checks": "Official IMHentai gallery page 1743747 links to /view/1743747/1/ through /10/ and reports 21 pages. The current reader DOM exposes #gimg at an m11 image host plus a contiguous g_th JSON manifest; an offline regression fixture covers parsing this schema and page URL construction. Actual Aidoku device rendering remains untested.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

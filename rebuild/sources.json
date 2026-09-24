@@ -223,7 +223,7 @@
       "Top Rated",
       "Downloaded"
     ],
-    "limitations": "Public requests returned HTTP 403 during worker checks; runtime availability and advanced-search behavior are unverified. Advanced filters follow the public GalleryAdults provider implementation and offline tests.",
+    "limitations": "HTTP requests from the worker environment returned 403. Current reader parsing is covered by a sanitized live-schema fixture; package runtime and device rendering remain unverified.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -231,8 +231,8 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "The current public GalleryAdults provider confirms IMHentai supports /advsearch/ with tag, artist, group, parody and character terms in key, alongside the same sort/category/language flags. WASM regression tests verify generated parameters and exclusions. Site requests remain HTTP 403 in worker checks; no live runtime is claimed.",
-    "fixture_tests_passed": 11,
+    "live_evidence": "Official IMHentai gallery page 1743747 links to /view/1743747/1/ through /10/ and reports 21 pages. The current reader DOM exposes #gimg at an m11 image host plus a contiguous g_th JSON manifest; an offline regression fixture covers parsing this schema and page URL construction. Actual Aidoku device rendering remains untested.",
+    "fixture_tests_passed": 12,
     "release_authorized": true
   },
   {

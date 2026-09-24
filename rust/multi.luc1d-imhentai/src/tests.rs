@@ -203,6 +203,42 @@ fn synthetic_pages_order_formats_and_validation() {
 }
 
 #[aidoku_test]
+fn current_imhentai_reader_uses_view_image_path_and_manifest() {
+	let doc = Html::parse_with_url(
+		r#"<input id="pages" value=""><input id="image_dir" value=""><input id="gallery_id" value=""><img id="gimg" src="https://m11.imhentai.xxx/033/readerkey/1.webp"><script>var g_th = $.parseJSON('{"1":"w,792,1224","2":"w,792,1224","3":"w,792,1224"}');</script>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let pages = parse_pages(&doc).unwrap();
+	assert_eq!(pages.len(), 3);
+	for (index, page) in pages.iter().enumerate() {
+		if let PageContent::Url(url, _) = &page.content {
+			assert_eq!(
+				url,
+				&format!(
+					"https://m11.imhentai.xxx/033/readerkey/{}.webp",
+					index + 1
+				)
+			);
+		} else {
+			panic!("not a URL");
+		}
+	}
+	let incomplete = Html::parse_with_url(
+		r#"<img id="gimg" src="https://m11.imhentai.xxx/033/readerkey/1.webp"><script>var g_th = $.parseJSON('{"1":"w,792,1224","3":"w,792,1224"}');</script>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert!(parse_pages(&incomplete).is_err());
+	let foreign = Html::parse_with_url(
+		r#"<img id="gimg" src="https://m11.imhentai.xxx.evil/033/readerkey/1.webp"><script>var g_th = $.parseJSON('{"1":"w,792,1224"}');</script>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert!(parse_pages(&foreign).is_err());
+}
+
+#[aidoku_test]
 fn page_descriptions_read_validated_reader_filenames() {
 	use aidoku::PageDescriptionProvider;
 	let source = GallerySource;
@@ -340,7 +376,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 13);
+	assert_eq!(manifest["info"]["version"], 14);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -350,7 +386,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 13);
+	assert_eq!(manifest["info"]["version"], 14);
 }
 
 use super::*;
@@ -380,6 +416,10 @@ fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 	);
 	assert_eq!(
 		deep_link_key("https://imhentai.xxx/gallery/123?from=share#reader"),
+		Some("123".into())
+	);
+	assert_eq!(
+		deep_link_key("https://imhentai.xxx/view/123/4/"),
 		Some("123".into())
 	);
 	assert!(deep_link_key("https://imhentai.xxx.evil/gallery/123/").is_none());

@@ -24,7 +24,8 @@ const IS_IM: bool = true;
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
 	let path = path.split(['?', '#']).next()?;
-	let key = path.strip_prefix("/gallery/")?.trim_end_matches('/');
+	let path = path.strip_prefix("/gallery/").or_else(|| path.strip_prefix("/view/"))?;
+	let key = path.split('/').next()?;
 	if !key.is_empty() && key.bytes().all(|b| b.is_ascii_digit()) {
 		Some(key.into())
 	} else {
@@ -72,7 +73,9 @@ fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 fn deep_link_key(url: &str) -> Option<String> {
 	let rest = url.strip_prefix("https://")?;
 	let (host, path) = rest.split_once('/')?;
-	if host != BASE_URL.trim_start_matches("https://") || !path.starts_with("gallery/") {
+	if host != BASE_URL.trim_start_matches("https://")
+		|| !(path.starts_with("gallery/") || path.starts_with("view/"))
+	{
 		return None;
 	}
 	key_from_url(&format!("{BASE_URL}/{path}"))
@@ -409,6 +412,77 @@ fn input(doc: &Document, id: &str) -> Result<String> {
 		.ok_or(error!("Missing reader metadata"))
 }
 fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
+	if doc.select_first("#gimg").is_some() {
+		let current = doc
+			.select_first("#gimg")
+			.and_then(|el| el.attr("src"))
+			.filter(|src| src.starts_with("https://"))
+			.ok_or(error!("Missing current reader image"))?;
+		let current_host = current
+			.strip_prefix("https://")
+			.and_then(|value| value.split('/').next())
+			.ok_or(error!("Invalid current reader image"))?;
+		let domain = BASE_URL.trim_start_matches("https://");
+		ensure!(
+			current_host == domain || current_host.ends_with(&format!(".{domain}")),
+			"Unexpected reader image host"
+		);
+		let current_path = current
+			.strip_prefix("https://")
+			.and_then(|value| value.split_once('/').map(|(_, path)| path))
+			.ok_or(error!("Invalid current reader image path"))?;
+		let filename = current_path.rsplit('/').next().unwrap_or_default();
+		let (current_page, current_ext) = filename
+			.split_once('.')
+			.ok_or(error!("Invalid current reader image filename"))?;
+		let current_page = current_page
+			.parse::<usize>()
+			.map_err(|_| error!("Invalid current reader page number"))?;
+		ensure!(
+			current_page > 0
+				&& matches!(current_ext, "jpg" | "jpeg" | "png" | "webp" | "gif" | "bmp"),
+			"Invalid current reader image filename"
+		);
+		let manifest = doc
+			.select("script")
+			.and_then(|scripts| {
+				scripts.filter_map(|element| element.html()).find_map(|script| {
+					let raw = script
+						.split("$.parseJSON('")
+						.nth(1)?
+						.split("');")
+						.next()?;
+					serde_json::from_str::<serde_json::Value>(raw).ok()
+				})
+			})
+			.ok_or(error!("Reader page manifest missing"))?;
+		let manifest = manifest
+			.as_object()
+			.ok_or(error!("Invalid reader page manifest"))?;
+		let count = manifest.len();
+		ensure!(
+			count > 0 && count <= 10000 && current_page <= count,
+			"Invalid reader page count"
+		);
+		for number in 1..=count {
+			ensure!(
+				manifest.get(&number.to_string()).and_then(|value| value.as_str()).is_some(),
+				"Incomplete reader page manifest"
+			);
+		}
+		let prefix = current_path
+			.strip_suffix(filename)
+			.ok_or(error!("Invalid current reader image path"))?;
+		let mut pages = Vec::with_capacity(count);
+		for number in 1..=count {
+			pages.push(Page {
+				content: PageContent::url(format!("https://{current_host}/{prefix}{number}.{current_ext}")),
+				has_description: true,
+				..Default::default()
+			});
+		}
+		return Ok(pages);
+	}
 	let id = input(doc, "load_id")?;
 	let dir = input(doc, "load_dir")?;
 	ensure!(
@@ -715,7 +789,7 @@ impl Source for GallerySource {
 				&& chapter.key.bytes().all(|b| b.is_ascii_digit()),
 			"Invalid gallery key"
 		);
-		parse_pages(&Request::get(format!("{BASE_URL}/gallery/{}/", chapter.key))?.html()?)
+		parse_pages(&Request::get(format!("{BASE_URL}/view/{}/1/", chapter.key))?.html()?)
 	}
 }
 impl ImageRequestProvider for GallerySource {
