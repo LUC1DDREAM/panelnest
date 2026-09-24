@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
 	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter,
-	FilterValue, ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult,
+	DynamicListings, FilterValue, ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult,
 	MultiSelectFilter, Page, PageContent, PageDescriptionProvider, Result, Source,
 	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	helpers::uri::encode_uri_component,
@@ -26,7 +26,87 @@ const BASE_URL: &str = "https://nhentai.net";
 const API_URL: &str = "https://nhentai.net/api/v2";
 const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) \
 						  AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/300.0.598994205 \
-						  Mobile/15E148 Safari/604";
+			Mobile/15E148 Safari/604";
+const POPULAR_TAG_LISTING_PREFIX: &str = "popular-tag-";
+const MAX_POPULAR_TAG_LISTINGS: usize = 25;
+
+fn encode_listing_tag(name: &str) -> String {
+	let mut encoded = String::with_capacity(name.len() * 2);
+	for byte in name.bytes() {
+		encoded.push_str(&format!("{byte:02x}"));
+	}
+	encoded
+}
+
+fn decode_listing_tag(id: &str) -> Result<Option<String>> {
+	let Some(encoded) = id.strip_prefix(POPULAR_TAG_LISTING_PREFIX) else {
+		return Ok(None);
+	};
+	ensure!(
+		!encoded.is_empty() && encoded.len() % 2 == 0 && encoded.len() <= 512,
+		"Invalid popular tag listing"
+	);
+	let mut bytes = Vec::with_capacity(encoded.len() / 2);
+	for pair in encoded.as_bytes().chunks_exact(2) {
+		let hex = |byte: u8| match byte {
+			b'0'..=b'9' => Some(byte - b'0'),
+			b'a'..=b'f' => Some(byte - b'a' + 10),
+			_ => None,
+		};
+		let high = hex(pair[0]).ok_or_else(|| error!("Invalid popular tag listing"))?;
+		let low = hex(pair[1]).ok_or_else(|| error!("Invalid popular tag listing"))?;
+		bytes.push((high << 4) | low);
+	}
+	let name = String::from_utf8(bytes).map_err(|_| error!("Invalid popular tag listing"))?;
+	ensure!(
+		!name.trim().is_empty()
+			&& !name.chars().any(|character| character.is_control() || matches!(character, '"' | '\\')),
+		"Invalid popular tag name"
+	);
+	Ok(Some(name))
+}
+
+fn popular_tag_listings(tags: &[NHentaiTag]) -> Vec<Listing> {
+	let mut listings = Vec::new();
+	for tag in tags.iter().filter(|tag| tag.r#type == "tag" && tag.count > 0) {
+		let name = tag.name.trim();
+		if name.is_empty()
+			|| name.chars().any(|character| character.is_control() || matches!(character, '"' | '\\'))
+		{
+			continue;
+		}
+		let id = format!("{POPULAR_TAG_LISTING_PREFIX}{}", encode_listing_tag(name));
+		if listings.iter().any(|listing: &Listing| listing.id == id) {
+			continue;
+		}
+		listings.push(Listing {
+			id,
+			name: format!("Popular tag: {name}"),
+			..Default::default()
+		});
+		if listings.len() == MAX_POPULAR_TAG_LISTINGS {
+			break;
+		}
+	}
+	listings
+}
+
+fn popular_tag_filters(id: &str) -> Result<Option<Vec<FilterValue>>> {
+	let Some(tag) = decode_listing_tag(id)? else {
+		return Ok(None);
+	};
+	Ok(Some(vec![
+		FilterValue::Text {
+			id: "tag".into(),
+			value: tag,
+		},
+		FilterValue::Sort {
+			id: "sort".into(),
+			index: 3,
+			ascending: false,
+		},
+	]))
+}
 
 fn is_trusted_image_url(url: &str) -> bool {
 	let Some(authority) = url.strip_prefix("https://") else {
@@ -285,6 +365,9 @@ impl PageDescriptionProvider for NHentai {
 
 impl ListingProvider for NHentai {
 	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult> {
+		if let Some(filters) = popular_tag_filters(&listing.id)? {
+			return self.get_search_manga_list(None, page, filters);
+		}
 		match listing.id.as_str() {
 			"popular-today" => self.get_search_manga_list(
 				None,
@@ -324,6 +407,20 @@ impl ListingProvider for NHentai {
 			),
 			_ => Err(AidokuError::Unimplemented),
 		}
+	}
+}
+
+impl DynamicListings for NHentai {
+	fn get_dynamic_listings(&self) -> Result<Vec<Listing>> {
+		let response: NHentaiTagsResponse = Request::get(format!(
+			"{API_URL}/tags/tag?sort=popular&page=1&per_page=100"
+		))?
+		.header("User-Agent", USER_AGENT)
+		.json_owned()?;
+		ensure!(response.num_pages > 0, "Invalid nhentai tag directory");
+		let listings = popular_tag_listings(&response.result);
+		ensure!(!listings.is_empty(), "No popular nhentai tags available");
+		Ok(listings)
 	}
 }
 
@@ -482,5 +579,6 @@ register_source!(
 	AlternateCoverProvider,
 	PageDescriptionProvider,
 	ImageRequestProvider,
+	DynamicListings,
 	DynamicFilters
 );

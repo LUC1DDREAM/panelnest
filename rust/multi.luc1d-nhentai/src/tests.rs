@@ -48,6 +48,45 @@ fn discovery_rejects_invalid_page_and_listing() {
 			.is_err()
 	);
 }
+
+#[aidoku_test]
+fn dynamic_popular_tag_listings_are_stable_and_use_popular_tag_search() {
+	let tags = aidoku::alloc::vec![
+		NHentaiTag {
+			id: 1,
+			name: "big breasts".into(),
+			count: 500,
+			r#type: "tag".into(),
+			url: "/tag/big-breasts/".into(),
+			slug: Some("big-breasts".into()),
+		},
+		NHentaiTag {
+			id: 2,
+			name: "artist name".into(),
+			count: 400,
+			r#type: "artist".into(),
+			url: "/artist/artist-name/".into(),
+			slug: Some("artist-name".into()),
+		},
+		NHentaiTag {
+			id: 3,
+			name: "".into(),
+			count: 300,
+			r#type: "tag".into(),
+			url: "/tag/".into(),
+			slug: None,
+		},
+	];
+	let listings = super::popular_tag_listings(&tags);
+	assert_eq!(listings.len(), 1);
+	assert_eq!(listings[0].name, "Popular tag: big breasts");
+	let filters = super::popular_tag_filters(&listings[0].id).unwrap().unwrap();
+	assert!(matches!(&filters[0], aidoku::FilterValue::Text { id, value } if id == "tag" && value == "big breasts"));
+	assert!(matches!(&filters[1], aidoku::FilterValue::Sort { index: 3, .. }));
+	assert!(super::popular_tag_filters("popular-tag-zz").is_err());
+	assert!(super::popular_tag_filters("popular-tag-missing").is_err());
+	assert!(super::popular_tag_filters("unsupported").unwrap().is_none());
+}
 #[cfg(feature = "live-tests")]
 #[aidoku_test]
 fn live_discovery_metadata_only() {
