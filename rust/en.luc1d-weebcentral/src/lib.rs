@@ -74,6 +74,75 @@ fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResul
 	})
 }
 
+fn hot_series_key_from_cover(url: &str) -> Option<String> {
+	let path = url.strip_prefix("https://temp.compsci88.com/cover/")?;
+	let (variant, filename) = path.split_once('/')?;
+	if !matches!(variant, "normal" | "small" | "fallback") {
+		return None;
+	}
+	let (id, extension) = filename.rsplit_once('.')?;
+	if !matches!(extension, "jpg" | "webp")
+		|| id.len() != 26
+		|| !id.bytes().all(|byte| {
+			byte.is_ascii_digit() || (b'A'..=b'Z').contains(&byte) && !b"ILOU".contains(&byte)
+		}) {
+		return None;
+	}
+	Some(format!("/series/{id}"))
+}
+
+fn parse_hot_updates(html: &aidoku::imports::html::Document) -> Result<MangaPageResult> {
+	let title = html
+		.select_first("title")
+		.and_then(|el| el.text())
+		.unwrap_or_default();
+	if title.contains("Cloudflare")
+		|| title.contains("Just a moment")
+		|| title.contains("Attention Required")
+	{
+		bail!("Website access blocked; open the source website and try again");
+	}
+	let mut entries: Vec<Manga> = Vec::new();
+	if let Some(cards) = html.select("article[data-tip]") {
+		for card in cards {
+			let Some(image) = card.select_first("img") else {
+				continue;
+			};
+			let Some(cover) = image.attr("abs:src") else {
+				continue;
+			};
+			let Some(key) = hot_series_key_from_cover(&cover) else {
+				continue;
+			};
+			if entries.iter().any(|entry| entry.key == key) {
+				continue;
+			}
+			let title = card
+				.select_first(".text-lg")
+				.and_then(|element| element.text())
+				.filter(|value| !value.trim().is_empty())
+				.or_else(|| card.attr("data-tip"))
+				.unwrap_or_default();
+			if title.trim().is_empty() {
+				continue;
+			}
+			entries.push(Manga {
+				key,
+				title,
+				cover: Some(cover),
+				..Default::default()
+			});
+		}
+	}
+	if entries.is_empty() {
+		bail!("Hot Updates unavailable or site layout changed");
+	}
+	Ok(MangaPageResult {
+		entries,
+		has_next_page: false,
+	})
+}
+
 impl Source for WeebCentral {
 	fn new() -> Self {
 		// 1 request per second
@@ -291,33 +360,7 @@ impl ListingProvider for WeebCentral {
 				});
 			}
 			let html = Request::get(format!("{BASE_URL}/hot-updates"))?.html()?;
-
-			let entries = html
-				.select("article:not(.hidden)")
-				.map(|els| {
-					els.filter_map(|el| {
-						let manga_key = el
-							.select_first("a")?
-							.attr("href")?
-							.trim_start_matches(BASE_URL)
-							.into();
-						let cover = el.select_first("img")?.attr("src");
-						let title = el.select_first(".text-lg")?.text()?;
-						Some(Manga {
-							key: manga_key,
-							title,
-							cover,
-							..Default::default()
-						})
-					})
-					.collect::<Vec<_>>()
-				})
-				.unwrap_or_default();
-
-			Ok(MangaPageResult {
-				entries,
-				has_next_page: false,
-			})
+			return parse_hot_updates(&html);
 		} else {
 			bail!("Invalid listing");
 		}

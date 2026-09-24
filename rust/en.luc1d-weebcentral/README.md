@@ -1,13 +1,16 @@
 # Weeb Central (LUC1D)
 
-## Discovery (package version 2)
+## Discovery (package version 7)
 
 Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
 the existing Advanced Search endpoint, its website sort values and explicit
 Descending order. Search pages use the live endpoint's 32-entry HTMX offsets;
 the View More Results button accurately indicates whether another page exists.
-Home Latest Updates now links to its full listing. Existing Hot Updates and
-Recommendations sections are retained; Hot Updates does not repeat on page two.
+Home Latest Updates now links to its full listing. Hot Updates cards resolve
+their series from the trusted cover-host ULID rather than treating chapter
+links as series; responsive duplicate cards are collapsed. The standalone Hot
+Updates listing is finite and does not repeat on page two. Recommendations are
+retained on Home.
 No daily/weekly/monthly popularity is exposed: the website Advanced Search
 verified via public text extraction only offers unqualified Popularity.
 
@@ -29,7 +32,7 @@ aidoku package
 aidoku verify package.aix
 ```
 
-Default tests: 5 passed, 1 ignored. Live smoke: failed with explicit website
+Default tests: 9 passed, 1 ignored. Live smoke: failed with explicit website
 access-blocked error. Release build and package/schema/icon/WASM verification
 passed. Tests preserve the existing synthetic nonexplicit HTML fixtures and
 add sort mapping and challenge rejection. No iOS/device proof.

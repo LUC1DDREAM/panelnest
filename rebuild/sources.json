@@ -53,9 +53,9 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Worker public search sort evidence; live WASM blocked by Cloudflare HTTP 403.",
+    "live_evidence": "Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Public search sort evidence exists, while live WASM checks can be blocked by Cloudflare HTTP 403.",
     "limitations": "Cloudflare returned HTTP 403 in CI live checks; access may depend on network and site policy.",
-    "fixture_tests_passed": 8,
+    "fixture_tests_passed": 9,
     "release_authorized": true
   },
   {

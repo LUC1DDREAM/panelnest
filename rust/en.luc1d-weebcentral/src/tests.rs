@@ -69,6 +69,27 @@ fn fixture_search_parses_and_skips_invalid_cards() {
 }
 
 #[aidoku_test]
+fn hot_updates_cards_resolve_to_deduplicated_series_keys_from_cover_ids() {
+	let html = Html::parse_with_url(
+		r#"
+		<article data-tip="Sample Series"><a href="/chapters/chapter-1">Chapter 1</a><img src="https://temp.compsci88.com/cover/fallback/01J76XYDT7H7ANER8KJG5R9SJV.jpg"><div class="text-lg">Sample Series</div></article>
+		<article class="hidden" data-tip="Duplicate update"><a href="/chapters/chapter-2">Chapter 2</a><img src="https://temp.compsci88.com/cover/normal/01J76XYDT7H7ANER8KJG5R9SJV.webp"><div class="text-lg">Sample Series</div></article>
+		<article data-tip="Other Series"><a href="/chapters/chapter-3">Chapter 3</a><img src="https://temp.compsci88.com/cover/small/01M38CCE8ZP635YHV9Y8CV1F8M.webp"><div class="text-lg">Other Series</div></article>
+		<article data-tip="Foreign"><img src="https://example.invalid/cover/normal/01J76XYDT7H7ANER8KJG5R9SJV.webp"><div class="text-lg">Foreign</div></article>
+		"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let result = parse_hot_updates(&html).unwrap();
+	assert_eq!(result.entries.len(), 2);
+	assert_eq!(result.entries[0].key, "/series/01J76XYDT7H7ANER8KJG5R9SJV");
+	assert_eq!(result.entries[0].title, "Sample Series");
+	assert_eq!(result.entries[1].key, "/series/01M38CCE8ZP635YHV9Y8CV1F8M");
+	assert!(!result.has_next_page);
+	assert!(parse_hot_updates(&Html::parse("<title>Access denied</title>").unwrap()).is_err());
+}
+
+#[aidoku_test]
 fn challenge_is_not_an_empty_catalogue() {
 	let html = Html::parse("<html><title>Attention Required! | Cloudflare</title><body>Sorry, you have been blocked</body></html>").unwrap();
 	assert!(parse_search(&html).is_err());
