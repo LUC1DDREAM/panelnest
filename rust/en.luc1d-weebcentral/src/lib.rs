@@ -1,8 +1,8 @@
 #![no_std]
 use aidoku::{
 	AidokuError, Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult,
-	DynamicFilters, Filter, FilterValue, Home, HomeComponent, HomeLayout, ImageRequestProvider,
-	Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
+	DynamicFilters, DynamicListings, Filter, FilterValue, Home, HomeComponent, HomeLayout,
+	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MultiSelectFilter, Page, PageContent, Result, SortFilter, SortFilterDefault, Source, TextFilter,
 	Viewer,
 	alloc::{String, Vec, borrow::{Cow, ToOwned}, vec},
@@ -101,6 +101,56 @@ fn search_filters() -> Vec<Filter> {
 		filters.push(filter.into());
 	}
 	filters
+}
+
+fn genre_listing_slug(genre: &str) -> String {
+	genre
+		.chars()
+		.map(|character| {
+			if character.is_ascii_alphanumeric() {
+				character.to_ascii_lowercase()
+			} else {
+				'-'
+			}
+		})
+		.collect::<String>()
+}
+
+fn genre_from_listing_id(id: &str) -> Option<&'static str> {
+	SEARCH_GENRES
+		.iter()
+		.copied()
+		.find(|genre| id == format!("genre-{}", genre_listing_slug(genre)))
+}
+
+fn popular_genre_filter(genre: &str) -> Vec<FilterValue> {
+	vec![
+		FilterValue::Sort {
+			id: "sort".into(),
+			index: filter::listing_sort("popular").unwrap_or(2),
+			ascending: false,
+		},
+		FilterValue::MultiSelect {
+			id: "genre".into(),
+			included: vec![genre.into()],
+			excluded: Vec::new(),
+		},
+	]
+}
+
+fn search_url(query: Option<String>, page: i32, filters: Vec<FilterValue>) -> Result<String> {
+	if page < 1 {
+		bail!("Invalid page");
+	}
+	let offset = (page - 1) * FETCH_LIMIT;
+	Ok(format!(
+		"{BASE_URL}/search/data\
+			?limit={FETCH_LIMIT}\
+			&offset={offset}\
+			&display_mode=Full+Display\
+			&{}",
+		filter::get_filters(query, filters)
+	))
 }
 
 fn reject_cloudflare(html: &aidoku::imports::html::Document) -> Result<()> {
@@ -305,21 +355,7 @@ impl Source for WeebCentral {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
-		if page < 1 {
-			bail!("Invalid page");
-		}
-		let offset = (page - 1) * FETCH_LIMIT;
-
-		let url = format!(
-			"{BASE_URL}/search/data\
-					?limit={FETCH_LIMIT}\
-					&offset={offset}\
-					&display_mode=Full+Display\
-					&{}",
-			filter::get_filters(query, filters)
-		);
-
-		let html = Request::get(&url)?.html()?;
+		let html = Request::get(search_url(query, page, filters)?)?.html()?;
 
 		parse_search(&html)
 	}
@@ -505,6 +541,9 @@ impl ListingProvider for WeebCentral {
 				}],
 			);
 		}
+		if let Some(genre) = genre_from_listing_id(&listing.id) {
+			return self.get_search_manga_list(None, page, popular_genre_filter(genre));
+		}
 		if listing.id == "hot" {
 			if page > 1 {
 				return Ok(MangaPageResult {
@@ -517,6 +556,19 @@ impl ListingProvider for WeebCentral {
 		} else {
 			bail!("Invalid listing");
 		}
+	}
+}
+
+impl DynamicListings for WeebCentral {
+	fn get_dynamic_listings(&self) -> Result<Vec<Listing>> {
+		Ok(SEARCH_GENRES
+			.iter()
+			.map(|genre| Listing {
+				id: format!("genre-{}", genre_listing_slug(genre)),
+				name: (*genre).into(),
+				..Default::default()
+			})
+			.collect())
 	}
 }
 
@@ -709,6 +761,7 @@ impl DeepLinkHandler for WeebCentral {
 register_source!(
 	WeebCentral,
 	ListingProvider,
+	DynamicListings,
 	DynamicFilters,
 	Home,
 	ImageRequestProvider,

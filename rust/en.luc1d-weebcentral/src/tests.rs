@@ -30,6 +30,59 @@ fn discovery_listings_use_real_search_sorts() {
 }
 
 #[aidoku_test]
+fn dynamic_genre_listings_expose_every_official_genre_with_stable_ids() {
+	use aidoku::DynamicListings;
+	let listings = WeebCentral.get_dynamic_listings().unwrap();
+	assert_eq!(listings.len(), SEARCH_GENRES.len());
+	assert_eq!(listings[0].id, "genre-action");
+	assert_eq!(listings[0].name, "Action");
+	assert!(listings.iter().any(|listing| {
+		listing.id == "genre-gender-bender" && listing.name == "Gender Bender"
+	}));
+	assert!(listings.iter().any(|listing| {
+		listing.id == "genre-sci-fi" && listing.name == "Sci-fi"
+	}));
+	for (index, listing) in listings.iter().enumerate() {
+		assert!(
+			listings[..index]
+				.iter()
+				.all(|previous| previous.id != listing.id),
+			"duplicate listing id: {}",
+			listing.id
+		);
+	}
+}
+
+#[aidoku_test]
+fn genre_listing_routes_to_paginated_popular_search() {
+	assert_eq!(genre_from_listing_id("genre-action"), Some("Action"));
+	assert_eq!(genre_from_listing_id("genre-sci-fi"), Some("Sci-fi"));
+	assert_eq!(genre_from_listing_id("genre-not-a-real-genre"), None);
+	let first = search_url(None, 1, popular_genre_filter("Action")).unwrap();
+	assert!(first.contains("limit=32&offset=0"), "{first}");
+	assert!(first.contains("sort=Popularity"), "{first}");
+	assert!(first.contains("order=Descending"), "{first}");
+	assert!(first.contains("included_tag=Action"), "{first}");
+	let second = search_url(None, 2, popular_genre_filter("Action")).unwrap();
+	assert!(second.contains("limit=32&offset=32"), "{second}");
+	assert!(search_url(None, 0, popular_genre_filter("Action")).is_err());
+}
+
+#[aidoku_test]
+fn unknown_genre_listing_is_rejected_without_network_access() {
+	use aidoku::ListingProvider;
+	assert!(WeebCentral
+		.get_manga_list(
+			Listing {
+				id: "genre-unknown".into(),
+				..Default::default()
+			},
+			1,
+		)
+		.is_err());
+}
+
+#[aidoku_test]
 #[ignore]
 fn live_discovery_safe_metadata_only() {
 	let page = WeebCentral::new()
@@ -293,7 +346,7 @@ fn image_requests_include_the_site_referer_and_provider_is_registered() {
 	let source = include_str!("lib.rs");
 	let normalized = source.split_whitespace().collect::<Vec<_>>().join(" ");
 	assert!(normalized.contains(
-		"register_source!( WeebCentral, ListingProvider, DynamicFilters, Home, ImageRequestProvider, DeepLinkHandler );"
+		"register_source!( WeebCentral, ListingProvider, DynamicListings, DynamicFilters, Home, ImageRequestProvider, DeepLinkHandler );"
 	));
 }
 

@@ -1,6 +1,6 @@
 {
   "id": "en.luc1d-weebcentral",
-  "version": 14,
+  "version": 15,
   "sha256": "e6cdfe903f9f5ac2aec3bde2fe6e4218b381eaf8db101a71dfea1e9cd07f65db",
   "bytes": 74440,
   "languages": [
@@ -10,8 +10,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 18,
-  "official_site_checks": "Official public series pages expose Associated Name(s) and Related Series(s), which are retained in the Aidoku details description with relationship labels when present. Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Official public /search HTML exposes tri-state Official Translation, Anime Adaptation, and Adult Content controls. Regression tests verify each filter routes its Any/True/False state to the matching form field; Cloudflare challenge pages are rejected across search, details, chapter-list, reader and Home requests rather than accepted as empty results. Live official /search UI exposes all six sort modes, author text search, trivalent official/anime/adult filters, and 38 include/exclude tags; Aidoku DynamicFilters now exposes the supported UI and routes those values through the already-tested advanced-search fields. The visible Series Status and Series Type groups expose Ongoing/Complete/Hiatus/Canceled and Manga/Manhwa/Manhua/OEL. Selecting Complete and Manga in the live page produced included_status=Complete and included_type=Manga; the provider and request builder now expose these options.",
+  "fixture_tests_passed": 21,
+  "official_site_checks": "Official public series pages expose Associated Name(s) and Related Series(s), which are retained in the Aidoku details description with relationship labels when present. Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Official public /search HTML exposes tri-state Official Translation, Anime Adaptation, and Adult Content controls. Regression tests verify each filter routes its Any/True/False state to the matching form field; Cloudflare challenge pages are rejected across search, details, chapter-list, reader and Home requests rather than accepted as empty results. Live official /search UI exposes all six sort modes, author text search, trivalent official/anime/adult filters, and 38 include/exclude tags; Aidoku DynamicFilters now exposes the supported UI and routes those values through the already-tested advanced-search fields. The visible Series Status and Series Type groups expose Ongoing/Complete/Hiatus/Canceled and Manga/Manhwa/Manhua/OEL. Selecting Complete and Manga in the live page produced included_status=Complete and included_type=Manga; the provider and request builder now expose these options. Official Advanced Search exposes the same 38 named tag checkboxes as the source filters; each serializes as included_tag or excluded_tag in the GET search form. Version 15 registers DynamicListings and exposes a paginated Popular listing per official tag, routing through /search/data with page-based offsets.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",
@@ -22,7 +22,8 @@
     "listings",
     "deep-links",
     "image-request",
-    "dynamic-filters"
+    "dynamic-filters",
+    "dynamic-listings"
   ],
   "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
 }
