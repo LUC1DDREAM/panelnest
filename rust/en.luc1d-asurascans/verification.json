@@ -1,16 +1,16 @@
 {
   "id": "en.luc1d-asurascans",
   "version": 11,
-  "sha256": null,
-  "bytes": 0,
+  "sha256": "6e9bb6e98e965b090de4ea4106296dfec088b8911b525cc46e7f5aae72f612ea",
+  "bytes": 126430,
   "languages": [
     "en"
   ],
   "contentRating": 0,
-  "package_verified": false,
+  "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 18,
+  "fixture_tests_passed": 19,
   "official_site_checks": "Official trending API /api/trending/day?limit=10 returned HTTP 200 with ten ranked entries on 2026-09-24; /api/trending/{week|month|all}?limit=10 are exposed as well. Regression fixtures preserve the server order for the daily feed. Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Dynamic genre names/slugs continue to come from the BrowseFilters payload. Version 10 registers ImageRequestProvider for cdn.asurascans.com, adds the source-site Referer, and validates the official HTTPS host offline; no image bytes or device runtime were checked. Version 11 registers PageDescriptionProvider and annotates both authenticated API and public HTML reader pages with their one-based original order; offline fixtures verify labels without extra requests.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
