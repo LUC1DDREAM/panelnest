@@ -1,13 +1,13 @@
 {
   "id": "multi.luc1d-hentaifox",
   "version": 21,
-  "sha256": null,
-  "bytes": 0,
+  "sha256": "7c0db925d476a20799a667ebd1de83fdfe2ebd8ce1d727b104cf05e20e06586d",
+  "bytes": 73815,
   "languages": [
     "multi"
   ],
   "contentRating": 2,
-  "package_verified": false,
+  "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
   "fixture_tests_passed": 26,
@@ -27,4 +27,4 @@
     "page-descriptions"
   ],
   "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
-}
+}\n
