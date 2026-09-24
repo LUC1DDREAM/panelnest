@@ -239,6 +239,79 @@ fn current_imhentai_reader_uses_view_image_path_and_manifest() {
 }
 
 #[aidoku_test]
+fn current_live_imhentai_reader_fixture_builds_all_pages() {
+	let mut manifest = String::from("{");
+	for number in 1..=50 {
+		if number > 1 {
+			manifest.push(',');
+		}
+		let format = if number == 2 { "w" } else { "j" };
+		manifest.push_str(&format!("\"{number}\":\"{format},1280,1810\""));
+	}
+	manifest.push('}');
+	let html = format!(
+		r#"<img id="gimg" src="https://m11.imhentai.xxx/033/nja31r49bw/1.jpg"><script>var g_th = $.parseJSON('{}');</script>"#,
+		manifest
+	);
+	let doc = Html::parse_with_url(&html, "https://imhentai.xxx/view/1743990/1/").unwrap();
+	let pages = parse_pages(&doc).unwrap();
+	assert_eq!(pages.len(), 50);
+	if let PageContent::Url(url, _) = &pages[0].content {
+		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/1.jpg");
+	} else {
+		panic!("page must be a URL");
+	}
+	if let PageContent::Url(url, _) = &pages[1].content {
+		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/2.webp");
+	} else {
+		panic!("page must be a URL");
+	}
+	if let PageContent::Url(url, _) = &pages[49].content {
+		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/50.jpg");
+	} else {
+		panic!("page must be a URL");
+	}
+}
+
+#[aidoku_test]
+fn image_requests_use_reader_context_and_validate_image_hosts() {
+	use aidoku::ImageRequestProvider;
+	let source = GallerySource;
+	let mut context = aidoku::PageContext::new();
+	context.insert(
+		"url".into(),
+		"https://imhentai.xxx/view/1743990/12/".into(),
+	);
+	assert_eq!(
+		image_request_referer(
+			"https://m11.imhentai.xxx/033/nja31r49bw/12.jpg",
+			Some(&context)
+		)
+		.unwrap(),
+		"https://imhentai.xxx/view/1743990/12/"
+	);
+	assert_eq!(
+		image_request_referer("https://m11.imhentai.xxx/033/nja31r49bw/cover.jpg", None)
+			.unwrap(),
+		"https://imhentai.xxx/"
+	);
+	for url in [
+		"http://m11.imhentai.xxx/033/nja31r49bw/12.jpg",
+		"https://m11.imhentai.xxx.evil/033/nja31r49bw/12.jpg",
+		"https://example.org/033/nja31r49bw/12.jpg",
+		"https://m11.imhentai.xxx/033/nja31r49bw/12.exe",
+	] {
+		assert!(image_request_referer(url, Some(&context)).is_err(), "{url}");
+	}
+	assert!(source
+		.get_image_request(
+			"https://m11.imhentai.xxx/033/nja31r49bw/12.jpg".into(),
+			Some(context),
+		)
+		.is_ok());
+}
+
+#[aidoku_test]
 fn page_descriptions_read_validated_reader_filenames() {
 	use aidoku::PageDescriptionProvider;
 	let source = GallerySource;

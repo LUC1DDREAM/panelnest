@@ -1,7 +1,9 @@
 # imhentai (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 14)
+## Discovery (source version 15)
+Version 15 handles protected CDN images with a validated per-page Referer from Aidoku PageContext. Cover images use the source root; unsupported hosts and formats are rejected. Reader manifests are validated and each page uses its own file format. Device rendering remains untested.
+
 Version 13 exposes Aidoku page descriptions using the already validated reader image filenames, so each page shows its page number without another network request.
 
 Version 11 adds the site's advanced search filters for tags, artists, groups, parodies and characters. Each accepts comma-separated terms and a leading minus sign excludes a term. The source maps these to the public advanced-search key syntax while retaining the selected sort, category and language flags. Advanced terms are sanitized and URL-encoded; combining advanced filters with the separate title query is rejected instead of silently dropping either input. The route and encoding follow the current public GalleryAdults provider implementation and are covered by offline WASM tests. IMHentai requests still return HTTP 403 in the worker environment, so the endpoint is not runtime-verified here.
@@ -13,7 +15,7 @@ Home links and manifest listings use the registered `Home` / `ListingProvider` i
 
 Canonical `https://imhentai.xxx/gallery/<numeric-id>/` links resolve to their manga entries. Host matching now requires the exact HTTPS hostname, so lookalike suffix hosts, HTTP links and nonnumeric IDs are rejected.
 
-Existing query search, title/cover/artist/tag metadata, one gallery chapter, reader pages from the current `/view/<id>/<page>/` route using its `g_th` page manifest and authoritative `#gimg` host/path, legacy numeric pages from the complete JSON reader manifest, Referer headers and one request/second remain intact. Reader deep links resolve to their gallery entry.
+Existing query search, title/cover/artist/tag metadata, one gallery chapter, reader pages from the current `/view/<id>/<page>/` route using its `g_th` page manifest and authoritative `#gimg` host/path, and legacy numeric pages from the complete JSON reader manifest remain intact. Each current reader page uses its own format from `g_th`; the source does not override Aidoku's image Referer with a generic site-root header, allowing the app's originating chapter/page context to reach the CDN. Reader deep links resolve to their gallery entry.
 
 ## Verification
 From this crate directory with Cargo and Aidoku tools on PATH:

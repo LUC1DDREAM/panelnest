@@ -432,17 +432,13 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 			.and_then(|value| value.split_once('/').map(|(_, path)| path))
 			.ok_or(error!("Invalid current reader image path"))?;
 		let filename = current_path.rsplit('/').next().unwrap_or_default();
-		let (current_page, current_ext) = filename
+		let (current_page, _) = filename
 			.split_once('.')
 			.ok_or(error!("Invalid current reader image filename"))?;
 		let current_page = current_page
 			.parse::<usize>()
 			.map_err(|_| error!("Invalid current reader page number"))?;
-		ensure!(
-			current_page > 0
-				&& matches!(current_ext, "jpg" | "jpeg" | "png" | "webp" | "gif" | "bmp"),
-			"Invalid current reader image filename"
-		);
+		ensure!(current_page > 0, "Invalid current reader image filename");
 		let manifest = doc
 			.select("script")
 			.and_then(|scripts| {
@@ -464,19 +460,39 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 			count > 0 && count <= 10000 && current_page <= count,
 			"Invalid reader page count"
 		);
+		let extension = |value: &serde_json::Value| -> Result<&'static str> {
+			let format = value
+				.as_str()
+				.and_then(|value| value.split(',').next())
+				.ok_or(error!("Invalid reader page format"))?;
+			match format {
+				"j" => Ok("jpg"),
+				"p" => Ok("png"),
+				"w" => Ok("webp"),
+				"g" => Ok("gif"),
+				"b" => Ok("bmp"),
+				_ => bail!("Unknown reader page format"),
+			}
+		};
 		for number in 1..=count {
-			ensure!(
-				manifest.get(&number.to_string()).and_then(|value| value.as_str()).is_some(),
-				"Incomplete reader page manifest"
-			);
+			extension(
+				manifest
+					.get(&number.to_string())
+					.ok_or(error!("Incomplete reader page manifest"))?,
+			)?;
 		}
 		let prefix = current_path
 			.strip_suffix(filename)
 			.ok_or(error!("Invalid current reader image path"))?;
 		let mut pages = Vec::with_capacity(count);
 		for number in 1..=count {
+			let ext = extension(
+				manifest
+					.get(&number.to_string())
+					.ok_or(error!("Incomplete reader page manifest"))?,
+			)?;
 			pages.push(Page {
-				content: PageContent::url(format!("https://{current_host}/{prefix}{number}.{current_ext}")),
+				content: PageContent::url(format!("https://{current_host}/{prefix}{number}.{ext}")),
 				has_description: true,
 				..Default::default()
 			});
@@ -554,6 +570,68 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 		});
 	}
 	Ok(pages)
+}
+fn image_request_referer(url: &str, context: Option<&aidoku::PageContext>) -> Result<String> {
+	let rest = url
+		.strip_prefix("https://")
+		.ok_or(error!("Image URL must use HTTPS"))?;
+	let (host, path) = rest
+		.split_once('/')
+		.ok_or(error!("Invalid image URL"))?;
+	let domain = BASE_URL.trim_start_matches("https://");
+	ensure!(
+		host == domain
+			|| (host
+				.strip_suffix(&format!(".{domain}"))
+				.and_then(|prefix| prefix.strip_prefix('m'))
+				.is_some_and(|server| !server.is_empty() && server.bytes().all(|byte| byte.is_ascii_digit()))),
+		"Unexpected image host"
+	);
+	let path = path.split(['?', '#']).next().unwrap_or_default();
+	let filename = path.rsplit('/').next().unwrap_or_default();
+	let (stem, extension) = filename
+		.split_once('.')
+		.ok_or(error!("Invalid image filename"))?;
+	ensure!(
+		!stem.is_empty()
+			&& stem.bytes().all(|byte| byte.is_ascii_alphanumeric())
+			&& matches!(extension, "jpg" | "jpeg" | "png" | "webp" | "gif" | "bmp"),
+		"Invalid image filename"
+	);
+	let is_reader_image = path
+		.rsplit('/')
+		.nth(1)
+		.is_some_and(|segment| segment.bytes().all(|byte| byte.is_ascii_alphanumeric() || byte == b'_'))
+		&& !filename.starts_with("cover.");
+	if is_reader_image {
+		if let Some(context) = context {
+			for key in ["url", "chapter_url", "page_url", "referer"] {
+				if let Some(referer) = context.get(key)
+					&& let Some(rest) = referer.strip_prefix("https://")
+					&& let Some((referer_host, path)) = rest.split_once('/')
+					&& referer_host == domain
+				{
+					let path = path.split(['?', '#']).next().unwrap_or_default();
+					let path = path
+						.strip_prefix("view/")
+						.unwrap_or_default()
+						.trim_end_matches('/');
+					let mut parts = path.split('/');
+					let gallery = parts.next().unwrap_or_default();
+					let page = parts.next().unwrap_or_default();
+					if !gallery.is_empty()
+						&& gallery.bytes().all(|byte| byte.is_ascii_digit())
+						&& !page.is_empty()
+						&& page.bytes().all(|byte| byte.is_ascii_digit())
+						&& parts.next().is_none()
+					{
+						return Ok(format!("{BASE_URL}/view/{gallery}/{page}/"));
+					}
+				}
+			}
+		}
+	}
+	Ok(format!("{BASE_URL}/"))
 }
 impl PageDescriptionProvider for GallerySource {
 	fn get_page_description(&self, page: Page) -> Result<String> {
@@ -796,9 +874,10 @@ impl ImageRequestProvider for GallerySource {
 	fn get_image_request(
 		&self,
 		url: String,
-		_context: Option<aidoku::PageContext>,
+		context: Option<aidoku::PageContext>,
 	) -> Result<Request> {
-		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
+		let referer = image_request_referer(&url, context.as_ref())?;
+		Ok(Request::get(url)?.header("Referer", referer.as_str()))
 	}
 }
 aidoku::register_source!(
