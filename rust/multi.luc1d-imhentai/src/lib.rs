@@ -7,7 +7,7 @@ use aidoku::{
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
-		net::{Request, TimeUnit, set_rate_limit},
+		net::{Request, RequestError, Response, TimeUnit, set_rate_limit},
 	},
 	imports::std::send_partial_result,
 	prelude::*,
@@ -588,25 +588,32 @@ impl aidoku::Home for GallerySource {
 	fn get_home(&self) -> Result<HomeLayout> {
 		let mut home = home_layout();
 		send_partial_result(&HomePartialResult::Layout(home.clone()));
-		let latest = listing_url("latest", 1)
-			.and_then(|url| Ok(Request::get(url)?.html()?))
-			.and_then(|doc| {
-				let result = parse_search(&doc);
-				ensure!(
-					!result.entries.is_empty(),
-					"Latest unavailable or site layout changed"
-				);
-				Ok(result)
-			});
-		let latest = latest?;
+		let requests = ["latest", "popular", "top-rated", "downloaded"]
+			.map(|id| listing_url(id, 1).and_then(Request::get))
+			.into_iter()
+			.collect::<Result<Vec<_>>>()?;
+		let responses: [core::result::Result<Response, RequestError>; 4] = Request::send_all(requests)
+			.try_into()
+			.expect("request count matches home feeds");
+		let results = responses.map(|response| {
+			response.and_then(|response| response.html().map(|doc| parse_search(&doc)))
+		});
+		let [latest, popular, top_rated, downloaded] = results;
+		let latest = latest.map_err(|_| error!("Latest unavailable or site layout changed"))?;
+		ensure!(
+			!latest.entries.is_empty(),
+			"Latest unavailable or site layout changed"
+		);
 		let component = listing_component_from_result("latest", "Latest", latest);
 		update_home_component(&mut home, component.clone());
 		send_partial_result(&HomePartialResult::Component(component));
 
-		for (id, title) in [("popular", "Popular"), ("top-rated", "Top Rated"), ("downloaded", "Downloaded")] {
-			let result = listing_url(id, 1)
-				.and_then(|url| Ok(Request::get(url)?.html()?))
-				.and_then(|doc| Ok(parse_search(&doc)));
+		for (id, title, result) in [
+			("popular", "Popular", popular),
+			("top-rated", "Top Rated", top_rated),
+			("downloaded", "Downloaded", downloaded),
+		]
+		{
 			if let Ok(result) = result {
 				if !result.entries.is_empty() {
 					let component = listing_component_from_result(id, title, result);
