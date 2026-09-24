@@ -145,12 +145,13 @@
       "home",
       "listings",
       "dynamic-listings",
-      "deep-links"
+      "deep-links",
+      "dynamic-filters"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Latest", "Top Rated"],
     "dynamic_listings": ["Most Faved", "Most Fapped", "Most Downloaded"],
-    "limitations": "Sidebar rankings are finite; no temporal popularity lists or language selector.",
+    "limitations": "Sidebar rankings are finite; no temporal popularity lists, language selector or advanced tag filters.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -158,8 +159,8 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Live HTTP check: homepage CSRF token and all three sidebar POST rankings returned HTTP 200 with 10 items each; no live WASM or device test.",
-    "fixture_tests_passed": 10,
+    "live_evidence": "Live HTTP check: homepage CSRF token and all three sidebar POST rankings returned HTTP 200 with 10 items each; text search recognizes the sort=popular parameter; no live WASM or device test.",
+    "fixture_tests_passed": 11,
     "release_authorized": true
   }
 ]

@@ -186,7 +186,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 7);
+	assert_eq!(manifest["info"]["version"], 8);
 	assert!(manifest["info"]["name"].as_str().unwrap().ends_with(" [PN]"));
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
@@ -223,4 +223,26 @@ fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 		source.handle_deep_link("https://hentaifox.com/gallery/123/".into()).unwrap(),
 		Some(DeepLinkResult::Manga { key: "123".into() })
 	);
+}
+
+#[aidoku_test]
+fn search_sort_filter_preserves_latest_and_maps_popular_to_site_parameter() {
+	let popular = vec![FilterValue::Sort {
+		id: "sort".into(),
+		index: 1,
+		ascending: false,
+	}];
+	let latest = vec![FilterValue::Sort {
+		id: "sort".into(),
+		index: 0,
+		ascending: false,
+	}];
+	let popular_url = search_url_with_filters(Some("two words"), 3, &popular).unwrap();
+	assert!(popular_url.ends_with("q=two%20words&page=3&sort=popular"));
+	assert_eq!(
+		search_url_with_filters(Some("two words"), 3, &latest).unwrap(),
+		search_url(Some("two words"), 3).unwrap()
+	);
+	assert_eq!(search_filters().len(), 1);
+	assert_eq!(search_url_with_filters(None, 1, &popular).unwrap(), search_url(None, 1).unwrap());
 }

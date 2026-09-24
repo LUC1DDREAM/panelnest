@@ -1,8 +1,8 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicListings, FilterValue,
-	ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page, PageContent, Result,
-	Source, Viewer,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter,
+	FilterValue, ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page,
+	PageContent, Result, SortFilter, Source, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -71,8 +71,14 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 	}
 }
 fn search_url(query: Option<&str>, page: i32) -> Result<String> {
+	search_url_with_filters(query, page, &[])
+}
+fn search_url_with_filters(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result<String> {
 	ensure!(page > 0, "Invalid page");
 	let query = query.unwrap_or("").trim();
+	let popular = filters.iter().any(|filter| {
+		matches!(filter, FilterValue::Sort { id, index: 1, .. } if id.as_str() == "sort")
+	});
 	if query.is_empty() {
 		return Ok(if IS_IM {
 			format!("{BASE_URL}/?page={page}")
@@ -90,13 +96,28 @@ fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 			escaped.push_str(&format!("%{b:02X}"));
 		}
 	}
-	Ok(if IS_IM {
+	let url = if IS_IM {
 		format!(
 			"{BASE_URL}/search/?lt=1&pp=0&dl=0&tr=0&m=1&d=1&w=1&i=1&a=1&g=1&en=1&jp=1&es=1&fr=1&kr=1&de=1&ru=1&key={escaped}&page={page}"
 		)
 	} else {
 		format!("{BASE_URL}/search/?q={escaped}&page={page}")
+	};
+	Ok(if popular && !IS_IM {
+		format!("{url}&sort=popular")
+	} else {
+		url
 	})
+}
+
+fn search_filters() -> Vec<Filter> {
+	let mut sort = SortFilter::default();
+	sort.id = "sort".into();
+	sort.title = Some("Sort".into());
+	sort.can_ascend = false;
+	sort.options = vec!["Latest".into(), "Popular".into()];
+	sort.default = Some(aidoku::SortFilterDefault { index: 0, ascending: false });
+	vec![sort.into()]
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
 	ensure!(
@@ -415,6 +436,11 @@ impl DeepLinkHandler for GallerySource {
 		Ok(deep_link_key(&url).map(|key| DeepLinkResult::Manga { key }))
 	}
 }
+impl DynamicFilters for GallerySource {
+	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
+		Ok(search_filters())
+	}
+}
 
 // The public homepage renders its default Top Rated sidebar server-side.
 // Do not relabel it as daily popularity or request account-dependent rankings.
@@ -464,9 +490,9 @@ impl Source for GallerySource {
 		&self,
 		query: Option<String>,
 		page: i32,
-		_filters: Vec<FilterValue>,
+		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
-		let doc = Request::get(search_url(query.as_deref(), page)?)?.html()?;
+		let doc = Request::get(search_url_with_filters(query.as_deref(), page, &filters)?)?.html()?;
 		ensure!(
 			doc.select_first("div.thumb, .pagination, .content, .container")
 				.is_some(),
@@ -509,7 +535,7 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicListings, DeepLinkHandler);
+aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicListings, DeepLinkHandler, DynamicFilters);
 
 #[cfg(test)]
 mod tests;
