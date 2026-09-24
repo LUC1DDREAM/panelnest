@@ -2,7 +2,9 @@
 
 Independent vendored current-API source, `multi.luc1d-nhentai`; pinned Aidoku SDK `e1320b0a2e11afb59e4dee374883a2212d325699`. Existing source/license provenance is retained in the repository. This change does not add any downloaded adult imagery or explicit fixture text.
 
-## Website-backed capabilities (source version 19)
+## Website-backed capabilities (source version 20)
+
+Version 20 stores the API's actual scanlator in Aidoku's scanlator field and maps a single recognized language tag to the chapter language. Translated and rewrite tags are ignored; mixed and unknown languages remain unset.
 
 Version 19 adds up to 25 dynamic Popular tag feeds from the official tag ranking. Each feed uses the exact tag name and popular search order; offline fixtures cover stable listing IDs and search filters. The new directory call is not runtime-tested.
 

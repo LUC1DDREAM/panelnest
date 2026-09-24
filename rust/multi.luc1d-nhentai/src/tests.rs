@@ -123,6 +123,42 @@ fn fixture_search_metadata_deserializes() {
 }
 
 #[aidoku_test]
+fn gallery_chapter_keeps_scanlator_and_single_language_in_their_fields() {
+	let mut gallery: NHentaiGallery = serde_json::from_str(
+		r#"{
+			"id":123,"media_id":"fixture",
+			"title":{"english":"Fixture","japanese":null,"pretty":"Fixture"},
+			"cover":{"path":"cover.jpg","width":100,"height":100},
+			"thumbnail":{"path":"cover.jpg","width":50,"height":50},
+			"scanlator":"Example group","upload_date":1234567890,
+			"tags":[
+				{"id":1,"name":"english","count":1,"type":"language","url":"/language/english/","slug":"english"},
+				{"id":2,"name":"translated","count":1,"type":"language","url":"/language/translated/","slug":"translated"}
+			],
+			"num_pages":1,"num_favorites":0,"pages":[]
+		}"#,
+	)
+	.unwrap();
+	let chapter = super::chapter_from_gallery(&gallery);
+	assert_eq!(chapter.language.as_deref(), Some("en"));
+	assert_eq!(chapter.scanlators.as_ref().unwrap()[0], "Example group");
+	assert_eq!(chapter.date_uploaded, Some(1234567890));
+
+	gallery.tags.push(NHentaiTag {
+		id: 3,
+		name: "french".into(),
+		count: 1,
+		r#type: "language".into(),
+		url: "/language/french/".into(),
+		slug: Some("french".into()),
+	});
+	assert_eq!(super::chapter_language(&gallery), None);
+
+	gallery.scanlator.clear();
+	assert!(super::chapter_from_gallery(&gallery).scanlators.is_none());
+}
+
+#[aidoku_test]
 fn malformed_metadata_is_not_silently_accepted() {
 	assert!(serde_json::from_str::<NHentaiSearchResponse>(r#"{"result":[{}]}"#).is_err());
 }

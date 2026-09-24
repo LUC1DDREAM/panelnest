@@ -30,6 +30,66 @@ const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X)
 const POPULAR_TAG_LISTING_PREFIX: &str = "popular-tag-";
 const MAX_POPULAR_TAG_LISTINGS: usize = 25;
 
+fn chapter_language(gallery: &NHentaiGallery) -> Option<String> {
+	let languages = gallery
+		.tags
+		.iter()
+		.filter(|tag| tag.r#type == "language" && tag.name != "translated" && tag.name != "rewrite")
+	.filter_map(|tag| match tag.name.to_ascii_lowercase().as_str() {
+			"arabic" => Some("ar"),
+			"chinese" => Some("zh"),
+			"czech" => Some("cs"),
+			"danish" => Some("da"),
+			"dutch" => Some("nl"),
+			"english" => Some("en"),
+			"esperanto" => Some("eo"),
+			"finnish" => Some("fi"),
+			"french" => Some("fr"),
+			"german" => Some("de"),
+			"greek" => Some("el"),
+			"hebrew" => Some("he"),
+			"hungarian" => Some("hu"),
+			"indonesian" => Some("id"),
+			"italian" => Some("it"),
+			"japanese" => Some("ja"),
+			"korean" => Some("ko"),
+			"latin" => Some("la"),
+			"norwegian" => Some("no"),
+			"polish" => Some("pl"),
+			"portuguese" => Some("pt"),
+			"russian" => Some("ru"),
+			"spanish" => Some("es"),
+			"swedish" => Some("sv"),
+			"thai" => Some("th"),
+			"turkish" => Some("tr"),
+			"ukrainian" => Some("uk"),
+			"vietnamese" => Some("vi"),
+			_ => None,
+		})
+		.collect::<Vec<_>>();
+	if languages.len() == 1 {
+		Some(languages[0].into())
+	} else {
+		None
+	}
+}
+
+fn chapter_from_gallery(gallery: &NHentaiGallery) -> Chapter {
+	Chapter {
+		key: gallery.id_str(),
+		chapter_number: Some(1.0),
+		date_uploaded: Some(gallery.upload_date),
+		url: Some(format!("{BASE_URL}/g/{}", gallery.id)),
+		language: chapter_language(gallery),
+		scanlators: if gallery.scanlator.trim().is_empty() {
+			None
+		} else {
+			Some(vec![gallery.scanlator.clone()])
+		},
+		..Default::default()
+	}
+}
+
 fn encode_listing_tag(name: &str) -> String {
 	let mut encoded = String::with_capacity(name.len() * 2);
 	for byte in name.bytes() {
@@ -276,27 +336,7 @@ impl Source for NHentai {
 			}
 
 			if needs_chapters {
-				let mut languages = Vec::new();
-				for tag in &gallery.tags {
-					if tag.r#type == "language" && tag.name != "translated" && tag.name != "rewrite"
-					{
-						languages.push(tag.name.clone());
-					}
-				}
-
-				let chapter = Chapter {
-					key: manga.key.clone(),
-					chapter_number: Some(1.0),
-					date_uploaded: Some(gallery.upload_date),
-					url: Some(format!("{}/g/{}", BASE_URL, manga.key)),
-					scanlators: if !languages.is_empty() {
-						Some(vec![languages.join(", ")])
-					} else {
-						None
-					},
-					..Default::default()
-				};
-				manga.chapters = Some(vec![chapter]);
+				manga.chapters = Some(vec![chapter_from_gallery(&gallery)]);
 			}
 
 			// Cache the fetched gallery for potential reuse in get_page_list
