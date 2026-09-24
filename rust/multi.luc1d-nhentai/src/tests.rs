@@ -143,6 +143,7 @@ fn gallery_chapter_keeps_scanlator_and_single_language_in_their_fields() {
 	assert_eq!(chapter.language.as_deref(), Some("en"));
 	assert_eq!(chapter.scanlators.as_ref().unwrap()[0], "Example group");
 	assert_eq!(chapter.date_uploaded, Some(1234567890));
+	assert_eq!(chapter.thumbnail.as_deref(), Some("https://t.nhentai.net/cover.jpg"));
 
 	gallery.tags.push(NHentaiTag {
 		id: 3,

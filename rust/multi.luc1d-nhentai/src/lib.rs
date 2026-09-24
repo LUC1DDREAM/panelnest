@@ -81,6 +81,7 @@ fn chapter_from_gallery(gallery: &NHentaiGallery) -> Chapter {
 		date_uploaded: Some(gallery.upload_date),
 		url: Some(format!("{BASE_URL}/g/{}", gallery.id)),
 		language: chapter_language(gallery),
+		thumbnail: Some(make_image_url(&gallery.thumbnail.path, true)),
 		scanlators: if gallery.scanlator.trim().is_empty() {
 			None
 		} else {
