@@ -16,7 +16,7 @@ class LocalizedSiteTests(unittest.TestCase):
     def test_five_static_routes_and_safe_import(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
-            (root/'index.json').write_text(json.dumps({'sources':[{'id':'fixture','name':'Fixture <safe>','version':7,'languages':['en'],'contentRating':2}]}))
+            (root/'index.json').write_text(json.dumps({'sources':[{'id':'fixture','name':'Fixture <safe>','version':7,'languages':['en'],'contentRating':2,'features':['search','details'],'listings':['Popular <safe>'],'limitations':'Remote site may block requests.'}]}))
             (root/'build-report.json').write_text('{"release":true}')
             site_output.prepare(root)
             for lang in ['en','de','es','fr','pt']:
@@ -31,5 +31,11 @@ class LocalizedSiteTests(unittest.TestCase):
                 self.assertEqual(urlparse(cta).netloc,'aidoku.app')
                 self.assertEqual(parse_qs(urlparse(cta).query)['url'],['https://luc1ddream.github.io/panelnest/index.min.json'])
                 self.assertIn('source-request.yml',text); self.assertIn('bug-report.yml',text)
+                expected = {'en':'Search · Details','de':'Suche · Details','es':'Búsqueda · Detalles','fr':'Recherche · Détails','pt':'Busca · Detalhes'}[lang]
+                full = {'en':'Search · Details · Chapters · Pages','de':'Suche · Details · Kapitel · Seiten','es':'Búsqueda · Detalles · Capítulos · Páginas','fr':'Recherche · Détails · Chapitres · Pages','pt':'Busca · Detalhes · Capítulos · Páginas'}[lang]
+                self.assertIn(expected,text)
+                self.assertNotIn(full,text)
+                self.assertIn('Popular &lt;safe&gt;',text)
+                self.assertIn('Remote site may block requests.',text)
             self.assertEqual(len(json.loads((root/'index.json').read_text())['sources']),1)
             self.assertTrue((root/'sitemap.xml').exists())

@@ -37,7 +37,21 @@ def render(root, base, repository):
             image = f'<img src="{prefix}experimental/{esc(icon)}" alt="" width="64" height="64" loading="lazy">' if icon else ''
             labels = ' · '.join(t['english'] if code=='en' else t['multi'] if code=='multi' else esc(code) for code in item.get('languages',[]))
             adult = f'<span class="adult">{t["adult"]}</span>' if item.get('contentRating')==2 else ''
-            cards.append(f'<article class="source-card" id="source-{esc(item["id"])}">{image}<div><h3>{name}</h3><p class="meta">{labels} <span aria-hidden="true">/</span> {t["version"]} {esc(str(item.get("version","")))}</p></div><p class="capabilities">{t["features"]}</p>{adult}</article>')
+            implemented = set(item.get('features', ()))
+            feature_labels = [t['feature_' + key] for key in ('search', 'details', 'chapters', 'pages')
+                              if key in implemented]
+            feature_text = ' · '.join(feature_labels)
+            listings = item.get('listings', [])
+            listing_text = ', '.join(esc(str(value)) for value in listings)
+            capabilities = (f'<p class="capabilities">{esc(feature_text)}</p>' if feature_text else '')
+            discovery = (f'<p class="discovery"><strong>{t["discovery"]}:</strong> {listing_text}</p>'
+                         if listing_text else '')
+            limitations = item.get('limitations')
+            if limitations and limitations is True:
+                limitations = t['limitation']
+            limitation_text = (f'<p class="limitations">{esc(str(limitations))}</p>'
+                               if limitations else '')
+            cards.append(f'<article class="source-card" id="source-{esc(item["id"])}">{image}<div><h3>{name}</h3><p class="meta">{labels} <span aria-hidden="true">/</span> {t["version"]} {esc(str(item.get("version","")))}</p></div>{capabilities}{discovery}{limitation_text}{adult}</article>')
         steps = ''.join(f'<li><h3>{t[f"step{i}"]}</h3><p>{t[f"body{i}"]}</p>'+('<a href="https://aidoku.app/">aidoku.app ↗</a>' if i==1 else '')+'</li>' for i in range(1,4))
         faq = ''.join(f'<details><summary>{t[f"q{i}"]}</summary><p>{t[f"a{i}"]}</p></details>' for i in range(1,5))
         schema = json.dumps({'@context':'https://schema.org','@graph':[

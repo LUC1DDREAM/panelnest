@@ -85,6 +85,27 @@ impl NHentaiGallery {
 	}
 }
 
+/// Return the canonical original and thumbnail cover variants supplied by nhentai.
+pub fn cover_variants(id: &str, media_id: &str, path: &str) -> Vec<String> {
+	if id.is_empty()
+		|| !id.bytes().all(|byte| byte.is_ascii_digit())
+		|| media_id.is_empty()
+		|| !media_id.bytes().all(|byte| byte.is_ascii_alphanumeric())
+	{
+		return Vec::new();
+	}
+	let Some((_, extension)) = path.rsplit_once('.') else {
+		return Vec::new();
+	};
+	if !matches!(extension, "jpg" | "png" | "gif" | "webp") {
+		return Vec::new();
+	}
+	let mut covers = Vec::new();
+	covers.push(format!("https://i.nhentai.net/galleries/{media_id}/cover.{extension}"));
+	covers.push(format!("https://t.nhentai.net/galleries/{media_id}/cover.{extension}"));
+	covers
+}
+
 pub fn make_image_url(path: &str, is_cover: bool) -> String {
 	if path.starts_with("http://") || path.starts_with("https://") {
 		return path.to_string();

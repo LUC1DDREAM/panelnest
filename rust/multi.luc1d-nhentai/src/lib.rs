@@ -1,6 +1,6 @@
 #![no_std]
 use aidoku::{
-	Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Listing, ListingProvider, Manga,
+	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Listing, ListingProvider, Manga,
 	MangaPageResult, Page, PageContent, Result, Source,
 	alloc::{String, Vec, string::ToString, vec},
 	helpers::uri::encode_uri_component,
@@ -276,6 +276,23 @@ impl ListingProvider for NHentai {
 	}
 }
 
+impl AlternateCoverProvider for NHentai {
+	fn get_alternate_covers(&self, manga: Manga) -> Result<Vec<String>> {
+		if manga.key.is_empty() || !manga.key.bytes().all(|byte| byte.is_ascii_digit()) {
+			return Err(error!("Invalid gallery key"));
+		}
+		let url = format!("{API_URL}/galleries/{}", manga.key);
+		let gallery: NHentaiGallery = Request::get(&url)?
+			.header("User-Agent", USER_AGENT)
+			.json_owned()?;
+		Ok(models::cover_variants(
+			&manga.key,
+			&gallery.media_id,
+			&gallery.cover.path,
+		))
+	}
+}
+
 impl DeepLinkHandler for NHentai {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
 		if !url.starts_with(BASE_URL) {
@@ -298,4 +315,4 @@ impl DeepLinkHandler for NHentai {
 	}
 }
 
-register_source!(NHentai, Home, ListingProvider, DeepLinkHandler);
+register_source!(NHentai, Home, ListingProvider, DeepLinkHandler, AlternateCoverProvider);

@@ -53,6 +53,29 @@ def validate_catalog_metadata(actual, expected):
         if actual.get(field) != expected.get(field):
             raise ValueError(f'Catalog/package/source {field} mismatch for {expected["id"]}')
 
+def enrich_catalog(catalog, rows):
+    """Attach verified, user-facing capabilities from the local source manifests."""
+    by_id = {row['id']: row for row in rows}
+    actual_ids = [item.get('id') for item in catalog.get('sources', [])]
+    if len(actual_ids) != len(set(actual_ids)) or set(actual_ids) != set(by_id):
+        raise ValueError('Cannot enrich a catalog with missing or duplicate sources')
+    for item in catalog['sources']:
+        row = by_id[item['id']]
+        info = json.loads((ROOT/row['path']/'res/source.json').read_text(encoding='utf-8'))
+        manifest = info
+        declared = set(row.get('features', []))
+        if not FEATURES <= declared:
+            raise ValueError(f"Feature metadata incomplete for {item['id']}")
+        # Only expose capabilities implemented and manually declared for this build.
+        if not declared <= set(row.get('implemented', [])):
+            raise ValueError(f"Feature metadata exceeds implementation record for {item['id']}")
+        listings = manifest.get('listings', [])
+        item['features'] = sorted(declared & FEATURES)
+        item['listings'] = [listing.get('name', listing.get('id', '')) for listing in listings]
+        if row.get('limitations'):
+            item['limitations'] = row['limitations']
+    return catalog
+
 def preserve_published_package(package, name, baseline=ROOT/'rebuild/published-packages'):
     """Keep published ZIP bytes only when every rebuilt member is identical.
 
@@ -146,6 +169,9 @@ def main():
         results.append(dict(id=row['id'],version=info['version'],sha256=hashlib.sha256(package.read_bytes()).hexdigest(),package_verified=True,runtime_tested=row.get('runtime_tested',False),device_tested=row.get('device_tested',False),release_authorized=row.get('release_authorized',False)))
     run('aidoku','build','-o',str(out),'-n','PanelNest'+('' if args.release else ' — staging'),*packages)
     index=json.loads((out/'index.json').read_text())
+    index = enrich_catalog(index, selected)
+    (out/'index.json').write_text(json.dumps(index, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+    (out/'index.min.json').write_text(json.dumps(index, ensure_ascii=False, separators=(',', ':'))+'\n', encoding='utf-8')
     actual=[r['id'] for r in index['sources']]
     expected={r['id'] for r in selected}
     if len(actual)!=len(expected) or set(actual)!=expected:

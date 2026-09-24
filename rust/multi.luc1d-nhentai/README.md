@@ -8,6 +8,8 @@ Existing `/api/v2/search` sorts are `popular-today`, `popular-week`, `popular` (
 
 Version 3 makes the Popular Today home section a ranked list with a working Today listing link (previous BigScroller had no browse-all action), preserving the actual today endpoint. Search/listings reject page numbers below 1. Existing identities, languages, content rating, icon, filters and reader behavior are unchanged.
 
+Alternate covers are now fetched from the public gallery metadata on demand. Both original and thumbnail variants use the canonical nhentai image hosts; gallery keys, media IDs, and extensions are validated before constructing the URLs.
+
 ## Verification and limits
 
 - `cargo test --locked`: five fixture tests pass in the real WASM host; adult fixtures are synthetic neutral technical metadata.

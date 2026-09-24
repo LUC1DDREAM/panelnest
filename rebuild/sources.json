@@ -14,6 +14,8 @@
       "home",
       "listings"
     ],
+    "features": ["search", "details", "chapters", "pages"],
+    "listings": ["Ranking", "Popular This Week", "Popular This Month", "Popular All Time"],
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -38,12 +40,15 @@
       "home",
       "listings"
     ],
+    "features": ["search", "details", "chapters", "pages"],
+    "listings": ["Hot Updates", "Popular", "Most Subscribed", "Recently Added", "Latest Updates"],
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
     "live_evidence": "Worker public search sort evidence; live WASM blocked by Cloudflare HTTP 403.",
+    "limitations": "Cloudflare returned HTTP 403 in CI live checks; access may depend on network and site policy.",
     "fixture_tests_passed": 5,
     "release_authorized": true
   },
@@ -62,6 +67,9 @@
       "home",
       "listings"
     ],
+    "features": ["search", "details", "chapters", "pages"],
+    "listings": ["Popular Today", "Popular Week", "Popular All", "Latest"],
+    "limitations": "Rate limiting (HTTP 429) interrupted one live check; retry later if unavailable.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -82,6 +90,8 @@
       "home",
       "listings"
     ],
+    "features": ["search", "details", "chapters", "pages"],
+    "listings": ["Drama: By Popularity", "Drama: By Likes", "Drama: By Date", "Fantasy", "Romance", "Action", "Comedy"],
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -90,6 +100,7 @@
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "Worker live-tests suite: 10 passed (including fixture tests); English Drama sorts and four additional genre listings; Canvas unverified.",
+    "limitations": "Canvas rendering is not verified in Aidoku.",
     "fixture_tests_passed": 8,
     "release_authorized": true
   },
@@ -104,6 +115,9 @@
       "home",
       "listings"
     ],
+    "features": ["search", "details", "chapters", "pages"],
+    "listings": ["Latest"],
+    "limitations": "Public requests returned HTTP 403 during checks; availability is not guaranteed.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -126,6 +140,9 @@
       "home",
       "listings"
     ],
+    "features": ["search", "details", "chapters", "pages"],
+    "listings": ["Latest", "Top Rated"],
+    "limitations": "No temporal popularity filters or language selector; Top Rated is available.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,

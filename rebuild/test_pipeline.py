@@ -45,6 +45,31 @@ class PipelineTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 pipeline.validate_catalog_metadata(dict(info, **{field: value}), info)
 
+    def test_catalog_enrichment_uses_each_source_manifest(self):
+        rows = json.loads((pipeline.ROOT/'rebuild/sources.json').read_text())
+        catalog = {'sources': []}
+        for row in rows:
+            manifest = json.loads((pipeline.ROOT/row['path']/'res/source.json').read_text())
+            catalog['sources'].append({'id': row['id'], 'name': manifest['info']['name']})
+        enriched = pipeline.enrich_catalog(catalog, rows)
+        self.assertEqual(len(enriched['sources']), 6)
+        for item in enriched['sources']:
+            row = next(row for row in rows if row['id'] == item['id'])
+            self.assertEqual(set(item['features']), {'search','details','chapters','pages'})
+            manifest = json.loads((pipeline.ROOT/row['path']/'res/source.json').read_text())
+            self.assertEqual(item['listings'], [x.get('name', x.get('id','')) for x in manifest.get('listings', [])])
+        self.assertTrue(any(item.get('limitations') for item in enriched['sources']))
+
+    def test_catalog_enrichment_rejects_missing_features_and_duplicate_ids(self):
+        rows = json.loads((pipeline.ROOT/'rebuild/sources.json').read_text())
+        catalog = {'sources': [{'id': row['id']} for row in rows]}
+        original = rows[0]['features']
+        rows[0]['features'] = ['search']
+        with self.assertRaises(ValueError): pipeline.enrich_catalog(catalog, rows)
+        rows[0]['features'] = original
+        catalog['sources'].append(dict(catalog['sources'][0]))
+        with self.assertRaises(ValueError): pipeline.enrich_catalog(catalog, rows)
+
     def test_package_rejects_non_square_or_transparent_icons(self):
         import io
         from PIL import Image
@@ -136,7 +161,7 @@ class SiteTests(unittest.TestCase):
             site_output.prepare(root)
             self.assertEqual(json.loads((root/'index.json').read_text())['sources'],[{'id':'test'}])
             self.assertEqual(json.loads((root/'experimental/index.json').read_text())['sources'],[{'id':'test'}])
-            html = (root/'index.html').read_text()
+            html = (root/'index.html').read_text(encoding='utf-8')
             self.assertIn('Independently maintained', html)
             self.assertIn('https://aidoku.app/add-source-list/?url=https%3A%2F%2Fluc1ddream.github.io%2Fpanelnest%2Findex.min.json', html)
             self.assertIn('https://luc1ddream.github.io/panelnest/index.min.json</code>', html)
