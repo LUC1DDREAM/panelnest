@@ -42,10 +42,9 @@ fn decode_listing_tag(id: &str) -> Result<Option<String>> {
 	let Some(encoded) = id.strip_prefix(POPULAR_TAG_LISTING_PREFIX) else {
 		return Ok(None);
 	};
-	ensure!(
-		!encoded.is_empty() && encoded.len() % 2 == 0 && encoded.len() <= 512,
-		"Invalid popular tag listing"
-	);
+	if encoded.is_empty() || encoded.len() % 2 != 0 || encoded.len() > 512 {
+		return Err(error!("Invalid popular tag listing"));
+	}
 	let mut bytes = Vec::with_capacity(encoded.len() / 2);
 	for pair in encoded.as_bytes().chunks_exact(2) {
 		let hex = |byte: u8| match byte {
@@ -58,11 +57,11 @@ fn decode_listing_tag(id: &str) -> Result<Option<String>> {
 		bytes.push((high << 4) | low);
 	}
 	let name = String::from_utf8(bytes).map_err(|_| error!("Invalid popular tag listing"))?;
-	ensure!(
-		!name.trim().is_empty()
-			&& !name.chars().any(|character| character.is_control() || matches!(character, '"' | '\\')),
-		"Invalid popular tag name"
-	);
+	if name.trim().is_empty()
+		|| name.chars().any(|character| character.is_control() || matches!(character, '"' | '\\'))
+	{
+		return Err(error!("Invalid popular tag name"));
+	}
 	Ok(Some(name))
 }
 
@@ -417,9 +416,13 @@ impl DynamicListings for NHentai {
 		))?
 		.header("User-Agent", USER_AGENT)
 		.json_owned()?;
-		ensure!(response.num_pages > 0, "Invalid nhentai tag directory");
+		if response.num_pages <= 0 {
+			return Err(error!("Invalid nhentai tag directory"));
+		}
 		let listings = popular_tag_listings(&response.result);
-		ensure!(!listings.is_empty(), "No popular nhentai tags available");
+		if listings.is_empty() {
+			return Err(error!("No popular nhentai tags available"));
+		}
 		Ok(listings)
 	}
 }
