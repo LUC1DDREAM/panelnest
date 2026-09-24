@@ -3,6 +3,7 @@ use aidoku::{
 	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
 	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider,
 	Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
+	PageDescriptionProvider,
 	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
 	alloc::{String, Vec, borrow::Cow, vec},
 	imports::{
@@ -357,28 +358,43 @@ fn parse_episodes(v: Value) -> Result<(Vec<Chapter>, Option<u64>)> {
 	Ok((chapters, next))
 }
 fn parse_pages(h: &Document) -> Result<Vec<Page>> {
-	let pages: Vec<Page> = h
-		.select("#_imageList img")
-		.map(|els| {
-			els.filter_map(|el| {
-				let url = el.attr("data-url")?;
-				if !url.starts_with("https://") {
-					return None;
-				}
-				Some(Page {
-					content: PageContent::url(url),
-					..Default::default()
-				})
-			})
-			.collect()
-		})
-		.unwrap_or_default();
+	let mut pages = Vec::new();
+	if let Some(elements) = h.select("#_imageList img") {
+		for element in elements {
+			let Some(url) = element.attr("data-url") else {
+				continue;
+			};
+			if !url.starts_with("https://") {
+				continue;
+			}
+			let mut context = PageContext::new();
+			context.insert("page_number".into(), (pages.len() + 1).to_string());
+			pages.push(Page {
+				content: PageContent::url_context(url, context),
+				has_description: true,
+				..Default::default()
+			});
+		}
+	}
 	if pages.is_empty() {
 		return Err(error!(
 			"No public WEBTOON pages: episode may require the app, login, or payment"
 		));
 	}
 	Ok(pages)
+}
+impl PageDescriptionProvider for Webtoon {
+	fn get_page_description(&self, page: Page) -> Result<String> {
+		let PageContent::Url(_, Some(context)) = page.content else {
+			return Err(error!("Page number context missing"));
+		};
+		let number = context
+			.get("page_number")
+			.and_then(|value| value.parse::<usize>().ok())
+			.filter(|number| *number > 0)
+			.ok_or_else(|| error!("Invalid page number context"))?;
+		Ok(format!("Page {number}"))
+	}
 }
 impl Source for Webtoon {
 	fn new() -> Self {
@@ -757,7 +773,8 @@ aidoku::register_source!(
 	Home,
 	DeepLinkHandler,
 	DynamicFilters,
-	DynamicListings
+	DynamicListings,
+	PageDescriptionProvider
 );
 #[cfg(test)]
 mod tests;

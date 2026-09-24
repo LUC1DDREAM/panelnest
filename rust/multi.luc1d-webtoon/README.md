@@ -1,12 +1,12 @@
 # Official WEBTOON (LUC1D)
 
-Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 16).
+Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 17).
 SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
 ## Support and limits
 
 - English public search with All-results, WEBTOON Originals and CANVAS scopes. All-results accepts the official `page` query parameter even though its HTML omits next-page links; the source continues while a page contains series and stops after the first empty page. Originals and CANVAS use their official page links for pagination.
-- Default popular genre browse, metadata, cursor-paginated episodes, public reader image URLs, vertical viewer, image Referer.
+- Default popular genre browse, metadata, cursor-paginated episodes, public reader image URLs, vertical viewer, image Referer. Page descriptions display each image's one-based position from its original reader order.
 - Official mobile episode API; HTML requests use the official desktop site with its documented-in-URLs platform redirect switch because mobile search is JS-only. This is not an authentication or payment workaround.
 - Full live WASM-host smoke: Space Boy search, details, all API episode batches, public episode 1 image URL parsing, default browse.
 - Discovery reads genres and sort links from each selected locale’s current genre page, with bundled fallbacks on request or parse failure. Filters and home links stay current as WEBTOON changes its genre catalog. Named listings cover each known genre in all three official sort orders while preserving existing IDs.

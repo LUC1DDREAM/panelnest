@@ -1,6 +1,23 @@
 use super::*;
 use aidoku::FilterKind;
 #[aidoku_test]
+fn reader_pages_carry_ordered_descriptions_without_network_requests() {
+	use aidoku::PageDescriptionProvider;
+	let doc = Html::parse(
+		r#"<div id="_imageList"><img data-url="https://webtoon-phinf.pstatic.net/episode/first.jpg"><img data-url="https://webtoon-phinf.pstatic.net/episode/second.webp"><img data-url="http://webtoon-phinf.pstatic.net/episode/rejected.jpg"></div>"#,
+	)
+	.unwrap();
+	let pages = parse_pages(&doc).unwrap();
+	assert_eq!(pages.len(), 2);
+	assert!(pages.iter().all(|page| page.has_description));
+	let source = Webtoon;
+	let mut pages = pages.into_iter();
+	assert_eq!(source.get_page_description(pages.next().unwrap()).unwrap(), "Page 1");
+	assert_eq!(source.get_page_description(pages.next().unwrap()).unwrap(), "Page 2");
+	assert!(source.get_page_description(Page::default()).is_err());
+}
+
+#[aidoku_test]
 fn captured_discovery_retains_site_order_and_full_list() {
 	let html = Html::parse(include_str!("../tests/fixtures/discovery.html")).unwrap();
 	let result = parse_search(&html);
