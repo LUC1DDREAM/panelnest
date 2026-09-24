@@ -36,3 +36,4 @@ aidoku verify package.aix
 ## Provenance
 
 New trait-based implementation informed by the legacy Aidoku official `multi.webtoon` parser and helper at the supplied `legacy-upstream` checkout. Icon copied from that source. Repository MIT/Apache licenses retained under `../../licenses`; WEBTOON branding remains its owner's trademark. Public HTML/JSON fixtures were fetched without credentials from official WEBTOON URLs; they are parser regression inputs, not comic image files. See `tests/fixtures/provenance.json`.
+Version 20 includes each official episode API thumbnail in Chapter.thumbnail after validating the relative CDN path. Tests cover the expected CDN URL and reject protocol-relative foreign URLs.

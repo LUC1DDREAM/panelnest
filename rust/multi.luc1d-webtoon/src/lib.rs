@@ -354,6 +354,11 @@ fn parse_episodes(v: Value, language: &str) -> Result<(Vec<Chapter>, Option<u64>
 			.and_then(Value::as_str)
 			.and_then(official_path)
 			.ok_or_else(|| error!("Invalid episode URL"))?;
+		let thumbnail = e
+			.get("thumbnail")
+			.and_then(Value::as_str)
+			.filter(|path| path.starts_with('/') && !path.starts_with("//") && !path.contains("..") && !path.contains('\\'))
+			.map(|path| format!("https://webtoon-phinf.pstatic.net{path}"));
 		chapters.push(Chapter {
 			key: path.clone(),
 			url: Some(format!("{BASE}{path}")),
@@ -367,6 +372,7 @@ fn parse_episodes(v: Value, language: &str) -> Result<(Vec<Chapter>, Option<u64>
 				.and_then(Value::as_i64)
 				.map(|n| n / 1000),
 			language: Some(language.into()),
+			thumbnail,
 			..Default::default()
 		});
 	}

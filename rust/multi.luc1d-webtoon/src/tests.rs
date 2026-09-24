@@ -518,12 +518,19 @@ fn episodes_fixture_and_cursor() {
 	assert_eq!(chapters[0].title.as_deref(), Some("Ep. 1"));
 	assert_eq!(chapters[0].date_uploaded, Some(1425564010));
 	assert_eq!(chapters[0].language.as_deref(), Some("en"));
+	assert_eq!(chapters[0].thumbnail.as_deref(), Some("https://webtoon-phinf.pstatic.net/20150305_16/14255619312545UkI5_JPEG/142556193121740014.jpg"));
 	let (translated, _) = parse_episodes(
 		serde_json::from_str(include_str!("../tests/fixtures/episodes.json")).unwrap(),
 		"zh",
 	)
 	.unwrap();
 	assert_eq!(translated[0].language.as_deref(), Some("zh"));
+	let (unsafe_thumb, _) = parse_episodes(
+		serde_json::json!({"result":{"episodeList":[{"viewerLink":"/en/x/ep-1/viewer?title_no=1","thumbnail":"//attacker.example/image.jpg"}]}}),
+		"en",
+	)
+	.unwrap();
+	assert!(unsafe_thumb[0].thumbnail.is_none());
 	assert!(parse_episodes(serde_json::json!({"error":"denied"}), "en").is_err());
 }
 #[aidoku_test]
