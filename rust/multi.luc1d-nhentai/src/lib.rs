@@ -1,8 +1,8 @@
 #![no_std]
 use aidoku::{
 	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter,
-	FilterValue, Listing, ListingProvider, Manga, MangaPageResult, MultiSelectFilter, Page,
-	PageContent, PageDescriptionProvider, Result, Source,
+	FilterValue, ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult,
+	MultiSelectFilter, Page, PageContent, PageDescriptionProvider, Result, Source,
 	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	helpers::uri::encode_uri_component,
 	imports::{
@@ -27,6 +27,14 @@ const API_URL: &str = "https://nhentai.net/api/v2";
 const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) \
 						  AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/300.0.598994205 \
 						  Mobile/15E148 Safari/604";
+
+fn is_trusted_image_url(url: &str) -> bool {
+	let Some(authority) = url.strip_prefix("https://") else {
+		return false;
+	};
+	let host = authority.split(['/', '?', '#']).next().unwrap_or_default();
+	matches!(host, "i.nhentai.net" | "t.nhentai.net")
+}
 
 struct NHentai {
 	cache: RefCell<Option<(String, NHentaiGallery)>>,
@@ -336,6 +344,20 @@ impl AlternateCoverProvider for NHentai {
 	}
 }
 
+impl ImageRequestProvider for NHentai {
+	fn get_image_request(
+		&self,
+		url: String,
+		_context: Option<aidoku::PageContext>,
+	) -> Result<aidoku::imports::net::Request> {
+		ensure!(is_trusted_image_url(&url), "Unsupported nhentai image host");
+		let referer = format!("{BASE_URL}/");
+		Ok(Request::get(url)?
+			.header("Referer", referer.as_str())
+			.header("User-Agent", USER_AGENT))
+	}
+}
+
 fn taxonomy_filter(
 	tags: Vec<NHentaiTag>,
 	tag_type: &str,
@@ -457,5 +479,6 @@ register_source!(
 	DeepLinkHandler,
 	AlternateCoverProvider,
 	PageDescriptionProvider,
+	ImageRequestProvider,
 	DynamicFilters
 );

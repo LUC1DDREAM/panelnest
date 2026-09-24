@@ -105,6 +105,25 @@ fn fixture_image_paths_preserve_host_and_slashes() {
 }
 
 #[aidoku_test]
+fn image_requests_allow_only_official_https_cdn_hosts() {
+	for url in [
+		"https://i.nhentai.net/galleries/fixture/1.jpg",
+		"https://t.nhentai.net/galleries/fixture/cover.webp",
+	] {
+		assert!(super::is_trusted_image_url(url), "{url}");
+	}
+	for url in [
+		"http://i.nhentai.net/galleries/fixture/1.jpg",
+		"https://i.nhentai.net.evil.example/galleries/fixture/1.jpg",
+		"https://evil.example/i.nhentai.net/galleries/fixture/1.jpg",
+		"https://i2.nhentai.net/galleries/fixture/1.jpg",
+		"https://user@i.nhentai.net/galleries/fixture/1.jpg",
+	] {
+		assert!(!super::is_trusted_image_url(url), "{url}");
+	}
+}
+
+#[aidoku_test]
 fn page_descriptions_use_the_validated_official_image_filename() {
 	use aidoku::{PageContent, PageDescriptionProvider, Source};
 	let source = super::NHentai::new();
