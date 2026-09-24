@@ -311,7 +311,7 @@ impl DeepLinkHandler for NHentai {
 
 		const GALLERY_PATH: &str = "/g/";
 		let Some(id_part) = path.strip_prefix(GALLERY_PATH.trim_start_matches('/')) else {
-			Ok(None)
+			return Ok(None);
 		};
 		let end = id_part.find('/').unwrap_or(id_part.len());
 		let manga_id = &id_part[..end];
