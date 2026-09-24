@@ -1,11 +1,12 @@
 # Weeb Central (LUC1D)
 
-## Discovery (package version 12)
+## Discovery (package version 13)
 
 Adds tri-state filters for Official Translation, Anime Adaptation, and Adult
 Content, mapped to the site's corresponding advanced-search parameters. Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
-the existing Advanced Search endpoint, its website sort values and explicit
-Descending order. Search pages use the live endpoint's 32-entry HTMX offsets;
+the existing Advanced Search endpoint, all six website sort values and explicit
+Descending order. Best Match and Alphabetical are also available directly as
+browse listings. Search pages use the live endpoint's 32-entry HTMX offsets;
 the View More Results button accurately indicates whether another page exists.
 Home Latest Updates now links to its full listing. Home, details, chapter-list
 and reader requests now report Cloudflare challenge pages as access errors

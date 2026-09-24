@@ -10,6 +10,8 @@ use aidoku::{
 // Website Advanced Search sorts, deliberately without time-window aliases.
 pub fn listing_sort(id: &str) -> Option<i32> {
 	match id {
+		"best-match" => Some(0),
+		"alphabet" => Some(1),
 		"popular" => Some(2),
 		"subscribers" => Some(3),
 		"new" => Some(4),

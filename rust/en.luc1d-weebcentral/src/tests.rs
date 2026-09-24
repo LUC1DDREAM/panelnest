@@ -5,6 +5,8 @@ use aidoku_test::aidoku_test;
 #[aidoku_test]
 fn discovery_listings_use_real_search_sorts() {
 	for (id, sort) in [
+		("best-match", "Best Match"),
+		("alphabet", "Alphabet"),
 		("popular", "Popularity"),
 		("subscribers", "Subscribers"),
 		("new", "Recently Added"),
@@ -24,6 +26,7 @@ fn discovery_listings_use_real_search_sorts() {
 	}
 	assert!(filter::listing_sort("popular-day").is_none());
 	assert!(filter::listing_sort("hot").is_none());
+	assert!(filter::listing_sort("unknown").is_none());
 }
 
 #[aidoku_test]
