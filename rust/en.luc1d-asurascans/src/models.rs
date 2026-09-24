@@ -89,7 +89,6 @@ impl BookmarkResponse {
 #[cfg(test)]
 mod bookmark_pagination_tests {
 	use super::*;
-	use alloc::vec;
 	use aidoku_test::aidoku_test;
 
 	#[aidoku_test]
@@ -100,7 +99,7 @@ mod bookmark_pagination_tests {
 		}"#).unwrap();
 		assert!(response.has_next_page(0));
 		assert!(!response.has_next_page(20));
-		let empty = BookmarkResponse { data: vec![], meta: BookmarkResponseMeta { total: 0 } };
+		let empty = BookmarkResponse { data: aidoku::alloc::Vec::new(), meta: BookmarkResponseMeta { total: 0 } };
 		assert!(!empty.has_next_page(0));
 	}
 }
