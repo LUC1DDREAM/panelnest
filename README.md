@@ -8,16 +8,16 @@ Six local Rust adapters, built against the pinned Aidoku SDK. Existing upstream 
 
 Manual URL: `https://luc1ddream.github.io/panelnest/index.min.json`. Requires Aidoku >=0.7.1.
 
-All six sources are published in the root catalog. **Already installed? Refresh your existing list; do not reinstall.** The canonical and old `my-aidoku-sources` `/experimental/index.json` and `/experimental/index.min.json` subscriptions remain maintained aliases. IDs and installed version asset URLs are unchanged. The legacy directory name is a compatibility path, not a publication classification. The compatibility mirror runs every six hours and supports immediate manual dispatch.
+All six sources are published in the root catalog. **Already installed? In Aidoku’s Browse tab, pull down to refresh the source list. Then install each entry shown in the Updates section.** Refreshing the list makes updates available; it does not replace locally installed source packages. The canonical and old `my-aidoku-sources` `/experimental/index.json` and `/experimental/index.min.json` subscriptions remain maintained aliases. IDs and installed version asset URLs are unchanged. The legacy directory name is a compatibility path, not a publication classification. The compatibility mirror runs every six hours and supports immediate manual dispatch.
 - Discovery menu reads the genre and sort links from the selected locale current page, falling back to bundled defaults if fetching or parsing fails. Filters and home links then track WEBTOON catalog changes. Named listings cover each known genre in all three official sort orders and keep existing IDs.
 | Display name | Stable ID | Version |
 |---|---|---:|
-| Asura Scans [PN] | `en.luc1d-asurascans` | 4 |
-| Weeb Central [PN] | `en.luc1d-weebcentral` | 3 |
-| nhentai [PN] | `multi.luc1d-nhentai` | 4 |
-| WEBTOON [PN] | `multi.luc1d-webtoon` | 4 |
-| IMHentai [PN] | `multi.luc1d-imhentai` | 5 |
-| HentaiFox [PN] | `multi.luc1d-hentaifox` | 5 |
+| Asura Scans [PN] | `en.luc1d-asurascans` | 9 |
+| Weeb Central [PN] | `en.luc1d-weebcentral` | 11 |
+| nhentai [PN] | `multi.luc1d-nhentai` | 16 |
+| WEBTOON [PN] | `multi.luc1d-webtoon` | 15 |
+| IMHentai [PN] | `multi.luc1d-imhentai` | 13 |
+| HentaiFox [PN] | `multi.luc1d-hentaifox` | 20 |
 
 ## Verification and approval
 
