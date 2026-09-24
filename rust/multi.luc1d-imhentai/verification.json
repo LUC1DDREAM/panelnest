@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-imhentai",
-  "version": 19,
-  "sha256": "d7467fad596f919c17c2796852b6ad87c7826779d5a0afcaaed6a60b65c10faf",
-  "bytes": 82898,
+  "version": 20,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "multi"
   ],
@@ -10,8 +10,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 17,
-  "official_site_checks": "Fixtures verify that gallery chapter keys preserve the validated canonical IMHentai /view/<gallery>/<page>/ URL, get_page_list requests that exact reader URL, and malformed or cross-gallery URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified. Dynamic listings expose six category and seven language browse feeds through the existing filtered search route; fixtures verify exact flag selection, pagination and rejection of unknown IDs. Version 19 marks completed, one-gallery manga as UpdateStrategy::Never through search, detail and update paths, avoiding unnecessary automatic library refreshes.",
+  "fixture_tests_passed": 18,
+  "official_site_checks": "Fixtures verify that gallery chapter keys preserve the validated canonical IMHentai /view/<gallery>/<page>/ URL, get_page_list requests that exact reader URL, and malformed or cross-gallery URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified. Dynamic listings expose six category and seven language browse feeds through the existing filtered search route; fixtures verify exact flag selection, pagination and rejection of unknown IDs. Version 19 marks completed, one-gallery manga as UpdateStrategy::Never through search, detail and update paths, avoiding unnecessary automatic library refreshes. Version 20 adds a normal mobile Safari User-Agent and the matching gallery-page Referer to reader HTML and CDN image requests; a live gallery and reader were checked in a browser on 2026-09-24, and a fixture validates the constructed gallery Referer.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

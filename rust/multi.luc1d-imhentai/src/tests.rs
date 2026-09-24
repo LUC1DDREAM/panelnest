@@ -101,6 +101,14 @@ fn stored_reader_url_is_used_only_for_its_matching_gallery() {
 	}
 	assert!(reader_url_for_chapter("43", &chapter).is_err());
 }
+
+#[aidoku_test]
+fn reader_navigation_uses_validated_gallery_referer() {
+	assert_eq!(gallery_referer("1744017").unwrap(), "https://imhentai.xxx/gallery/1744017/");
+	for invalid in ["", "1/2", "-1", "1?x=1"] {
+		assert!(gallery_referer(invalid).is_err(), "{invalid}");
+	}
+}
 #[aidoku_test]
 fn search_urls_escape_query_and_validate_page() {
 	let url = search_url(Some("Sample &page=999"), 2).unwrap();

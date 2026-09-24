@@ -20,6 +20,7 @@ macro_rules! ensure {
 	};
 }
 const BASE_URL: &str = "https://imhentai.xxx";
+const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1";
 const IS_IM: bool = true;
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
@@ -476,6 +477,13 @@ fn reader_url_for_chapter(gallery_id: &str, chapter: &Chapter) -> Result<String>
 	let page = page.strip_suffix('/').ok_or(error!("Invalid gallery reader URL"))?;
 	ensure!(!page.is_empty() && page.bytes().all(|byte| byte.is_ascii_digit()), "Invalid gallery reader URL");
 	Ok(format!("{prefix}{page}/"))
+}
+fn gallery_referer(gallery_id: &str) -> Result<String> {
+	ensure!(
+		!gallery_id.is_empty() && gallery_id.bytes().all(|byte| byte.is_ascii_digit()),
+		"Invalid gallery key"
+	);
+	Ok(format!("{BASE_URL}/gallery/{gallery_id}/"))
 }
 fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 	parse_pages_with_referer(doc, &format!("{BASE_URL}/view/1/1/"))
@@ -990,7 +998,11 @@ impl Source for GallerySource {
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
 		ensure!(!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()), "Invalid gallery key");
 		let reader_url = reader_url_for_chapter(&manga.key, &chapter)?;
-		let reader_doc = Request::get(reader_url.clone())?.html()?;
+		let referer = gallery_referer(&manga.key)?;
+		let reader_doc = Request::get(reader_url.clone())?
+			.header("Referer", referer.as_str())
+			.header("User-Agent", USER_AGENT)
+			.html()?;
 		ensure!(reader_doc.select_first("#gimg, input#load_id").is_some(), "Reader unavailable or site layout changed");
 		parse_pages_with_referer(&reader_doc, &reader_url)
 	}
@@ -1007,7 +1019,9 @@ impl ImageRequestProvider for GallerySource {
 		context: Option<aidoku::PageContext>,
 	) -> Result<Request> {
 		let referer = image_request_referer(&url, context.as_ref())?;
-		Ok(Request::get(url)?.header("Referer", referer.as_str()))
+		Ok(Request::get(url)?
+			.header("Referer", referer.as_str())
+			.header("User-Agent", USER_AGENT))
 	}
 }
 aidoku::register_source!(
