@@ -5,7 +5,10 @@ use aidoku::{
 	PageContent, Result, Source,
 	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	helpers::uri::encode_uri_component,
-	imports::{error::AidokuError, net::Request},
+	imports::{
+		error::AidokuError,
+		net::{Request, TimeUnit, set_rate_limit},
+	},
 	prelude::*,
 };
 
@@ -29,8 +32,21 @@ struct NHentai {
 	cache: RefCell<Option<(String, NHentaiGallery)>>,
 }
 
+fn taxonomy_type(filter_id: &str) -> Option<&'static str> {
+	match filter_id {
+		"tags" | "genre" => Some("tag"),
+		"artists" | "artist-tags" => Some("artist"),
+		"groups" | "group-tags" => Some("group"),
+		"languages" | "language-tags" => Some("language"),
+		"parodies" | "parody-tags" => Some("parody"),
+		"characters" | "character-tags" => Some("character"),
+		_ => None,
+	}
+}
+
 impl Source for NHentai {
 	fn new() -> Self {
+		set_rate_limit(1, 1, TimeUnit::Seconds);
 		Self {
 			cache: RefCell::new(None),
 		}
@@ -97,15 +113,7 @@ impl Source for NHentai {
 					excluded,
 					..
 				} => {
-					let tag_type = match id.as_str() {
-						"tags" | "genre" => Some("tag"),
-						"artists" | "artist-tags" => Some("artist"),
-						"groups" | "group-tags" => Some("group"),
-						"languages" | "language-tags" => Some("language"),
-						"parodies" | "parody-tags" => Some("parody"),
-						"characters" | "character-tags" => Some("character"),
-						_ => None,
-					};
+					let tag_type = taxonomy_type(&id);
 					if let Some(tag_type) = tag_type {
 						for tag in included {
 							query_parts.push(format!("{tag_type}:\"{tag}\""));
@@ -350,18 +358,27 @@ impl DynamicFilters for NHentai {
 			}
 			tags.extend(response.result);
 		}
-		let artists: NHentaiTagsResponse = Request::get(format!(
-			"{API_URL}/tags/artist?sort=popular&page=1&per_page=120"
-		))?
-		.header("User-Agent", USER_AGENT)
-		.json_owned()?;
-		if !(1..=1000).contains(&artists.num_pages) || artists.result.is_empty() {
-			return Err(error!("Invalid nhentai artist directory"));
+		let mut filters = vec![taxonomy_filter(tags, "language", "languages", "Language")?];
+		for (tag_type, id, title) in [
+			("artist", "artists", "Popular Artists"),
+			("group", "group-tags", "Popular Groups"),
+			("parody", "parodies", "Popular Parodies"),
+			("character", "characters", "Popular Characters"),
+		] {
+			let response: Option<NHentaiTagsResponse> = Request::get(format!(
+				"{API_URL}/tags/{tag_type}?sort=popular&page=1&per_page=100"
+			))
+			.ok()
+			.map(|request| request.header("User-Agent", USER_AGENT))
+			.and_then(|request| request.json_owned().ok());
+			if let Some(response) = response
+				&& response.num_pages > 0
+				&& let Ok(filter) = taxonomy_filter(response.result, tag_type, id, title)
+			{
+				filters.push(filter);
+			}
 		}
-		Ok(vec![
-			taxonomy_filter(tags, "language", "languages", "Language")?,
-			taxonomy_filter(artists.result, "artist", "artists", "Popular Artists")?,
-		])
+		Ok(filters)
 	}
 }
 

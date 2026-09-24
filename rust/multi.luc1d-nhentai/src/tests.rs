@@ -227,6 +227,20 @@ fn popular_artist_filter_uses_searchable_artist_tag_names() {
 }
 
 #[aidoku_test]
+fn dynamic_taxonomy_filter_ids_match_search_syntax() {
+	for (id, expected) in [
+		("languages", "language"),
+		("artists", "artist"),
+		("group-tags", "group"),
+		("parodies", "parody"),
+		("characters", "character"),
+	] {
+		assert_eq!(super::taxonomy_type(id), Some(expected));
+	}
+	assert_eq!(super::taxonomy_type("unknown"), None);
+}
+
+#[aidoku_test]
 fn blocklist_setting_starts_empty_without_excluding_a_placeholder_tag() {
 	let settings: serde_json::Value =
 		serde_json::from_str(include_str!("../res/settings.json")).unwrap();

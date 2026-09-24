@@ -44,7 +44,7 @@
   {
     "id": "en.luc1d-weebcentral",
     "path": "rust/en.luc1d-weebcentral",
-    "upstream_version": 11,
+    "upstream_version": 12,
     "upstream_id": "en.weebcentral",
     "upstream_version": 8,
     "upstream_commit": "0f537147588d7fec7d70a22a9d7084376cd5c2b7",
@@ -113,14 +113,14 @@
       "Popular All",
       "Latest"
     ],
-    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable. The dynamic Artist selector exposes the 120 entries on the official popular-artists page 1; text search remains available for other artists.",
+    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable. Dynamic quick-select filters expose the 120 most popular entries from each artist, group, parody and character directory first page; free-text artist and group search remains available for other values.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page; the official popular artist API reports 277 pages and returned 120 type=artist entries on page 1. Runtime filter construction selects unique entries of the matching type. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
-    "fixture_tests_passed": 12,
+    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). Runtime filters select unique entries of each taxonomy type; source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
+    "fixture_tests_passed": 13,
     "release_authorized": true
   },
   {
