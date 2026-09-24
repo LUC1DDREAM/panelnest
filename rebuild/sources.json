@@ -246,7 +246,7 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Live HTTP checks confirmed all three sidebar rankings, the /tags/popular/ index, popular artist/character/parody/group directories, canonical gallery routes and /pag/N/ pagination. No live WASM or device test.",
+    "live_evidence": "Live site routes confirmed latest and Popular pages for tag categories at /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. The source now maps the Popular filter and selected tag together; regression tests verify route and pagination. Taxonomy routes remain based on official page links.",
     "fixture_tests_passed": 19,
     "release_authorized": true
   }

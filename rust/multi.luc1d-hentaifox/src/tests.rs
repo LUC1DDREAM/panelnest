@@ -137,16 +137,24 @@ fn dynamic_sidebar_rankings_are_registered_and_parse_scoped_entries() {
 fn popular_tag_directory_builds_safe_paginated_gallery_routes() {
 	assert_eq!(POPULAR_TAGS_PATH, "/tags/popular/");
 	assert_eq!(
-		popular_tag_url("popular-tag-big-breasts", 1).unwrap(),
+		popular_tag_url("popular-tag-big-breasts", 1, false).unwrap(),
 		format!("{BASE_URL}/tag/big-breasts/")
 	);
 	assert_eq!(
-		popular_tag_url("popular-tag-big-breasts", 2).unwrap(),
+		popular_tag_url("popular-tag-big-breasts", 2, false).unwrap(),
 		format!("{BASE_URL}/tag/big-breasts/pag/2/")
 	);
-	assert!(popular_tag_url("popular-tag-../evil", 1).is_err());
-	assert!(popular_tag_url("popular-tag-big-breasts", 0).is_err());
-	assert!(popular_tag_url("latest", 1).is_err());
+	assert_eq!(
+		popular_tag_url("popular-tag-big-breasts", 1, true).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/popular/")
+	);
+	assert_eq!(
+		popular_tag_url("popular-tag-big-breasts", 2, true).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/popular/pag/2/")
+	);
+	assert!(popular_tag_url("popular-tag-../evil", 1, false).is_err());
+	assert!(popular_tag_url("popular-tag-big-breasts", 0, false).is_err());
+	assert!(popular_tag_url("latest", 1, false).is_err());
 }
 
 #[aidoku_test]
@@ -244,7 +252,7 @@ fn popular_tag_filter_exposes_directory_entries() {
 #[aidoku_test]
 fn popular_taxonomy_filters_map_to_official_latest_and_popular_routes() {
 	assert_eq!(
-		popular_tag_url("popular-tag-big-breasts", 2).unwrap(),
+		popular_tag_url("popular-tag-big-breasts", 2, false).unwrap(),
 		format!("{BASE_URL}/tag/big-breasts/pag/2/")
 	);
 	assert_eq!(
@@ -289,6 +297,22 @@ fn popular_taxonomy_filters_map_to_official_latest_and_popular_routes() {
 	assert_eq!(
 		search_url_with_filters(None, 3, &tag_filter).unwrap(),
 		format!("{BASE_URL}/tag/big-breasts/pag/3/")
+	);
+	let popular_tag_filter = vec![
+		tag_filter[0].clone(),
+		FilterValue::Sort {
+			id: "sort".into(),
+			index: 1,
+			ascending: false,
+		},
+	];
+	assert_eq!(
+		search_url_with_filters(None, 1, &popular_tag_filter).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/popular/")
+	);
+	assert_eq!(
+		search_url_with_filters(None, 2, &popular_tag_filter).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/popular/pag/2/")
 	);
 	assert!(search_url_with_filters(Some("query"), 1, &filters).is_err());
 	let conflicting = vec![
@@ -362,7 +386,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 13);
+	assert_eq!(manifest["info"]["version"], 14);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()

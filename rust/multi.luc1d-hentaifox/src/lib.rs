@@ -140,7 +140,7 @@ fn search_url_with_filters(
 	if let Some((kind, slug)) = selected_taxonomies.first() {
 		ensure!(query.is_empty(), "Clear text search to browse a category");
 		return if *kind == "tag" {
-			popular_tag_url(&format!("popular-tag-{slug}"), page)
+			popular_tag_url(&format!("popular-tag-{slug}"), page, popular)
 		} else {
 			taxonomy_url(kind, slug, page, popular)
 		};
@@ -401,13 +401,14 @@ fn popular_tag_slug(id: &str) -> Option<&str> {
 		None
 	}
 }
-fn popular_tag_url(id: &str, page: i32) -> Result<String> {
+fn popular_tag_url(id: &str, page: i32, popular: bool) -> Result<String> {
 	ensure!(page > 0, "Invalid page");
 	let slug = popular_tag_slug(id).ok_or(error!("Unsupported listing"))?;
+	let popular_path = if popular { "popular/" } else { "" };
 	Ok(if page == 1 {
-		format!("{BASE_URL}/tag/{slug}/")
+		format!("{BASE_URL}/tag/{slug}/{popular_path}")
 	} else {
-		format!("{BASE_URL}/tag/{slug}/pag/{page}/")
+		format!("{BASE_URL}/tag/{slug}/{popular_path}pag/{page}/")
 	})
 }
 fn parse_popular_tag_listings(doc: &Document) -> Result<Vec<Listing>> {
@@ -598,7 +599,7 @@ impl aidoku::Home for GallerySource {
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
 		if popular_tag_slug(&listing.id).is_some() {
-			let doc = Request::get(popular_tag_url(&listing.id, page)?)?.html()?;
+			let doc = Request::get(popular_tag_url(&listing.id, page, false)?)?.html()?;
 			let result = parse_search(&doc);
 			ensure!(
 				!result.entries.is_empty(),
