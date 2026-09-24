@@ -32,7 +32,7 @@ pub fn get_filters(query: Option<String>, filters: Vec<FilterValue>) -> String {
 
 	for filter in filters {
 		match filter {
-			FilterValue::Text { ref id, ref value } if id == "author" || id == "artist" => {
+			FilterValue::Text { ref id, ref value } if id == "author" => {
 				if !value.is_empty() {
 					qs.push(id, Some(value));
 				}
@@ -65,14 +65,18 @@ pub fn get_filters(query: Option<String>, filters: Vec<FilterValue>) -> String {
 					}
 				}
 			}
-			FilterValue::Check { value, .. } => qs.push(
-				"official",
-				Some(match value {
-					0 => "False",
-					1 => "True",
-					_ => "Any",
-				}),
-			),
+			FilterValue::Check { ref id, value }
+				if id == "official" || id == "anime" || id == "adult" =>
+			{
+				qs.push(
+					id,
+					Some(match value {
+						0 => "False",
+						1 => "True",
+						_ => "Any",
+					}),
+				)
+			}
 			_ => {}
 		}
 	}

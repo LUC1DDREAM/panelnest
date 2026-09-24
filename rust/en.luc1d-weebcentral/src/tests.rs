@@ -111,7 +111,7 @@ fn search_query_does_not_inject_parameters() {
 }
 
 #[aidoku_test]
-fn author_and_artist_filters_use_their_matching_advanced_search_fields() {
+fn author_filter_uses_the_official_advanced_search_field() {
 	let author = filter::get_filters(
 		None,
 		vec![FilterValue::Text {
@@ -119,17 +119,33 @@ fn author_and_artist_filters_use_their_matching_advanced_search_fields() {
 			value: "Author Name".into(),
 		}],
 	);
-	let artist = filter::get_filters(
-		None,
-		vec![FilterValue::Text {
-			id: "artist".into(),
-			value: "Artist Name".into(),
-		}],
-	);
 	assert!(author.contains("author=Author%20Name"));
 	assert!(!author.contains("artist="));
-	assert!(artist.contains("artist=Artist%20Name"));
-	assert!(!artist.contains("author="));
+}
+
+#[aidoku_test]
+fn official_anime_and_adult_checks_use_matching_site_fields() {
+	for (id, field) in [
+		("official", "official"),
+		("anime", "anime"),
+		("adult", "adult"),
+	] {
+		for (value, expected) in [(0, "False"), (1, "True"), (2, "Any")] {
+			let query = filter::get_filters(
+				None,
+				vec![FilterValue::Check {
+					id: id.into(),
+					value,
+				}],
+			);
+			assert!(query.contains(&format!("{field}={expected}")), "{query}");
+			for other in ["official", "anime", "adult"] {
+				if other != field {
+					assert!(!query.contains(&format!("{other}=")), "{query}");
+				}
+			}
+		}
+	}
 }
 
 #[aidoku_test]

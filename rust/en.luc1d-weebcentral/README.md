@@ -1,9 +1,9 @@
 # Weeb Central (LUC1D)
 
-## Discovery (package version 9)
+## Discovery (package version 10)
 
-Adds separate Author and Artist search fields that route to Weeb Central's
-matching advanced-search parameters. Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
+Adds tri-state filters for Official Translation, Anime Adaptation, and Adult
+Content, mapped to the site's corresponding advanced-search parameters. Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
 the existing Advanced Search endpoint, its website sort values and explicit
 Descending order. Search pages use the live endpoint's 32-entry HTMX offsets;
 the View More Results button accurately indicates whether another page exists.
