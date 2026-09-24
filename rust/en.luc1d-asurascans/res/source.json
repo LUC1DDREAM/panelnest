@@ -2,7 +2,7 @@
     "info":  {
                  "id":  "en.luc1d-asurascans",
                  "name":  "Asura Scans [PN]",
-                 "version":  8,
+                 "version":  9,
                  "url":  "https://asurascans.com",
                  "contentRating":  0,
                  "languages":  [
@@ -14,6 +14,10 @@
                      {
                          "id":  "Ranking",
                          "kind":  1
+                     },
+                     {
+                         "id":  "popular-today",
+                         "name":  "Popular Today"
                      },
                      {
                          "id":  "popular-week",

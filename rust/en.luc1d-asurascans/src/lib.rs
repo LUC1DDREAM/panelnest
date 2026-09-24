@@ -472,6 +472,7 @@ impl Home for AsuraScans {
 		}
 
 		for (id, title) in [
+			("popular-today", "Popular Today"),
 			("popular-week", "Popular This Week"),
 			("popular-month", "Popular This Month"),
 			("popular-all", "Popular All Time"),

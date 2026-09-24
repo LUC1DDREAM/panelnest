@@ -36,6 +36,7 @@
     ],
     "listings": [
       "Ranking",
+      "Popular Today",
       "Popular This Week",
       "Popular This Month",
       "Popular All Time"
@@ -49,8 +50,8 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Regression tests verify the Aidoku creator and artist text filters are carried into the matching browse query parameters; previous builds dropped both text values. Dynamic genre names/slugs continue to come from the BrowseFilters payload.",
-    "fixture_tests_passed": 15,
+    "live_evidence": "Official trending API /api/trending/day?limit=10 returned HTTP 200 with ten ranked entries on 2026-09-24; /api/trending/{week|month|all}?limit=10 are exposed as well. Regression fixtures preserve the server order for the daily feed. Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Dynamic genre names/slugs continue to come from the BrowseFilters payload.",
+    "fixture_tests_passed": 16,
     "release_authorized": true
   },
   {

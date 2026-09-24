@@ -4,9 +4,10 @@ use aidoku::{
 };
 use serde::Deserialize;
 
-// Only periods offered by the comic PopularSidebar; no daily alias.
+// Periods exposed by the official trending API.
 pub fn popularity_period(id: &str) -> Option<&'static str> {
 	match id {
+		"popular-today" => Some("day"),
 		"popular-week" => Some("week"),
 		"popular-month" => Some("month"),
 		"popular-all" => Some("all"),
@@ -49,6 +50,7 @@ mod tests {
 	use aidoku_test::aidoku_test;
 	#[aidoku_test]
 	fn periods_are_explicit_not_invented() {
+		assert_eq!(popularity_period("popular-today"), Some("day"));
 		assert_eq!(popularity_period("popular-week"), Some("week"));
 		assert_eq!(popularity_period("popular-month"), Some("month"));
 		assert_eq!(popularity_period("popular-all"), Some("all"));
@@ -68,6 +70,18 @@ mod tests {
 				.entries
 				.is_empty()
 		);
+	}
+	#[aidoku_test]
+	fn captured_daily_popularity_uses_live_today_endpoint_data() {
+		let page = parse_popularity(include_str!("../fixtures/popular-day.json")).unwrap();
+		assert_eq!(page.entries.len(), 2);
+		assert_eq!(page.entries[0].key, "the-academy-s-weapon-replicator");
+		assert_eq!(page.entries[0].title, "The Academy’s Weapon Replicator");
+		assert_eq!(
+			page.entries[0].cover.as_deref(),
+			Some("https://cdn.asurascans.com/asura-images/covers/the-academy-s-weapon-replicator.2096c2.webp")
+		);
+		assert!(!page.has_next_page);
 	}
 	#[aidoku_test]
 	fn single_page_listing_does_not_repeat_or_accept_invalid_pages() {
@@ -95,13 +109,24 @@ mod tests {
 			.unwrap();
 		assert!(result.entries.is_empty());
 		assert!(!result.has_next_page);
+		let today = source
+			.get_manga_list(
+				Listing {
+					id: "popular-today".into(),
+					..Default::default()
+				},
+				2,
+			)
+			.unwrap();
+		assert!(today.entries.is_empty());
+		assert!(!today.has_next_page);
 	}
 	#[aidoku_test]
 	#[ignore]
 	fn live_popularity_metadata_only() {
 		use aidoku::{Home, HomeComponentValue};
 		let home = crate::AsuraScans.get_home().unwrap();
-		for expected in ["popular-week", "popular-month", "popular-all"] {
+		for expected in ["popular-today", "popular-week", "popular-month", "popular-all"] {
 			assert!(home.components.iter().any(|c| match &c.value {
 				HomeComponentValue::Scroller {
 					entries,
@@ -112,7 +137,7 @@ mod tests {
 		}
 		use aidoku::{Listing, ListingProvider, Source};
 		let source = crate::AsuraScans::new();
-		for id in ["popular-week", "popular-month", "popular-all"] {
+		for id in ["popular-today", "popular-week", "popular-month", "popular-all"] {
 			let page = source
 				.get_manga_list(
 					Listing {

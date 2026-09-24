@@ -1,14 +1,13 @@
 # Asura Scans
 
-## Discovery (package version 8)
+## Discovery (package version 9)
 
-The comic website PopularSidebar offers Weekly, Monthly and All Time, using
-`https://api.asurascans.com/api/trending/{week|month|all}?limit=10`.
-These are now Home scrollers and named listings. Each is the website's top ten,
+The official trending API exposes Day, Week, Month and All Time at
+`https://api.asurascans.com/api/trending/{day|week|month|all}?limit=10`.
+All four are Home scrollers and named listings. Each is the website's top ten,
 in server order, with no pagination or all-time fallback for a failed period.
-No Popular Today listing is exposed: no daily option was evidenced in that UI.
 Existing Trending Comics, Latest Updates, Ranking and authenticated Bookmarks
-remain. Package version 8 exposes the live browse facets in Aidoku: sort,
+remain. Package version 9 exposes the live browse facets in Aidoku: sort,
 status (including Axed), series type, the site's current genre list, creator,
 artist and minimum chapter count. Creator and artist filters now submit their
 values as the site's `author` and `artist` query parameters; previously those
@@ -26,6 +25,8 @@ marked as having another page when the total exceeds the page number.
 `fixtures/popular-week.json` is a reduced capture of the first two public entries
 from the week endpoint on 2026-09-08; only slug, title, cover URL and public URL
 are retained. No images or reader pages were downloaded.
+`fixtures/popular-day.json` captures the first two metadata rows of the official
+day endpoint on 2026-09-24; only slug, title and cover URL are retained.
 
 ```sh
 cargo test --locked
