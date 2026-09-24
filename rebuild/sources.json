@@ -287,7 +287,7 @@
       "Most Fapped",
       "Most Downloaded"
     ],
-    "limitations": "Sidebar rankings are finite; no paginated temporal popularity listings. Home also displays the site's single current and previous Daily Top Rated spotlight. Sidebar feeds may fail independently. Quick-select menus show 25 popular tags and up to 50 popular entries per other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site's ASCII slug.",
+    "limitations": "The three sidebar ranking feeds are finite and may fail independently. Popular-sorted dynamic listings are available for the 25 quick-select tags, with pagination. Home displays the site\u2019s current and previous Daily Top Rated spotlights. Quick-select menus show up to 50 popular entries for each other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site\u2019s ASCII slug.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
