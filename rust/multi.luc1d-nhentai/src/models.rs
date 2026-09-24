@@ -164,6 +164,7 @@ impl From<NHentaiGallery> for Manga {
 		let mut groups = Vec::new();
 		let mut parodies = Vec::new();
 		let mut characters = Vec::new();
+		let mut languages = Vec::new();
 
 		for tag in &value.tags {
 			match tag.r#type.as_str() {
@@ -176,6 +177,7 @@ impl From<NHentaiGallery> for Manga {
 					}
 				}
 				"character" => characters.push((tag.name.clone(), tag.count)),
+				"language" => languages.push((tag.name.clone(), tag.count)),
 				_ => {}
 			}
 		}
@@ -186,6 +188,7 @@ impl From<NHentaiGallery> for Manga {
 		groups.sort_by(|a, b| b.1.cmp(&a.1));
 		parodies.sort_by(|a, b| b.1.cmp(&a.1));
 		characters.sort_by(|a, b| b.1.cmp(&a.1));
+		languages.sort_by(|a, b| b.1.cmp(&a.1));
 
 		let tags = tags.into_iter().map(|(name, _)| name).collect::<Vec<_>>();
 		let groups = groups.into_iter().map(|(name, _)| name).collect::<Vec<_>>();
@@ -201,6 +204,10 @@ impl From<NHentaiGallery> for Manga {
 			.into_iter()
 			.map(|(name, _)| name)
 			.collect::<Vec<_>>();
+		let languages = languages
+			.into_iter()
+			.map(|(name, _)| name)
+			.collect::<Vec<_>>();
 
 		let description = {
 			let mut info_parts = Vec::new();
@@ -210,6 +217,9 @@ impl From<NHentaiGallery> for Manga {
 			}
 			if !characters.is_empty() {
 				info_parts.push(format!("Characters: {}", characters.join(", ")));
+			}
+			if !languages.is_empty() {
+				info_parts.push(format!("Languages: {}", languages.join(", ")));
 			}
 			info_parts.push(format!("Pages: {}", value.num_pages));
 			if value.num_favorites > 0 {

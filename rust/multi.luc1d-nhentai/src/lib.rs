@@ -96,18 +96,22 @@ impl Source for NHentai {
 					excluded,
 					..
 				} => {
-					if id == "tags" {
+					let tag_type = match id.as_str() {
+						"tags" | "genre" => Some("tag"),
+						"artists" | "artist-tags" => Some("artist"),
+						"groups" | "group-tags" => Some("group"),
+						"languages" | "language-tags" => Some("language"),
+						"parodies" | "parody-tags" => Some("parody"),
+						"characters" | "character-tags" => Some("character"),
+						_ => None,
+					};
+					if let Some(tag_type) = tag_type {
 						for tag in included {
-							query_parts.push(format!("tag:\"{tag}\""));
+							query_parts.push(format!("{tag_type}:\"{tag}\""));
 						}
 						for tag in excluded {
-							query_parts.push(format!("-tag:\"{tag}\""));
+							query_parts.push(format!("-{tag_type}:\"{tag}\""));
 						}
-					}
-				}
-				FilterValue::Select { id, value } => {
-					if id == "genre" {
-						query_parts.push(format!("tag:\"{value}\""));
 					}
 				}
 				_ => continue,
@@ -295,16 +299,22 @@ impl AlternateCoverProvider for NHentai {
 
 impl DeepLinkHandler for NHentai {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
-		if !url.starts_with(BASE_URL) {
+		let Some(path) = url.strip_prefix(BASE_URL) else {
+			return Ok(None);
+		};
+		if !path.starts_with("/") || path.starts_with("//") {
 			return Ok(None);
 		}
 
 		const GALLERY_PATH: &str = "/g/";
 
-		if let Some(id_start) = url.find(GALLERY_PATH) {
-			let id_part = &url[id_start + GALLERY_PATH.len()..];
+		if let Some(id_start) = path.find(GALLERY_PATH) {
+			let id_part = &path[id_start + GALLERY_PATH.len()..];
 			let end = id_part.find('/').unwrap_or(id_part.len());
 			let manga_id = &id_part[..end];
+			if manga_id.is_empty() || !manga_id.bytes().all(|byte| byte.is_ascii_digit()) {
+				return Ok(None);
+			}
 
 			Ok(Some(DeepLinkResult::Manga {
 				key: manga_id.into(),

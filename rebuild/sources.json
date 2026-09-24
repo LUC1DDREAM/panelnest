@@ -69,7 +69,9 @@
       "chapters",
       "pages",
       "home",
-      "listings"
+      "listings",
+      "alternate-covers",
+      "deep-links"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Popular Today", "Popular Week", "Popular All", "Latest"],
@@ -80,7 +82,7 @@
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
     "live_evidence": "Worker four sorts page 1/2 metadata passed; Home hit HTTP 429, suite failed; no device test.",
-    "fixture_tests_passed": 6,
+    "fixture_tests_passed": 8,
     "release_authorized": true
   },
   {

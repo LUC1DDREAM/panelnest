@@ -114,3 +114,32 @@ fn alternate_cover_variants_are_safe_and_use_official_image_hosts() {
 	assert!(super::models::cover_variants("123", "fixture/../../host", "cover.jpg").is_empty());
 	assert!(super::models::cover_variants("123", "fixture", "cover.unknown").is_empty());
 }
+
+#[aidoku_test]
+fn details_include_language_metadata() {
+	let gallery: NHentaiGallery = serde_json::from_str(r#"{
+		"id":123,"media_id":"fixture123","title":{"english":"Fixture","japanese":null,"pretty":"Fixture"},
+		"cover":{"path":"galleries/fixture123/cover.jpg","width":1,"height":1},
+		"thumbnail":{"path":"galleries/fixture123/thumb.jpg","width":1,"height":1},"scanlator":"","upload_date":0,
+		"tags":[{"id":1,"name":"english","count":1,"type":"language","url":"/language/english"}],
+		"num_pages":1,"num_favorites":0,"pages":[]
+	}"#).unwrap();
+	let manga: aidoku::Manga = gallery.into();
+	assert!(manga.description.unwrap().contains("Languages: english"));
+}
+
+#[aidoku_test]
+fn deep_links_accept_only_numeric_gallery_paths_on_canonical_host() {
+	use aidoku::{DeepLinkHandler, DeepLinkResult};
+	let source = super::NHentai::new();
+	let valid = source.handle_deep_link("https://nhentai.net/g/12345/title/".into()).unwrap();
+	assert!(matches!(valid, Some(DeepLinkResult::Manga { key }) if key == "12345"));
+	for url in [
+		"https://evil.example/nhentai.net/g/12345/",
+		"https://nhentai.net.evil.example/g/12345/",
+		"https://nhentai.net/g/nope/",
+		"https://nhentai.net/g//",
+	] {
+		assert!(source.handle_deep_link(url.into()).unwrap().is_none(), "{url}");
+	}
+}

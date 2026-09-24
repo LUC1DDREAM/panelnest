@@ -4,11 +4,11 @@ Independent vendored current-API source, `multi.luc1d-nhentai`; pinned Aidoku SD
 
 ## Website-backed capabilities
 
-Existing `/api/v2/search` sorts are `popular-today`, `popular-week`, `popular` (all time), and `date`. Home, four listings, sort/tag/artist/group filters and language/blocklist settings already existed. They are not newly invented features. Home queries apply configured language and blocklist constraints, so ranks are within that selected result set.
+Existing `/api/v2/search` sorts are `popular-today`, `popular-week`, `popular` (all time), and `date`. Home, four listings, static tag/artist/group filters and language/blocklist settings already existed. They are not newly invented features. Home queries apply configured language and blocklist constraints, so ranks are within that selected result set. Gallery details now include the API's language tags alongside tags, artists, groups, parodies, and characters; they were previously omitted from the description.
 
 Version 3 makes the Popular Today home section a ranked list with a working Today listing link (previous BigScroller had no browse-all action), preserving the actual today endpoint. Search/listings reject page numbers below 1. Existing identities, languages, content rating, icon, filters and reader behavior are unchanged.
 
-Alternate covers are now fetched from the public gallery metadata on demand. Both original and thumbnail variants use the canonical nhentai image hosts; gallery keys, media IDs, and extensions are validated before constructing the URLs.
+Alternate covers are now fetched from the public gallery metadata on demand. Both original and thumbnail variants use the canonical nhentai image hosts; gallery keys, media IDs, and extensions are validated before constructing the URLs. Deep links now accept only numeric gallery paths on the exact canonical host; malformed and lookalike-host URLs are ignored.
 
 ## Verification and limits
 
