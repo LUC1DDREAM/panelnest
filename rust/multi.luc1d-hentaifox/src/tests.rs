@@ -1,6 +1,6 @@
 #[aidoku_test]
 fn synthetic_details_and_chapter_flags() {
-	let doc=Html::parse_with_url(r#"<div class="gallery_top gallery_first"><h1>Sample 2</h1><div class="cover left_cover"><img src="/cover.png"></div><ul class="artists"><li><a>Artist 7</a></li></ul><ul><li><span class="tags_text">Artists:</span><a class="tag">Artist 7</a></li></ul></div>"#,BASE_URL).unwrap();
+	let doc=Html::parse_with_url(r#"<div class="gallery_top gallery_first"><h1>Sample 2</h1><div class="cover left_cover"><img src="/cover.png"></div><ul class="artists"><li><a>Artist 7</a></li></ul><ul class="languages"><span class="i_text">Languages:</span><li><a class="tag_btn">english <span class="t_badge">1</span></a></li><li><a class="tag_btn">translated <span class="t_badge">2</span></a></li></ul><ul><li><span class="tags_text">Artists:</span><a class="tag">Artist 7</a></li></ul></div>"#,BASE_URL).unwrap();
 	let m = update(
 		&doc,
 		Manga {
@@ -13,7 +13,9 @@ fn synthetic_details_and_chapter_flags() {
 	.unwrap();
 	assert_eq!(m.title, "Sample 2");
 	assert_eq!(m.authors.unwrap()[0], "Artist 7");
-	assert_eq!(m.chapters.unwrap()[0].key, "42");
+	let chapters = m.chapters.unwrap();
+	assert_eq!(chapters[0].key, "42");
+	assert_eq!(chapters[0].language.as_deref(), Some("en"));
 	assert_eq!(m.update_strategy, UpdateStrategy::Never);
 	assert!(
 		update(
@@ -655,7 +657,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 23);
+	assert_eq!(manifest["info"]["version"], 24);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()

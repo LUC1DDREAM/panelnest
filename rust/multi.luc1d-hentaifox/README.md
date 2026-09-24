@@ -1,7 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 23)
+## Discovery (source version 24)
+Version 24 fills Aidoku's chapter language when the gallery has exactly one recognized language tag. Unknown, translated-only and mixed-language galleries leave the field unset rather than guessing.
 Version 23 carries each gallery page’s /gallery/<id>/ URL through Aidoku page context so CDN image requests use the matching Referer. The image provider validates the CDN host and gallery path; fixtures cover valid and malformed contexts. Completed one-gallery entries also use Aidoku’s UpdateStrategy::Never, so routine library refreshes skip their immutable chapter lists.
 Version 21 adds a separate Popular-sorted dynamic listing for each of the 25 popular tags. The existing Tag: listings keep their IDs and Latest ordering; Popular: listings use the official paginated /tag/<slug>/popular/ route.
 Version 21 adds a separate Popular-sorted dynamic listing for each of the 25 popular tags. The existing Tag: listings keep their IDs and Latest ordering; Popular: listings use the official paginated `/tag/<slug>/popular/` route.

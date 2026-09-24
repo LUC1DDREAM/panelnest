@@ -357,11 +357,42 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 			key: manga.key.clone(),
 			title: Some("Gallery".into()),
 			chapter_number: Some(1.0),
+			language: gallery_language(doc),
 			url: Some(format!("{BASE_URL}/gallery/{}/", manga.key)),
 			..Default::default()
 		}]);
 	}
 	Ok(manga)
+}
+fn gallery_language(doc: &Document) -> Option<String> {
+	let language_tags = doc
+		.select(if IS_IM { "li" } else { "ul.languages" })?
+		.filter(|item| {
+			item.select_first(if IS_IM { ".tags_text" } else { ".i_text" })
+				.and_then(|label| label.text())
+				.is_some_and(|label| label.trim() == "Languages:")
+		})
+		.flat_map(|item| {
+			item.select("a")
+				.map(|tags| tags.filter_map(|tag| tag.own_text()).collect::<Vec<_>>())
+				.unwrap_or_default()
+		})
+		.filter_map(|tag| match tag.trim().to_ascii_lowercase().as_str() {
+			"english" => Some("en"),
+			"japanese" => Some("ja"),
+			"spanish" => Some("es"),
+			"french" => Some("fr"),
+			"korean" => Some("ko"),
+			"german" => Some("de"),
+			"russian" => Some("ru"),
+			_ => None,
+		})
+		.collect::<Vec<_>>();
+	if language_tags.len() == 1 {
+		Some(language_tags[0].into())
+	} else {
+		None
+	}
 }
 fn input(doc: &Document, id: &str) -> Result<String> {
 	doc.select_first(&format!("input#{id}"))

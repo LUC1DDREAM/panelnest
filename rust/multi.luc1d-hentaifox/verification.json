@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-hentaifox",
-  "version": 23,
+  "version": 24,
   "sha256": "620dfaba472b8f958ca0d649e1dd01939133f38c8555b19ae94accb3f3e75cfd",
   "bytes": 75553,
   "languages": [
@@ -11,7 +11,7 @@
   "runtime_tested": false,
   "device_tested": false,
   "fixture_tests_passed": 27,
-  "official_site_checks": "The official homepage currently renders the Daily Top Rated Today and Yesterday gallery links and thumbnails server-side; its JavaScript only toggles their visibility locally. The Home parser exposes both picks as one-entry scrollers without extra requests. Live official /languages/ and /languages/popular/ directories each expose 26 language classifications. Sample /language/english/ Latest and Popular page-1/page-2 routes returned HTTP 200. Live site routes also confirm /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. The three official sidebar POST routes top_faved, top_fapped and top_downloaded each return HTTP 200 and current div.item gallery markup through the same XHR/CSRF request shape used by the source. Regression tests cover the daily picks, language directory parsing, route sorting and pagination, quick-select and freeform taxonomy routing, browsable Home scrollers, and independent handling of failed sidebar markup. Version 21 adds separate Latest and Popular dynamic listings for popular tags; fixtures check listing IDs and route selection. Version 22 marks completed, single-gallery manga as UpdateStrategy::Never in search, rankings, daily home picks, details and update results; fixtures verify these construction paths. Version 23 carries the gallery-page URL from reader parsing through Aidoku PageContext into CDN image requests and validates both the CDN host and gallery Referer. Fixture coverage confirms context propagation and rejects malformed gallery IDs.",
+  "official_site_checks": "The official homepage and language, tag and sidebar routes retain their prior live checks. A gallery page fetched on 2026-09-25 returns HTTP 200 and includes a Languages list with language links (for example, english and translated). Version 24 maps exactly one recognized tag to a BCP 47 chapter language code; translated-only, unknown and mixed languages remain unset. Fixtures cover chapter construction and language extraction. Version 23 carries the gallery-page URL through Aidoku PageContext for CDN Referer requests; its host and gallery ID validation remains fixture-covered. Device rendering and native Aidoku runtime remain unverified.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",
