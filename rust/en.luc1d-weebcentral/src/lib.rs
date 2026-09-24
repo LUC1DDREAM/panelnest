@@ -4,7 +4,7 @@ use aidoku::{
 	DynamicFilters, DynamicListings, Filter, FilterValue, Home, HomeComponent, HomeLayout,
 	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MultiSelectFilter, Page, PageContent, Result, SortFilter, SortFilterDefault, Source, TextFilter,
-	Viewer,
+	Viewer, PageContext, PageDescriptionProvider,
 	alloc::{String, Vec, borrow::{Cow, ToOwned}, vec},
 	imports::{
 		html::Element,
@@ -25,6 +25,32 @@ const REFERER: &str = "https://weebcentral.com/";
 const FETCH_LIMIT: i32 = 32;
 
 struct WeebCentral;
+
+fn numbered_reader_page(url: String, number: usize) -> Page {
+	let mut context = PageContext::new();
+	context.insert("page_number".into(), number.to_string());
+	Page {
+		content: PageContent::url_context(url, context),
+		has_description: true,
+		..Default::default()
+	}
+}
+
+fn parse_reader_pages(html: &aidoku::imports::html::Html) -> Vec<Page> {
+	let mut pages = Vec::new();
+	if let Some(elements) = html.select("section[x-data*=scroll] > img") {
+		for element in elements {
+			let Some(page_url) = element.attr("abs:src") else {
+				continue;
+			};
+			if !page_url.starts_with("https://") {
+				continue;
+			}
+			pages.push(numbered_reader_page(page_url, pages.len() + 1));
+		}
+	}
+	pages
+}
 
 const SEARCH_GENRES: [&str; 38] = [
 	"Action", "Adult", "Adventure", "Comedy", "Doujinshi", "Drama", "Ecchi", "Fantasy",
@@ -507,19 +533,7 @@ impl Source for WeebCentral {
 		let html = Request::get(url)?.html()?;
 		reject_cloudflare(&html)?;
 
-		let pages = html
-			.select("section[x-data*=scroll] > img")
-			.map(|els| {
-				els.filter_map(|el| {
-					let page_url = el.attr("abs:src")?;
-					Some(Page {
-						content: PageContent::url(page_url),
-						..Default::default()
-					})
-				})
-				.collect::<Vec<_>>()
-			})
-			.unwrap_or_default();
+		let pages = parse_reader_pages(&html);
 
 		Ok(pages)
 	}
@@ -717,6 +731,20 @@ impl ImageRequestProvider for WeebCentral {
 	}
 }
 
+impl PageDescriptionProvider for WeebCentral {
+	fn get_page_description(&self, page: Page) -> Result<String> {
+		let PageContent::Url(_, Some(context)) = page.content else {
+			return Err(error!("Page number context missing"));
+		};
+		let number = context
+			.get("page_number")
+			.and_then(|value| value.parse::<usize>().ok())
+			.filter(|number| *number > 0)
+			.ok_or_else(|| error!("Invalid page number context"))?;
+		Ok(format!("Page {number}"))
+	}
+}
+
 impl DeepLinkHandler for WeebCentral {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
 		let Some(rest) = url.strip_prefix("https://") else {
@@ -765,5 +793,6 @@ register_source!(
 	DynamicFilters,
 	Home,
 	ImageRequestProvider,
+	PageDescriptionProvider,
 	DeepLinkHandler
 );

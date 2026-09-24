@@ -54,6 +54,30 @@ fn dynamic_genre_listings_expose_every_official_genre_with_stable_ids() {
 }
 
 #[aidoku_test]
+fn reader_pages_keep_order_and_expose_page_descriptions() {
+	use aidoku::PageDescriptionProvider;
+	let html = Html::parse_with_url(
+		r#"<section x-data="scroll"><img src="https://temp.compsci88.com/1.jpg"><img src="https://temp.compsci88.com/2.jpg"><img src="http://invalid.test/3.jpg"><img></section>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let pages = parse_reader_pages(&html);
+	assert_eq!(pages.len(), 2);
+	assert!(pages.iter().all(|page| page.has_description));
+	assert_eq!(
+		WeebCentral.get_page_description(pages[0].clone()).unwrap(),
+		"Page 1"
+	);
+	assert_eq!(
+		WeebCentral.get_page_description(pages[1].clone()).unwrap(),
+		"Page 2"
+	);
+	let source = include_str!("lib.rs");
+	let normalized = source.split_whitespace().collect::<Vec<_>>().join(" ");
+	assert!(normalized.contains("PageDescriptionProvider"));
+}
+
+#[aidoku_test]
 fn genre_listing_routes_to_paginated_popular_search() {
 	assert_eq!(genre_from_listing_id("genre-action"), Some("Action"));
 	assert_eq!(genre_from_listing_id("genre-sci-fi"), Some("Sci-fi"));
