@@ -93,7 +93,7 @@ fn search_url_with_filters(query: Option<&str>, page: i32, filters: &[FilterValu
 			_ => {}
 		}
 	}
-	if query.is_empty() && filters.is_empty() {
+	if query.is_empty() && sort == 1 && categories.is_none() && languages.is_none() {
 		return Ok(if IS_IM {
 			format!("{BASE_URL}/?page={page}")
 		} else if page == 1 {

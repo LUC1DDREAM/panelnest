@@ -83,6 +83,18 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 	let browse = search_url_with_filters(None, 1, &filters).unwrap();
 	assert!(browse.starts_with(&format!("{BASE_URL}/search/?")));
 	assert_eq!(discovery_filters().len(), 3);
+	let popular_only = search_url_with_filters(None, 1, &[FilterValue::Sort {
+		id: "sort".into(), index: 0, ascending: false,
+	}]).unwrap();
+	assert!(popular_only.starts_with(&format!("{BASE_URL}/search/?pp=1&lt=0&dl=0&tr=0")));
+	let downloads_only = search_url_with_filters(None, 1, &[FilterValue::Sort {
+		id: "sort".into(), index: 2, ascending: false,
+	}]).unwrap();
+	assert!(downloads_only.starts_with(&format!("{BASE_URL}/search/?pp=0&lt=0&dl=1&tr=0")));
+	let latest_only = search_url_with_filters(None, 1, &[FilterValue::Sort {
+		id: "sort".into(), index: 1, ascending: false,
+	}]).unwrap();
+	assert_eq!(latest_only, format!("{BASE_URL}/?page=1"));
 }
 #[aidoku_test]
 fn synthetic_pages_order_formats_and_validation() {
