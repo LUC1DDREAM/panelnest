@@ -569,7 +569,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 19);
+	assert_eq!(manifest["info"]["version"], 20);
 }
 
 use super::*;
