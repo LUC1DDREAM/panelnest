@@ -203,8 +203,7 @@ fn synthetic_pages_order_formats_and_validation() {
 
 #[aidoku_test]
 fn discovery_home_has_working_latest_listing() {
-	let doc = Html::parse_with_url(r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"></a></div><div class="caption">Sample</div></div>"#, BASE_URL).unwrap();
-	let home = parse_home(&doc).unwrap();
+	let home = home_layout();
 	assert_eq!(home.components.len(), 4);
 	for (index, (id, title)) in [
 		("latest", "Latest"),
@@ -219,7 +218,7 @@ fn discovery_home_has_working_latest_listing() {
 		if let aidoku::HomeComponentValue::Scroller { entries, listing } =
 			&home.components[index].value
 		{
-			assert_eq!(entries.len(), 1);
+			assert!(entries.is_empty());
 			let listing = listing.as_ref().unwrap();
 			assert_eq!(listing.id, *id);
 		} else {
@@ -248,9 +247,36 @@ fn discovery_home_has_working_latest_listing() {
 	);
 	assert!(listing_url("popular-today", 1).is_err());
 	assert!(listing_url("latest", 0).is_err());
-	assert!(
-		parse_home(&Html::parse("<div class='container'>Access denied</div>").unwrap()).is_err()
-	);
+	let doc = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"></a></div><div class="caption">Sample</div></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let latest = parse_search(&doc);
+	let component = listing_component_from_result("latest", "Latest", latest);
+	let mut home = home_layout();
+	update_home_component(&mut home, component);
+	if let aidoku::HomeComponentValue::Scroller { entries, listing } = &home.components[0].value {
+		assert_eq!(entries.len(), 1);
+		assert_eq!(listing.as_ref().unwrap().id, "latest");
+	} else {
+		panic!("expected latest scroller");
+	}
+	let popular_doc = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/43/"></a></div><div class="caption">Popular</div></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let component = listing_component_from_result("popular", "Popular", parse_search(&popular_doc));
+	update_home_component(&mut home, component);
+	if let aidoku::HomeComponentValue::Scroller { entries, listing } = &home.components[1].value {
+		assert_eq!(entries.len(), 1);
+		assert_eq!(listing.as_ref().unwrap().id, "popular");
+		assert_eq!(entries[0].title, "Popular");
+	} else {
+		panic!("expected popular scroller");
+	}
+	assert!(parse_search(&Html::parse("<div class='container'>Access denied</div>").unwrap()).entries.is_empty());
 }
 
 #[aidoku_test]

@@ -1,13 +1,15 @@
 #![no_std]
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterValue,
-	ImageRequestProvider, Manga, MangaPageResult, MangaStatus, MultiSelectFilter, Page,
-	PageContent, Result, SortFilter, Source, TextFilter, Viewer,
+	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider, Manga,
+	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, Result, SortFilter, Source,
+	TextFilter, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
 		net::{Request, TimeUnit, set_rate_limit},
 	},
+	std::send_partial_result,
 	prelude::*,
 };
 macro_rules! ensure {
@@ -500,15 +502,14 @@ fn listing_url(id: &str, page: i32) -> Result<String> {
 		_ => bail!("Unsupported listing"),
 	}
 }
-fn listing_component(doc: &Document, id: &str, title: &str) -> Result<aidoku::HomeComponent> {
-	let result = parse_search(doc);
-	ensure!(
-		!result.entries.is_empty(),
-		"Latest unavailable or site layout changed"
-	);
-	Ok(aidoku::HomeComponent {
+fn listing_component_from_result(
+	id: &str,
+	title: &str,
+	result: MangaPageResult,
+) -> HomeComponent {
+	HomeComponent {
 		title: Some(title.into()),
-		value: aidoku::HomeComponentValue::Scroller {
+		value: HomeComponentValue::Scroller {
 			entries: result.entries.into_iter().map(Into::into).collect(),
 			listing: Some(aidoku::Listing {
 				id: id.into(),
@@ -517,21 +518,104 @@ fn listing_component(doc: &Document, id: &str, title: &str) -> Result<aidoku::Ho
 			}),
 		},
 		..Default::default()
-	})
+	}
 }
-fn parse_home(doc: &Document) -> Result<aidoku::HomeLayout> {
-	let components = vec![
-		listing_component(doc, "latest", "Latest")?,
-		listing_component(doc, "popular", "Popular")?,
-		listing_component(doc, "top-rated", "Top Rated")?,
-		listing_component(doc, "downloaded", "Downloaded")?,
-	];
-
-	Ok(aidoku::HomeLayout { components })
+fn home_layout() -> HomeLayout {
+	HomeLayout {
+		components: vec![
+			HomeComponent {
+				title: Some("Latest".into()),
+				value: HomeComponentValue::Scroller {
+					entries: Vec::new(),
+					listing: Some(aidoku::Listing {
+						id: "latest".into(),
+						name: "Latest".into(),
+						..Default::default()
+					}),
+				},
+				..Default::default()
+			},
+			HomeComponent {
+				title: Some("Popular".into()),
+				value: HomeComponentValue::Scroller {
+					entries: Vec::new(),
+					listing: Some(aidoku::Listing {
+						id: "popular".into(),
+						name: "Popular".into(),
+						..Default::default()
+					}),
+				},
+				..Default::default()
+			},
+			HomeComponent {
+				title: Some("Top Rated".into()),
+				value: HomeComponentValue::Scroller {
+					entries: Vec::new(),
+					listing: Some(aidoku::Listing {
+						id: "top-rated".into(),
+						name: "Top Rated".into(),
+						..Default::default()
+					}),
+				},
+				..Default::default()
+			},
+			HomeComponent {
+				title: Some("Downloaded".into()),
+				value: HomeComponentValue::Scroller {
+					entries: Vec::new(),
+					listing: Some(aidoku::Listing {
+						id: "downloaded".into(),
+						name: "Downloaded".into(),
+						..Default::default()
+					}),
+				},
+				..Default::default()
+			},
+		],
+	}
+}
+fn update_home_component(home: &mut HomeLayout, component: HomeComponent) {
+	if let HomeComponentValue::Scroller { listing, .. } = &component.value
+		&& let Some(listing) = listing
+		&& let Some(item) = home.components.iter_mut().find(|item| {
+			matches!(&item.value, HomeComponentValue::Scroller { listing: Some(existing), .. } if existing.id == listing.id)
+		})
+	{
+		*item = component;
+	}
 }
 impl aidoku::Home for GallerySource {
-	fn get_home(&self) -> Result<aidoku::HomeLayout> {
-		parse_home(&Request::get(listing_url("latest", 1)?)?.html()?)
+	fn get_home(&self) -> Result<HomeLayout> {
+		let mut home = home_layout();
+		send_partial_result(&HomePartialResult::Layout(home.clone()));
+		let latest = listing_url("latest", 1)
+			.and_then(|url| Request::get(url)?.html())
+			.and_then(|doc| {
+				let result = parse_search(&doc);
+				ensure!(
+					!result.entries.is_empty(),
+					"Latest unavailable or site layout changed"
+				);
+				Ok(result)
+			});
+		let latest = latest?;
+		let component = listing_component_from_result("latest", "Latest", latest);
+		update_home_component(&mut home, component.clone());
+		send_partial_result(&HomePartialResult::Component(component));
+
+		for (id, title) in [("popular", "Popular"), ("top-rated", "Top Rated"), ("downloaded", "Downloaded")] {
+			let result = listing_url(id, 1)
+				.and_then(|url| Request::get(url)?.html())
+				.and_then(|doc| Ok(parse_search(&doc)));
+			if let Ok(result) = result {
+				if !result.entries.is_empty() {
+					let component = listing_component_from_result(id, title, result);
+					update_home_component(&mut home, component.clone());
+					send_partial_result(&HomePartialResult::Component(component));
+				}
+			}
+		}
+		Ok(home)
 	}
 }
 impl DynamicFilters for GallerySource {
