@@ -1,13 +1,13 @@
 {
   "id": "en.luc1d-weebcentral",
   "version": 13,
-  "sha256": null,
-  "bytes": 0,
+  "sha256": "d0f36055daee60a764f4d968a1a533847d61370971d205a1c60a3dc0e0f17d81",
+  "bytes": 71750,
   "languages": [
     "en"
   ],
   "contentRating": 1,
-  "package_verified": false,
+  "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
   "fixture_tests_passed": 14,
