@@ -1,7 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 18)
+## Discovery (source version 19)
+Version 19 exposes Aidoku page descriptions using the already validated reader image filenames, so each page shows its page number without another network request.
 Version 18 streams the initial Latest/Top Rated home layout immediately, then sends each available sidebar ranking as soon as it returns. Users can browse the core sections while the remaining rankings load.
 Version 17 expands the Home page with browsable Latest, Top Rated, Most Faved, Most Fapped and Most Downloaded sections. The three sidebar rankings are requested independently and omitted individually when unavailable, so a ranking failure does not hide the rest of Home. The ranking HTML uses the same CSRF-protected official sidebar route as its existing dynamic catalog listings.
 Version 16 adds a Language filter from the site's official `/languages/popular/` directory. All 26 listed categories are available, including the site's translated, rewrite and text-cleaning classifications. Selected values open the corresponding `/language/<slug>/` routes and preserve Latest/Popular sorting and pagination.
