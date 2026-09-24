@@ -86,6 +86,9 @@ impl Source for WeebCentral {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
+		if page < 1 {
+			bail!("Invalid page");
+		}
 		let offset = (page - 1) * FETCH_LIMIT;
 
 		let url = format!(

@@ -32,3 +32,8 @@ Default tests: 5 passed, 1 ignored. Live smoke: failed with explicit website
 access-blocked error. Release build and package/schema/icon/WASM verification
 passed. Tests preserve the existing synthetic nonexplicit HTML fixtures and
 add sort mapping and challenge rejection. No iOS/device proof.
+
+Search rejects page numbers below 1 before calculating the offset, matching the
+listing handler and avoiding invalid negative-offset requests. The public
+capability index also records the existing image request provider, which sets
+the site Referer for chapter page requests.

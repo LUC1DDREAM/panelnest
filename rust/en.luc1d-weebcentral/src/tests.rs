@@ -87,3 +87,11 @@ fn search_query_does_not_inject_parameters() {
 	assert!(query.contains("%26"));
 	assert!(!query.contains("&offset=999"));
 }
+
+#[aidoku_test]
+fn search_rejects_nonpositive_page_before_request() {
+	use aidoku::Source;
+	let source = WeebCentral::new();
+	assert!(source.get_search_manga_list(None, 0, vec![]).is_err());
+	assert!(source.get_search_manga_list(None, -1, vec![]).is_err());
+}
