@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-nhentai",
-  "version": 4,
+  "version": 5,
   "sha256": "c13c03d8e82272614cf2a0403c3d3325f69882ecdb74152d8f582ddb3566fe85",
   "bytes": 90040,
   "languages": [
@@ -13,7 +13,7 @@
   "package_verified": true,
   "runtime_tested": false,
   "ios_tested": false,
-  "fixture_tests_passed": 5,
+  "fixture_tests_passed": 6,
   "live_suite_tests_passed": 5,
   "live_suite_tests_failed": 1,
   "live_suite_failed": true,
@@ -26,7 +26,8 @@
     "home",
     "listings",
     "filters",
-    "deep-links"
+    "deep-links",
+    "alternate-covers"
   ],
   "package_hash_scope": "Local Windows [PN] metadata release; CI archive bytes may differ.",
   "live_suite_scope": "Worker run including fixture tests; not repeated during integration."

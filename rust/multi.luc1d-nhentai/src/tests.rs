@@ -106,10 +106,10 @@ fn fixture_image_paths_preserve_host_and_slashes() {
 
 #[aidoku_test]
 fn alternate_cover_variants_are_safe_and_use_official_image_hosts() {
-	let covers = super::models::cover_variants("12345", "fixture_media_123", "cover.jpg");
+	let covers = super::models::cover_variants("12345", "fixturemedia123", "cover.jpg");
 	assert_eq!(covers.len(), 2);
-	assert_eq!(covers[0], "https://i.nhentai.net/galleries/fixture_media_123/cover.jpg");
-	assert_eq!(covers[1], "https://t.nhentai.net/galleries/fixture_media_123/cover.jpg");
+	assert_eq!(covers[0], "https://i.nhentai.net/galleries/fixturemedia123/cover.jpg");
+	assert_eq!(covers[1], "https://t.nhentai.net/galleries/fixturemedia123/cover.jpg");
 	assert!(super::models::cover_variants("../123", "fixture", "cover.jpg").is_empty());
 	assert!(super::models::cover_variants("123", "fixture/../../host", "cover.jpg").is_empty());
 	assert!(super::models::cover_variants("123", "fixture", "cover.unknown").is_empty());
