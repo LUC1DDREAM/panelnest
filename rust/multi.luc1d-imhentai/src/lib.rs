@@ -68,10 +68,12 @@ fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 	search_url_with_filters(query, page, &[])
 }
 fn deep_link_key(url: &str) -> Option<String> {
-	if !url.starts_with(BASE_URL) {
+	let rest = url.strip_prefix("https://")?;
+	let (host, path) = rest.split_once('/')?;
+	if host != BASE_URL.trim_start_matches("https://") || !path.starts_with("gallery/") {
 		return None;
 	}
-	key_from_url(url)
+	key_from_url(&format!("{BASE_URL}/{path}"))
 }
 fn search_url_with_filters(
 	query: Option<&str>,

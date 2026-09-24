@@ -263,6 +263,8 @@ fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 		Some("123".into())
 	);
 	assert!(deep_link_key("https://imhentai.xxx.evil/gallery/123/").is_none());
+	assert!(deep_link_key("https://imhentai.xxx.evil.example/gallery/123/").is_none());
+	assert!(deep_link_key("http://imhentai.xxx/gallery/123/").is_none());
 	assert!(deep_link_key("https://example.org/gallery/123/").is_none());
 	assert!(deep_link_key("https://imhentai.xxx/gallery/nope/").is_none());
 	assert_eq!(
