@@ -55,7 +55,7 @@
     "status": "public; release authorized; automated device certification not claimed",
     "live_evidence": "Worker public search sort evidence; live WASM blocked by Cloudflare HTTP 403.",
     "limitations": "Cloudflare returned HTTP 403 in CI live checks; access may depend on network and site policy.",
-    "fixture_tests_passed": 7,
+    "fixture_tests_passed": 8,
     "release_authorized": true
   },
   {

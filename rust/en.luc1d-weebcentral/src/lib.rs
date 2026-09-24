@@ -495,4 +495,10 @@ impl DeepLinkHandler for WeebCentral {
 	}
 }
 
-register_source!(WeebCentral, ListingProvider, Home, DeepLinkHandler);
+register_source!(
+	WeebCentral,
+	ListingProvider,
+	Home,
+	ImageRequestProvider,
+	DeepLinkHandler
+);

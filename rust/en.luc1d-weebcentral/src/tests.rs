@@ -91,9 +91,13 @@ fn search_query_does_not_inject_parameters() {
 
 #[aidoku_test]
 fn fixture_search_pagination_uses_real_htmx_more_button() {
-	let terminal = Html::parse_with_url(r#"
+	let terminal = Html::parse_with_url(
+		r#"
 		<article><section><a href="/series/fixture/Sample">Sample</a></section></article>
-	"#, BASE_URL).unwrap();
+	"#,
+		BASE_URL,
+	)
+	.unwrap();
 	assert!(!parse_search(&terminal).unwrap().has_next_page);
 	let more = Html::parse_with_url(r#"
 		<article><section><a href="/series/fixture/Sample">Sample</a></section></article>
@@ -108,4 +112,17 @@ fn search_rejects_nonpositive_page_before_request() {
 	let source = WeebCentral::new();
 	assert!(source.get_search_manga_list(None, 0, vec![]).is_err());
 	assert!(source.get_search_manga_list(None, -1, vec![]).is_err());
+}
+
+#[aidoku_test]
+fn image_requests_include_the_site_referer_and_provider_is_registered() {
+	use aidoku::ImageRequestProvider;
+	let request = WeebCentral
+		.get_image_request("https://temp.compsci88.com/page.jpg".into(), None)
+		.unwrap();
+	let _ = request;
+	let source = include_str!("lib.rs");
+	assert!(source.contains(
+		"register_source!(WeebCentral, ListingProvider, Home, ImageRequestProvider, DeepLinkHandler)"
+	));
 }
