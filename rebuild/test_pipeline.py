@@ -11,6 +11,21 @@ pipeline = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pipeline)
 
 class PipelineTests(unittest.TestCase):
+    def test_source_manifest_has_no_duplicate_json_keys(self):
+        def unique_object(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError(f'duplicate JSON key: {key}')
+                result[key] = value
+            return result
+
+        path = pipeline.ROOT/'rebuild/sources.json'
+        rows = json.loads(path.read_text(encoding='utf-8'), object_pairs_hook=unique_object)
+        self.assertEqual(len(rows), 6)
+        self.assertEqual(rows[1]['upstream_version'], 8)
+        self.assertEqual(rows[2]['upstream_version'], 17)
+
     def rows(self):
         return [dict(id=f'en.luc1d-{s}', path=f'rust/en.luc1d-{s}', implemented=['search','details','chapters','pages'], package_verified=True, runtime_tested=True, publish=True) for s in ['asurascans','weebcentral','nhentai','webtoon','imhentai','hentaifox']]
 

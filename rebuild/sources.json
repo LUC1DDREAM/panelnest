@@ -44,7 +44,6 @@
   {
     "id": "en.luc1d-weebcentral",
     "path": "rust/en.luc1d-weebcentral",
-    "upstream_version": 12,
     "upstream_id": "en.weebcentral",
     "upstream_version": 8,
     "upstream_commit": "0f537147588d7fec7d70a22a9d7084376cd5c2b7",
@@ -85,7 +84,6 @@
   {
     "id": "multi.luc1d-nhentai",
     "path": "rust/multi.luc1d-nhentai",
-    "upstream_version": 10,
     "upstream_id": "multi.nhentai",
     "upstream_version": 17,
     "upstream_commit": "0f537147588d7fec7d70a22a9d7084376cd5c2b7",
