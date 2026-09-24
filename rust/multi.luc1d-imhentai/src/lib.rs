@@ -305,7 +305,7 @@ fn discovery_filters() -> Vec<Filter> {
 		let mut filter = TextFilter::default();
 		filter.id = id.into();
 		filter.title = Some(title.into());
-		filter.placeholder = Some(format!("Comma-separated; prefix - to exclude {title}"));
+		filter.placeholder = Some(format!("Comma-separated; prefix - to exclude {title}").into());
 		advanced.push(filter.into());
 	}
 	let mut filters = vec![sort.into(), categories.into(), languages.into()];
