@@ -13,7 +13,7 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 | Display name | Stable ID | Version |
 |---|---|---:|
 | Asura Scans [PN] | `en.luc1d-asurascans` | 11 |
-| Weeb Central [PN] | `en.luc1d-weebcentral` | 16 |
+| Weeb Central [PN] | `en.luc1d-weebcentral` | 17 |
 | nhentai [PN] | `multi.luc1d-nhentai` | 18 |
 | WEBTOON [PN] | `multi.luc1d-webtoon` | 17 |
 | IMHentai [PN] | `multi.luc1d-imhentai` | 20 |

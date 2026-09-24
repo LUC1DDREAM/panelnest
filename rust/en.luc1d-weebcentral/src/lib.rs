@@ -4,7 +4,7 @@ use aidoku::{
 	DynamicFilters, DynamicListings, Filter, FilterValue, Home, HomeComponent, HomeLayout,
 	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MultiSelectFilter, Page, PageContent, Result, SortFilter, SortFilterDefault, Source, TextFilter,
-	Viewer, PageContext, PageDescriptionProvider,
+	Viewer, PageContext, PageDescriptionProvider, UpdateStrategy,
 	alloc::{String, Vec, borrow::{Cow, ToOwned}, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -25,6 +25,14 @@ const REFERER: &str = "https://weebcentral.com/";
 const FETCH_LIMIT: i32 = 32;
 
 struct WeebCentral;
+
+fn library_update_strategy(status: MangaStatus) -> UpdateStrategy {
+	if status == MangaStatus::Completed {
+		UpdateStrategy::Never
+	} else {
+		UpdateStrategy::Always
+	}
+}
 
 fn numbered_reader_page(url: String, number: usize) -> Page {
 	let mut context = PageContext::new();
@@ -521,6 +529,7 @@ impl Source for WeebCentral {
 					.collect::<Vec<_>>()
 			});
 		}
+		manga.update_strategy = library_update_strategy(manga.status);
 
 		Ok(manga)
 	}

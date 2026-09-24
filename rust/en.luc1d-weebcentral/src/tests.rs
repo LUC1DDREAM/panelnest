@@ -30,6 +30,19 @@ fn discovery_listings_use_real_search_sorts() {
 }
 
 #[aidoku_test]
+fn completed_series_skip_library_refresh_and_other_statuses_keep_refreshing() {
+	assert_eq!(library_update_strategy(MangaStatus::Completed), UpdateStrategy::Never);
+	for status in [
+		MangaStatus::Ongoing,
+		MangaStatus::Hiatus,
+		MangaStatus::Cancelled,
+		MangaStatus::Unknown,
+	] {
+		assert_eq!(library_update_strategy(status), UpdateStrategy::Always);
+	}
+}
+
+#[aidoku_test]
 fn dynamic_genre_listings_expose_every_official_genre_with_stable_ids() {
 	use aidoku::DynamicListings;
 	let listings = WeebCentral.get_dynamic_listings().unwrap();

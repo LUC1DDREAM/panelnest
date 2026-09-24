@@ -1,3 +1,7 @@
+## Discovery and library updates (package version 17)
+
+Completed series are excluded from periodic library refreshes. Ongoing, hiatus, cancelled and unknown titles remain refreshable.
+
 Version 16 adds numbered page descriptions to reader images and skips entries without valid HTTPS image URLs. Version 15 exposes all 38 official search tags as separate paginated Popular listings. Each listing uses a stable genre ID and the same included_tag search path and offset pagination as the site Advanced Search. Cloudflare may still block native requests in some environments.
 
 # Weeb Central (LUC1D)
