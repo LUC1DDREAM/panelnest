@@ -198,7 +198,35 @@ fn synthetic_pages_order_formats_and_validation() {
 	} else {
 		panic!("not a URL")
 	}
+	assert!(pages.iter().all(|page| page.has_description));
 	assert!(parse_pages(&Html::parse("<html></html>").unwrap()).is_err());
+}
+
+#[aidoku_test]
+fn page_descriptions_read_validated_reader_filenames() {
+	use aidoku::PageDescriptionProvider;
+	let source = GallerySource;
+	let page = Page {
+		content: PageContent::url("https://m2.imhentai.xxx/001/81/17.webp"),
+		has_description: true,
+		..Default::default()
+	};
+	assert_eq!(source.get_page_description(page).unwrap(), "Page 17");
+	for url in [
+		"https://m2.imhentai.xxx/001/81/x.webp",
+		"https://m2.imhentai.xxx/001/81/1.exe",
+		"https://m2.imhentai.xxx/001/81/1.webp/extra",
+	] {
+		assert!(
+			source
+				.get_page_description(Page {
+					content: PageContent::url(url),
+					..Default::default()
+				})
+				.is_err(),
+			"{url}"
+		);
+	}
 }
 
 #[aidoku_test]
@@ -312,7 +340,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 12);
+	assert_eq!(manifest["info"]["version"], 13);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -322,7 +350,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 12);
+	assert_eq!(manifest["info"]["version"], 13);
 }
 
 use super::*;

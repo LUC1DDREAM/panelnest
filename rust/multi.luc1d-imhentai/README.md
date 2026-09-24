@@ -1,7 +1,8 @@
 # imhentai (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 12)
+## Discovery (source version 13)
+Version 13 exposes Aidoku page descriptions using the already validated reader image filenames, so each page shows its page number without another network request.
 
 Version 11 adds the site's advanced search filters for tags, artists, groups, parodies and characters. Each accepts comma-separated terms and a leading minus sign excludes a term. The source maps these to the public advanced-search key syntax while retaining the selected sort, category and language flags. Advanced terms are sanitized and URL-encoded; combining advanced filters with the separate title query is rejected instead of silently dropping either input. The route and encoding follow the current public GalleryAdults provider implementation and are covered by offline WASM tests. IMHentai requests still return HTTP 403 in the worker environment, so the endpoint is not runtime-verified here.
 Home presents Latest, Popular, Top Rated and Downloaded scrollers; each links to its full paginated listing. The public site exposes `/popular/`, `/top-rated/` and `/downloaded/` browse pages. Worker runtime checks returned HTTP 403, so those routes are site-verified but not live-tested through Aidoku; no bypass was attempted.

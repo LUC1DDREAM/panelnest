@@ -2,8 +2,8 @@
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterValue,
 	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider, Manga,
-	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, Result, SortFilter, Source,
-	TextFilter, Viewer,
+	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, PageDescriptionProvider,
+	Result, SortFilter, Source, TextFilter, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -475,10 +475,29 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 		};
 		pages.push(Page {
 			content: PageContent::url(format!("https://{host}/{dir}/{id}/{n}.{ext}")),
+			has_description: true,
 			..Default::default()
 		});
 	}
 	Ok(pages)
+}
+impl PageDescriptionProvider for GallerySource {
+	fn get_page_description(&self, page: Page) -> Result<String> {
+		let PageContent::Url(url, _) = page.content else {
+			return Err(error!("Page does not contain an image URL"));
+		};
+		let filename = url.rsplit('/').next().unwrap_or_default();
+		let (number, extension) = filename
+			.split_once('.')
+			.ok_or_else(|| error!("Invalid page image URL"))?;
+		if number.is_empty()
+			|| !number.bytes().all(|byte| byte.is_ascii_digit())
+			|| !matches!(extension, "jpg" | "png" | "webp" | "gif" | "bmp")
+		{
+			return Err(error!("Invalid page image URL"));
+		}
+		Ok(format!("Page {number}"))
+	}
 }
 fn listing_url(id: &str, page: i32) -> Result<String> {
 	ensure!(page > 0, "Invalid page");
@@ -714,7 +733,8 @@ aidoku::register_source!(
 	Home,
 	ListingProvider,
 	DynamicFilters,
-	DeepLinkHandler
+	DeepLinkHandler,
+	PageDescriptionProvider
 );
 
 #[cfg(test)]
