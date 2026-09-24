@@ -2,7 +2,7 @@
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
 	Filter, FilterValue, ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page,
-	PageContent, Result, SelectFilter, SortFilter, Source, Viewer,
+	PageContent, Result, SelectFilter, SortFilter, Source, TextFilter, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -31,6 +31,13 @@ const POPULAR_TAXONOMIES: [(&str, &str, &str); 4] = [
 	("characters", "character", "Character"),
 	("parodies", "parody", "Parody"),
 	("groups", "group", "Group"),
+];
+const TEXT_TAXONOMIES: [(&str, &str, &str); 5] = [
+	("tag-name", "tag", "Tag"),
+	("artist-name", "artist", "Artist"),
+	("character-name", "character", "Character"),
+	("parody-name", "parody", "Parody"),
+	("group-name", "group", "Group"),
 ];
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
@@ -107,6 +114,47 @@ fn taxonomy_url(kind: &str, slug: &str, page: i32, popular: bool) -> Result<Stri
 		format!("{BASE_URL}/{kind}/{slug}/pag/{page}/")
 	})
 }
+fn taxonomy_text_slug(value: &str) -> Result<String> {
+	let mut slug = String::new();
+	for character in value.trim().chars() {
+		if !character.is_ascii() {
+			bail!("Enter an ASCII site name or slug");
+		}
+		let character = character.to_ascii_lowercase();
+		if character.is_ascii_alphanumeric() || character == '.' {
+			slug.push(character);
+		} else if !slug.is_empty() && !slug.ends_with('-') {
+			slug.push('-');
+		}
+	}
+	while slug.ends_with('-') {
+		slug.pop();
+	}
+	ensure!(
+		!slug.is_empty() && slug != "." && slug != ".." && !slug.contains(".."),
+		"Invalid taxonomy name or slug"
+	);
+	Ok(slug)
+}
+fn tag_url(slug: &str, page: i32, popular: bool) -> Result<String> {
+	ensure!(page > 0, "Invalid page");
+	ensure!(
+		!slug.is_empty()
+			&& slug != "."
+			&& slug != ".."
+			&& !slug.contains("..")
+			&& slug.bytes().all(|byte| {
+				byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-' || byte == b'.'
+			}),
+		"Invalid tag"
+	);
+	let popular_path = if popular { "popular/" } else { "" };
+	Ok(if page == 1 {
+		format!("{BASE_URL}/tag/{slug}/{popular_path}")
+	} else {
+		format!("{BASE_URL}/tag/{slug}/{popular_path}pag/{page}/")
+	})
+}
 fn search_url_with_filters(
 	query: Option<&str>,
 	page: i32,
@@ -117,30 +165,41 @@ fn search_url_with_filters(
 	let popular = filters.iter().any(
 		|filter| matches!(filter, FilterValue::Sort { id, index: 1, .. } if id.as_str() == "sort"),
 	);
-	let selected_taxonomies = filters
-		.iter()
-		.filter_map(|filter| match filter {
+	let mut selected_taxonomies = Vec::new();
+	for filter in filters {
+		match filter {
 			FilterValue::Select { id, value } if !value.is_empty() => {
-				if id == "tag" {
-					Some(("tag", value.as_str()))
+				let kind = if id == "tag" {
+					Some("tag")
 				} else {
 					POPULAR_TAXONOMIES
 						.iter()
 						.find(|(_, filter_id, _)| *filter_id == id)
-						.map(|(_, kind, _)| (*kind, value.as_str()))
+						.map(|(_, kind, _)| *kind)
+				};
+				if let Some(kind) = kind {
+					selected_taxonomies.push((kind, value.as_str().to_string()));
 				}
 			}
-			_ => None,
-		})
-		.collect::<Vec<_>>();
+			FilterValue::Text { id, value } if !value.trim().is_empty() => {
+				if let Some((_, kind, _)) =
+					TEXT_TAXONOMIES.iter().find(|(filter_id, _, _)| *filter_id == id)
+				{
+					selected_taxonomies.push((*kind, taxonomy_text_slug(value)?));
+				}
+			}
+			_ => {}
+		}
+	}
 	ensure!(
 		selected_taxonomies.len() <= 1,
 		"Choose only one gallery category"
 	);
-	if let Some((kind, slug)) = selected_taxonomies.first() {
+	if !selected_taxonomies.is_empty() {
+		let (kind, slug) = &selected_taxonomies[0];
 		ensure!(query.is_empty(), "Clear text search to browse a category");
 		return if *kind == "tag" {
-			popular_tag_url(&format!("popular-tag-{slug}"), page, popular)
+			tag_url(slug, page, popular)
 		} else {
 			taxonomy_url(kind, slug, page, popular)
 		};
@@ -186,7 +245,15 @@ fn search_filters() -> Vec<Filter> {
 		index: 0,
 		ascending: false,
 	});
-	vec![sort.into()]
+	let mut filters = vec![sort.into()];
+	for (id, _, title) in TEXT_TAXONOMIES {
+		let mut filter = TextFilter::default();
+		filter.id = id.into();
+		filter.title = Some(format!("Browse {title}").into());
+		filter.placeholder = Some(format!("Enter a {title} name or slug").into());
+		filters.push(filter.into());
+	}
+	filters
 }
 fn taxonomy_filter(id: &'static str, title: &'static str, values: Vec<(String, String)>) -> Filter {
 	let mut filter = SelectFilter::default();

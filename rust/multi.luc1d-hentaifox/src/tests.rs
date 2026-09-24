@@ -203,6 +203,67 @@ fn popular_taxonomy_filters_parse_safe_live_categories() {
 }
 
 #[aidoku_test]
+fn freeform_taxonomy_filters_reach_categories_outside_the_popular_top_fifty() {
+	assert_eq!(taxonomy_text_slug("Naruto Uzumaki").unwrap(), "naruto-uzumaki");
+	assert_eq!(taxonomy_text_slug(".EXE").unwrap(), ".exe");
+	assert!(taxonomy_text_slug("../escape").is_err());
+	assert!(taxonomy_text_slug("日本語").is_err());
+
+	let filters = search_filters();
+	assert_eq!(filters.len(), 6);
+	for (index, id) in [
+		"tag-name",
+		"artist-name",
+		"character-name",
+		"parody-name",
+		"group-name",
+	]
+	.iter()
+	.enumerate()
+	{
+		assert_eq!(filters[index + 1].id.as_ref(), *id);
+	}
+
+	let tag = vec![
+		FilterValue::Text {
+			id: "tag-name".into(),
+			value: "Big Breasts".into(),
+		},
+		FilterValue::Sort {
+			id: "sort".into(),
+			index: 1,
+			ascending: false,
+		},
+	];
+	assert_eq!(
+		search_url_with_filters(None, 2, &tag).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/popular/pag/2/")
+	);
+
+	let artist = vec![FilterValue::Text {
+		id: "artist-name".into(),
+		value: "Daum".into(),
+	}];
+	assert_eq!(
+		search_url_with_filters(None, 1, &artist).unwrap(),
+		format!("{BASE_URL}/artist/daum/")
+	);
+	assert!(search_url_with_filters(Some("gallery"), 1, &artist).is_err());
+
+	let conflicting = vec![
+		FilterValue::Select {
+			id: "artist".into(),
+			value: "daum".into(),
+		},
+		FilterValue::Text {
+			id: "group-name".into(),
+			value: "circle".into(),
+		},
+	];
+	assert!(search_url_with_filters(None, 1, &conflicting).is_err());
+}
+
+#[aidoku_test]
 fn popular_taxonomy_filter_exposes_names_and_validated_slugs() {
 	let filter = taxonomy_filter(
 		"artist",
@@ -386,7 +447,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 14);
+	assert_eq!(manifest["info"]["version"], 15);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -458,7 +519,7 @@ fn search_sort_filter_preserves_latest_and_maps_popular_to_site_parameter() {
 		search_url_with_filters(Some("two words"), 3, &latest).unwrap(),
 		search_url(Some("two words"), 3).unwrap()
 	);
-	assert_eq!(search_filters().len(), 1);
+	assert_eq!(search_filters().len(), 6);
 	assert_eq!(
 		search_url_with_filters(None, 1, &popular).unwrap(),
 		format!("{BASE_URL}/search/?q=&page=1&sort=popular")

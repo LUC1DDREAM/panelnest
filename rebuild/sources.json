@@ -238,7 +238,7 @@
       "Most Fapped",
       "Most Downloaded"
     ],
-    "limitations": "Sidebar rankings are finite; no temporal popularity listings or language selector. Artist, character, parody and group filters expose the current 50 most popular entries per category; tag filter exposes the popular tag directory.",
+    "limitations": "Sidebar rankings are finite; no temporal popularity listings or language selector. Quick-select menus show 25 popular tags and up to 50 popular entries per other category; freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site's ASCII slug.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -246,7 +246,7 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Live site routes confirmed latest and Popular pages for tag categories at /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. The source now maps the Popular filter and selected tag together; regression tests verify route and pagination. Taxonomy routes remain based on official page links.",
+    "live_evidence": "Live site routes confirmed latest and Popular pages for tag categories at /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. Regression tests cover name-to-slug routing, quick-select and freeform taxonomy selection, sort and pagination. Taxonomy routes follow official page links.",
     "fixture_tests_passed": 19,
     "release_authorized": true
   }
