@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-webtoon",
-  "version": 17,
-  "sha256": "165a10cf70ac0b176a9b7b5f0e33b25a93118d0919fd33d20171b05906f93b04",
-  "bytes": 76166,
+  "version": 18,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "en",
     "zh",
@@ -16,8 +16,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 24,
-  "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. The official episode API's viewerLink includes both title_no and episode_no; the source now maps these links to exact series and chapter keys. All-results pagination now follows page numbers and stops on empty results. This is source/API fixture evidence, not a live Aidoku/device run. WASM fixtures verify discovery menus, new genres, and episode deep-link routing. Regression testing now enforces exactly 51 unique canonical genre-sort listings (17 genres × 3 sorts) and maps Home sections to those same canonical listing IDs. The implementation registry also confirms ImageRequestProvider is registered and sends the official m.webtoons.com Referer with page image requests. Version 17 registers PageDescriptionProvider and carries one-based page numbers in each ordered reader PageContext; fixtures verify descriptions use image order and require no extra requests.",
+  "fixture_tests_passed": 25,
+  "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. The official episode API's viewerLink includes both title_no and episode_no; the source now maps these links to exact series and chapter keys. All-results pagination now follows page numbers and stops on empty results. This is source/API fixture evidence, not a live Aidoku/device run. WASM fixtures verify discovery menus, new genres, and episode deep-link routing. Regression testing now enforces exactly 51 unique canonical genre-sort listings (17 genres × 3 sorts) and maps Home sections to those same canonical listing IDs. The implementation registry also confirms ImageRequestProvider is registered and sends the official m.webtoons.com Referer with page image requests. Version 17 registers PageDescriptionProvider and carries one-based page numbers in each ordered reader PageContext; fixtures verify descriptions use image order and require no extra requests. Version 18 maps completed series to Aidoku UpdateStrategy::Never; ongoing and unknown statuses remain refreshable. Offline fixtures verify the status mapping.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

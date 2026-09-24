@@ -1,3 +1,7 @@
+## Discovery and library updates (package version 18)
+
+Completed series are excluded from periodic library refreshes. Ongoing and unknown titles remain refreshable.
+
 # Official WEBTOON (LUC1D)
 
 Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 17).

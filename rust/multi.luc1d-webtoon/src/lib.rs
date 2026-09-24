@@ -3,7 +3,7 @@ use aidoku::{
 	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
 	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider,
 	Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
-	PageDescriptionProvider,
+	PageDescriptionProvider, UpdateStrategy,
 	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
 	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	imports::{
@@ -16,6 +16,15 @@ use aidoku::{
 };
 use serde_json::Value;
 const BASE: &str = "https://m.webtoons.com";
+
+fn library_update_strategy(status: MangaStatus) -> UpdateStrategy {
+	if status == MangaStatus::Completed {
+		UpdateStrategy::Never
+	} else {
+		UpdateStrategy::Always
+	}
+}
+
 struct Webtoon;
 fn locale_for_language_code(code: &str) -> &'static str {
 	match code {
@@ -472,6 +481,7 @@ impl Source for Webtoon {
 			chapters.reverse();
 			manga.chapters = Some(chapters);
 		}
+		manga.update_strategy = library_update_strategy(manga.status);
 		Ok(manga)
 	}
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {

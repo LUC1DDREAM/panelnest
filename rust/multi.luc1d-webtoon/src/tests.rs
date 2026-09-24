@@ -1,5 +1,13 @@
 use super::*;
 use aidoku::FilterKind;
+
+#[aidoku_test]
+fn completed_series_skip_library_refresh_and_other_statuses_keep_refreshing() {
+	assert_eq!(library_update_strategy(MangaStatus::Completed), UpdateStrategy::Never);
+	for status in [MangaStatus::Ongoing, MangaStatus::Hiatus, MangaStatus::Cancelled, MangaStatus::Unknown] {
+		assert_eq!(library_update_strategy(status), UpdateStrategy::Always);
+	}
+}
 #[aidoku_test]
 fn reader_pages_carry_ordered_descriptions_without_network_requests() {
 	use aidoku::PageDescriptionProvider;
