@@ -3,7 +3,7 @@ use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
 	Filter, FilterValue, HomePartialResult, ImageRequestProvider, Listing, Manga, MangaPageResult,
 	MangaStatus, Page, PageContent, PageDescriptionProvider, Result, SelectFilter, SortFilter,
-	Source, TextFilter, Viewer,
+	Source, TextFilter, UpdateStrategy, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -73,6 +73,7 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 					cover: el.select_first(".inner_thumb img").and_then(|e| image(&e)),
 					content_rating: ContentRating::NSFW,
 					status: MangaStatus::Completed,
+					update_strategy: UpdateStrategy::Never,
 					viewer: Viewer::RightToLeft,
 					..Default::default()
 				})
@@ -273,6 +274,7 @@ fn taxonomy_filter(id: &'static str, title: &'static str, values: Vec<(String, S
 	filter.into()
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
+	manga.update_strategy = UpdateStrategy::Never;
 	ensure!(
 		!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()),
 		"Invalid gallery key"
@@ -345,6 +347,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 			names("ul.tags a")
 		});
 		manga.status = MangaStatus::Completed;
+		manga.update_strategy = UpdateStrategy::Never;
 		manga.content_rating = ContentRating::NSFW;
 		manga.viewer = Viewer::RightToLeft;
 		manga.url = Some(format!("{BASE_URL}/gallery/{}/", manga.key));
@@ -626,6 +629,7 @@ fn parse_sidebar_items(doc: &Document) -> Result<MangaPageResult> {
 					cover: image(&img),
 					content_rating: ContentRating::NSFW,
 					status: MangaStatus::Completed,
+					update_strategy: UpdateStrategy::Never,
 					viewer: Viewer::RightToLeft,
 					..Default::default()
 				})
@@ -757,6 +761,7 @@ fn parse_daily_top_rated(doc: &Document) -> Vec<(&'static str, Manga)> {
 				cover: image(&img),
 				content_rating: ContentRating::NSFW,
 				status: MangaStatus::Completed,
+				update_strategy: UpdateStrategy::Never,
 				viewer: Viewer::RightToLeft,
 				..Default::default()
 			},
@@ -897,6 +902,7 @@ fn parse_top_rated(doc: &Document) -> Result<MangaPageResult> {
 					cover: image(&img),
 					content_rating: ContentRating::NSFW,
 					status: MangaStatus::Completed,
+					update_strategy: UpdateStrategy::Never,
 					viewer: Viewer::RightToLeft,
 					..Default::default()
 				})
@@ -937,10 +943,11 @@ impl Source for GallerySource {
 	}
 	fn get_manga_update(
 		&self,
-		manga: Manga,
+		mut manga: Manga,
 		needs_details: bool,
 		needs_chapters: bool,
 	) -> Result<Manga> {
+		manga.update_strategy = UpdateStrategy::Never;
 		if !needs_details && !needs_chapters {
 			return Ok(manga);
 		}

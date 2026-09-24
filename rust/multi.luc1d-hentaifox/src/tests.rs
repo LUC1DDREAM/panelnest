@@ -14,6 +14,7 @@ fn synthetic_details_and_chapter_flags() {
 	assert_eq!(m.title, "Sample 2");
 	assert_eq!(m.authors.unwrap()[0], "Artist 7");
 	assert_eq!(m.chapters.unwrap()[0].key, "42");
+	assert_eq!(m.update_strategy, UpdateStrategy::Never);
 	assert!(
 		update(
 			&doc,
@@ -154,6 +155,7 @@ fn daily_top_rated_today_and_yesterday_are_home_spotlights() {
 	assert_eq!(daily[0].0, "Daily Top Rated Today");
 	assert_eq!(daily[0].1.key, "173623");
 	assert_eq!(daily[0].1.title, "Today Pick");
+	assert_eq!(daily[0].1.update_strategy, UpdateStrategy::Never);
 	assert_eq!(daily[0].1.cover.as_deref(), Some("https://i3.hentaifox.com/today.jpg"));
 	assert_eq!(daily[1].0, "Daily Top Rated Yesterday");
 	assert_eq!(daily[1].1.key, "173529");
@@ -179,6 +181,7 @@ fn top_rated_is_scoped_finite_and_not_today() {
 	assert_eq!(result.entries.len(), 1);
 	assert_eq!(result.entries[0].key, "77");
 	assert_eq!(result.entries[0].title, "Sample Rated");
+	assert_eq!(result.entries[0].update_strategy, UpdateStrategy::Never);
 	assert!(!result.has_next_page);
 	assert_eq!(listing_url("top-rated", 1).unwrap(), format!("{BASE_URL}/"));
 	assert!(parse_top_rated(&Html::parse("<div id='middle_sidebar'></div>").unwrap()).is_err());
@@ -204,6 +207,7 @@ fn dynamic_sidebar_rankings_are_registered_and_parse_scoped_entries() {
 	assert_eq!(result.entries.len(), 1);
 	assert_eq!(result.entries[0].key, "77");
 	assert_eq!(result.entries[0].title, "Sample Ranked");
+	assert_eq!(result.entries[0].update_strategy, UpdateStrategy::Never);
 	assert!(!result.has_next_page);
 	assert!(parse_sidebar_items(&Html::parse("<html></html>").unwrap()).is_err());
 }
@@ -645,6 +649,7 @@ fn synthetic_search() {
 	assert_eq!(result.entries.len(), 1);
 	assert_eq!(result.entries[0].key, "42");
 	assert_eq!(result.entries[0].title, "Sample");
+	assert_eq!(result.entries[0].update_strategy, UpdateStrategy::Never);
 	assert_eq!(
 		result.entries[0].cover,
 		Some(format!("{BASE_URL}/cover.png"))
