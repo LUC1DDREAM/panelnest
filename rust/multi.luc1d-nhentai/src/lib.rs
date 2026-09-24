@@ -298,12 +298,17 @@ impl AlternateCoverProvider for NHentai {
 	}
 }
 
-fn language_filter(tags: Vec<NHentaiTag>) -> Result<Filter> {
+fn taxonomy_filter(
+	tags: Vec<NHentaiTag>,
+	tag_type: &str,
+	id: &'static str,
+	title: &'static str,
+) -> Result<Filter> {
 	let mut options: Vec<Cow<'static, str>> = Vec::new();
 	let mut ids: Vec<Cow<'static, str>> = Vec::new();
 	for tag in tags {
 		let name = tag.name.trim();
-		if tag.r#type != "language"
+		if tag.r#type != tag_type
 			|| name.is_empty()
 			|| options.iter().any(|existing| existing.as_ref() == name)
 		{
@@ -313,11 +318,11 @@ fn language_filter(tags: Vec<NHentaiTag>) -> Result<Filter> {
 		ids.push(Cow::Owned(name.into()));
 	}
 	if options.is_empty() {
-		return Err(error!("nhentai language directory unavailable"));
+		return Err(error!("nhentai taxonomy directory unavailable"));
 	}
 	let mut filter = MultiSelectFilter::default();
-	filter.id = "languages".into();
-	filter.title = Some("Language".into());
+	filter.id = Cow::Borrowed(id);
+	filter.title = Some(Cow::Borrowed(title));
 	filter.options = options;
 	filter.ids = Some(ids);
 	Ok(filter.into())
@@ -345,7 +350,18 @@ impl DynamicFilters for NHentai {
 			}
 			tags.extend(response.result);
 		}
-		Ok(vec![language_filter(tags)?])
+		let artists: NHentaiTagsResponse = Request::get(format!(
+			"{API_URL}/tags/artist?sort=popular&page=1&per_page=120"
+		))?
+		.header("User-Agent", USER_AGENT)
+		.json_owned()?;
+		if !(1..=1000).contains(&artists.num_pages) || artists.result.is_empty() {
+			return Err(error!("Invalid nhentai artist directory"));
+		}
+		Ok(vec![
+			taxonomy_filter(tags, "language", "languages", "Language")?,
+			taxonomy_filter(artists.result, "artist", "artists", "Popular Artists")?,
+		])
 	}
 }
 

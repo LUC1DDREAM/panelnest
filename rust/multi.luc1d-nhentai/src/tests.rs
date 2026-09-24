@@ -136,40 +136,45 @@ fn details_include_language_metadata() {
 
 #[aidoku_test]
 fn dynamic_language_filter_uses_only_unique_language_tags() {
-	let filter = super::language_filter(aidoku::alloc::vec![
-		NHentaiTag {
-			id: 1,
-			name: "japanese".into(),
-			count: 340_913,
-			r#type: "language".into(),
-			url: "/language/japanese/".into(),
-			slug: Some("japanese".into()),
-		},
-		NHentaiTag {
-			id: 2,
-			name: "japanese".into(),
-			count: 340_913,
-			r#type: "language".into(),
-			url: "/language/japanese/".into(),
-			slug: Some("japanese".into()),
-		},
-		NHentaiTag {
-			id: 3,
-			name: "action".into(),
-			count: 10,
-			r#type: "tag".into(),
-			url: "/tag/action/".into(),
-			slug: Some("action".into()),
-		},
-		NHentaiTag {
-			id: 4,
-			name: "textless narrative".into(),
-			count: 1,
-			r#type: "language".into(),
-			url: "/language/textless-narrative/".into(),
-			slug: Some("textless-narrative".into()),
-		},
-	])
+	let filter = super::taxonomy_filter(
+		aidoku::alloc::vec![
+			NHentaiTag {
+				id: 1,
+				name: "japanese".into(),
+				count: 340_913,
+				r#type: "language".into(),
+				url: "/language/japanese/".into(),
+				slug: Some("japanese".into()),
+			},
+			NHentaiTag {
+				id: 2,
+				name: "japanese".into(),
+				count: 340_913,
+				r#type: "language".into(),
+				url: "/language/japanese/".into(),
+				slug: Some("japanese".into()),
+			},
+			NHentaiTag {
+				id: 3,
+				name: "action".into(),
+				count: 10,
+				r#type: "tag".into(),
+				url: "/tag/action/".into(),
+				slug: Some("action".into()),
+			},
+			NHentaiTag {
+				id: 4,
+				name: "textless narrative".into(),
+				count: 1,
+				r#type: "language".into(),
+				url: "/language/textless-narrative/".into(),
+				slug: Some("textless-narrative".into()),
+			},
+		],
+		"language",
+		"languages",
+		"Language",
+	)
 	.unwrap();
 	match filter.kind {
 		aidoku::FilterKind::MultiSelect { options, ids, .. } => {
@@ -181,6 +186,43 @@ fn dynamic_language_filter_uses_only_unique_language_tags() {
 			assert_eq!(ids[1].as_ref(), "textless narrative");
 		}
 		_ => panic!("expected multi-select language filter"),
+	}
+}
+
+#[aidoku_test]
+fn popular_artist_filter_uses_searchable_artist_tag_names() {
+	let filter = super::taxonomy_filter(
+		aidoku::alloc::vec![
+			NHentaiTag {
+				id: 1,
+				name: "ankoman".into(),
+				count: 1_075,
+				r#type: "artist".into(),
+				url: "/artist/ankoman/".into(),
+				slug: Some("ankoman".into()),
+			},
+			NHentaiTag {
+				id: 2,
+				name: "action".into(),
+				count: 10,
+				r#type: "tag".into(),
+				url: "/tag/action/".into(),
+				slug: Some("action".into()),
+			},
+		],
+		"artist",
+		"artists",
+		"Popular Artists",
+	)
+	.unwrap();
+	assert_eq!(filter.id.as_ref(), "artists");
+	match filter.kind {
+		aidoku::FilterKind::MultiSelect { options, ids, .. } => {
+			assert_eq!(options.len(), 1);
+			assert_eq!(options[0].as_ref(), "ankoman");
+			assert_eq!(ids.unwrap()[0].as_ref(), "ankoman");
+		}
+		_ => panic!("expected multi-select artist filter"),
 	}
 }
 

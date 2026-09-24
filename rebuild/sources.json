@@ -44,7 +44,7 @@
   {
     "id": "en.luc1d-weebcentral",
     "path": "rust/en.luc1d-weebcentral",
-    "upstream_version": 10,
+    "upstream_version": 11,
     "upstream_id": "en.weebcentral",
     "upstream_version": 8,
     "upstream_commit": "0f537147588d7fec7d70a22a9d7084376cd5c2b7",
@@ -113,14 +113,14 @@
       "Popular All",
       "Latest"
     ],
-    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable.",
+    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable. The dynamic Artist selector exposes the 120 entries on the official popular-artists page 1; text search remains available for other artists.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The updated tag filter contains 807 alphabetically sorted entries with at least ten galleries. Official /api/v2/tags/language?sort=popular&page=1&per_page=100 returned one complete page with 14 language-classification entries; runtime filter construction includes all unique entries of type language. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
-    "fixture_tests_passed": 11,
+    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page; the official popular artist API reports 277 pages and returned 120 type=artist entries on page 1. Runtime filter construction selects unique entries of the matching type. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
+    "fixture_tests_passed": 12,
     "release_authorized": true
   },
   {
