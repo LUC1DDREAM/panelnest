@@ -1,5 +1,6 @@
 """Public release regression: stable identities and honest approval."""
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -19,6 +20,16 @@ class PublicReleaseTests(unittest.TestCase):
                 if previous['id'] not in installed or previous['version']>installed[previous['id']]['version']: installed[previous['id']]=previous
         for info in infos:
             previous=installed[info['id']]
+            row=next(r for r in rows if r['id']==info['id'])
+            verification_path=pipeline.ROOT/row['path']/'verification.json'
+            verification=json.loads(verification_path.read_text()) if verification_path.is_file() else None
+            if verification is not None:
+                self.assertEqual(verification['version'],info['version'],f"{info['id']} verification version")
+            package_name=f"{info['id']}-v{info['version']}.aix"
+            package=pipeline.ROOT/'rebuild/published-packages'/package_name
+            if verification is not None and package.is_file():
+                digest=hashlib.sha256(package.read_bytes()).hexdigest()
+                self.assertEqual(verification['sha256'],digest,f"{info['id']} verified package hash")
             self.assertIn(info['version'],(previous['version'],previous['version']+1))
             self.assertEqual(info['name'],previous['name'].replace(' (LUC1D)',' [PN]'))
             for key in set(previous)-{'name','version','languages'}: self.assertEqual(info.get(key),previous[key],key)
