@@ -4,6 +4,8 @@ use aidoku::{
 };
 use serde::Deserialize;
 
+pub const POPULARITY_LIMIT: usize = 100;
+
 // Periods exposed by the official trending API.
 pub fn popularity_period(id: &str) -> Option<&'static str> {
 	match id {
@@ -13,6 +15,11 @@ pub fn popularity_period(id: &str) -> Option<&'static str> {
 		"popular-all" => Some("all"),
 		_ => None,
 	}
+}
+
+pub fn popularity_path(id: &str) -> Option<String> {
+	let period = popularity_period(id)?;
+	Some(aidoku::alloc::format!("/trending/{period}?limit={POPULARITY_LIMIT}"))
 }
 
 #[derive(Deserialize)]
@@ -70,6 +77,18 @@ mod tests {
 				.entries
 				.is_empty()
 		);
+	}
+	#[aidoku_test]
+	fn popularity_routes_request_one_hundred_ranked_series_without_fake_pagination() {
+		for (id, expected) in [
+			("popular-today", "/trending/day?limit=100"),
+			("popular-week", "/trending/week?limit=100"),
+			("popular-month", "/trending/month?limit=100"),
+			("popular-all", "/trending/all?limit=100"),
+		] {
+			assert_eq!(popularity_path(id).as_deref(), Some(expected));
+		}
+		assert!(popularity_path("popular-day").is_none());
 	}
 	#[aidoku_test]
 	fn captured_daily_popularity_uses_live_today_endpoint_data() {

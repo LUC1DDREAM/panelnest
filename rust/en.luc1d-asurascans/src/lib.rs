@@ -576,14 +576,14 @@ impl ListingProvider for AsuraScans {
 		if page < 1 {
 			bail!("Invalid page");
 		}
-		if let Some(period) = discovery::popularity_period(&listing.id) {
+		if let Some(path) = discovery::popularity_path(&listing.id) {
 			if page > 1 {
 				return Ok(MangaPageResult {
 					entries: Vec::new(),
 					has_next_page: false,
 				});
 			}
-			let json = Request::get(format!("{API_URL}/trending/{period}?limit=10"))?.string()?;
+			let json = Request::get(format!("{API_URL}{path}"))?.string()?;
 			return discovery::parse_popularity(&json);
 		}
 		match listing.id.as_str() {
