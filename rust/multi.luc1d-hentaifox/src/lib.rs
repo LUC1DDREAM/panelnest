@@ -1,7 +1,8 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DynamicListings, FilterValue, ImageRequestProvider, Listing, Manga,
-	MangaPageResult, MangaStatus, Page, PageContent, Result, Source, Viewer,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicListings, FilterValue,
+	ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page, PageContent, Result,
+	Source, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -26,6 +27,7 @@ const SIDEBAR_LISTINGS: [(&str, &str, &str); 3] = [
 ];
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
+	let path = path.split(['?', '#']).next()?;
 	let key = path.strip_prefix("/gallery/")?.trim_end_matches('/');
 	if !key.is_empty() && key.bytes().all(|b| b.is_ascii_digit()) {
 		Some(key.into())
@@ -270,6 +272,12 @@ fn listing_url(id: &str, page: i32) -> Result<String> {
 		_ => bail!("Unsupported listing"),
 	}
 }
+fn deep_link_key(url: &str) -> Option<String> {
+	if !url.starts_with(BASE_URL) {
+		return None;
+	}
+	key_from_url(url)
+}
 fn sidebar_type(id: &str) -> Option<&'static str> {
 	SIDEBAR_LISTINGS
 		.iter()
@@ -402,6 +410,11 @@ impl DynamicListings for GallerySource {
 			.collect())
 	}
 }
+impl DeepLinkHandler for GallerySource {
+	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
+		Ok(deep_link_key(&url).map(|key| DeepLinkResult::Manga { key }))
+	}
+}
 
 // The public homepage renders its default Top Rated sidebar server-side.
 // Do not relabel it as daily popularity or request account-dependent rankings.
@@ -496,7 +509,7 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicListings);
+aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicListings, DeepLinkHandler);
 
 #[cfg(test)]
 mod tests;

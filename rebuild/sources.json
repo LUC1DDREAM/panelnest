@@ -117,7 +117,8 @@
       "pages",
       "home",
       "listings",
-      "dynamic-filters"
+      "dynamic-filters",
+      "deep-links"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Latest"],
@@ -130,7 +131,7 @@
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "Worker public HTTP 403; offline discovery and filter parameter mapping are validated against provider source and synthetic fixtures, no bypass.",
-    "fixture_tests_passed": 8,
+    "fixture_tests_passed": 9,
     "release_authorized": true
   },
   {
@@ -143,7 +144,8 @@
       "pages",
       "home",
       "listings",
-      "dynamic-listings"
+      "dynamic-listings",
+      "deep-links"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Latest", "Top Rated"],
@@ -157,7 +159,7 @@
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "Live HTTP check: homepage CSRF token and all three sidebar POST rankings returned HTTP 200 with 10 items each; no live WASM or device test.",
-    "fixture_tests_passed": 9,
+    "fixture_tests_passed": 10,
     "release_authorized": true
   }
 ]

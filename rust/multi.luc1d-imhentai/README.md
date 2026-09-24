@@ -1,12 +1,14 @@
 # imhentai (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 6)
+## Discovery (source version 7)
 Latest home scroller and paginated Latest listing reuse the existing IMHentai `/?page=N` route. This is an offline semantic adaptation, NOT live-verified: the homepage returned HTTP 403 and no bypass was attempted.
 
 Search now exposes dynamic sort, category and language filters. Popular, Latest, Downloads and Top Rated plus the site's six category flags and seven language flags map to the documented GalleryAdults intermediate-search parameters. Filtered searches use `/search/`; the no-filter browse route remains the existing latest route. Endpoint access is still blocked, so parameter construction is verified against the public provider implementation and synthetic fixtures, not a live IMHentai response.
 
 Home links and manifest listings use the registered `Home` / `ListingProvider` implementations. Unknown listing IDs and nonpositive pages fail rather than silently opening Latest. Challenge/empty home documents fail instead of producing a misleading empty success.
+
+Canonical `https://imhentai.xxx/gallery/<numeric-id>/` links resolve to their manga entries. Foreign hosts and nonnumeric IDs are rejected.
 
 Existing query search, title/cover/artist/tag metadata, one gallery chapter, numeric pages from the complete JSON reader manifest, Referer headers and one request/second remain intact.
 

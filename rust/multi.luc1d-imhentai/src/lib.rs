@@ -1,8 +1,8 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DynamicFilters, Filter, FilterValue, ImageRequestProvider, Manga,
-	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, Result, SortFilter, Source,
-	Viewer,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterValue,
+	ImageRequestProvider, Manga, MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent,
+	Result, SortFilter, Source, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -21,6 +21,7 @@ const BASE_URL: &str = "https://imhentai.xxx";
 const IS_IM: bool = true;
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
+	let path = path.split(['?', '#']).next()?;
 	let key = path.strip_prefix("/gallery/")?.trim_end_matches('/');
 	if !key.is_empty() && key.bytes().all(|b| b.is_ascii_digit()) {
 		Some(key.into())
@@ -65,6 +66,12 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 }
 fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 	search_url_with_filters(query, page, &[])
+}
+fn deep_link_key(url: &str) -> Option<String> {
+	if !url.starts_with(BASE_URL) {
+		return None;
+	}
+	key_from_url(url)
 }
 fn search_url_with_filters(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result<String> {
 	ensure!(page > 0, "Invalid page");
@@ -366,6 +373,11 @@ impl DynamicFilters for GallerySource {
 		Ok(discovery_filters())
 	}
 }
+impl DeepLinkHandler for GallerySource {
+	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
+		Ok(deep_link_key(&url).map(|key| DeepLinkResult::Manga { key }))
+	}
+}
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
 		let url = listing_url(&listing.id, page)?;
@@ -435,7 +447,7 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicFilters);
+aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicFilters, DeepLinkHandler);
 
 #[cfg(test)]
 mod tests;

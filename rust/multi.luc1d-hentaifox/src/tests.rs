@@ -186,7 +186,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 6);
+	assert_eq!(manifest["info"]["version"], 7);
 	assert!(manifest["info"]["name"].as_str().unwrap().ends_with(" [PN]"));
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
@@ -208,4 +208,19 @@ fn synthetic_search() {
 		Some(format!("{BASE_URL}/cover.png"))
 	);
 	assert!(result.has_next_page);
+}
+
+#[aidoku_test]
+fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
+	use aidoku::DeepLinkHandler;
+	let source = GallerySource;
+	assert_eq!(deep_link_key("https://hentaifox.com/gallery/123/"), Some("123".into()));
+	assert_eq!(deep_link_key("https://hentaifox.com/gallery/123?from=share#reader"), Some("123".into()));
+	assert!(deep_link_key("https://hentaifox.com.evil/gallery/123/").is_none());
+	assert!(deep_link_key("https://example.org/gallery/123/").is_none());
+	assert!(deep_link_key("https://hentaifox.com/gallery/nope/").is_none());
+	assert_eq!(
+		source.handle_deep_link("https://hentaifox.com/gallery/123/".into()).unwrap(),
+		Some(DeepLinkResult::Manga { key: "123".into() })
+	);
 }
