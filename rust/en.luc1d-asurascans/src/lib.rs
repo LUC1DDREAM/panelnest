@@ -251,6 +251,7 @@ impl Source for AsuraScans {
 						chapters::chapter_from_astro(row, &manga.key, is_subscribed, now)
 					})
 					.filter(|chapter| !skip_locked || !chapter.locked)
+					.map(|chapter| chapters::with_series_thumbnail(chapter, &manga.cover))
 					.collect(),
 			);
 		}

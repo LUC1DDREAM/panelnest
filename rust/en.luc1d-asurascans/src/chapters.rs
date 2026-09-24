@@ -1,4 +1,4 @@
-use aidoku::{Chapter, alloc::string::ToString};
+use aidoku::{Chapter, alloc::{String, string::ToString}};
 use serde_json::Value;
 
 /// Convert one public Astro chapter row without changing chapter identity/order.
@@ -73,6 +73,11 @@ pub fn chapter_from_astro(
 		locked,
 		..Default::default()
 	})
+}
+
+pub fn with_series_thumbnail(mut chapter: Chapter, cover: &Option<String>) -> Chapter {
+	chapter.thumbnail = cover.clone();
+	chapter
 }
 
 /// Gate page extraction using freshly fetched source metadata, never a cached lock bit.
@@ -153,6 +158,16 @@ mod tests {
 			..Default::default()
 		};
 		assert!(require_readable(Some(&free)).is_ok());
+	}
+
+	#[aidoku_test]
+	fn chapters_can_reuse_the_series_cover_as_their_thumbnail() {
+		let chapter = with_series_thumbnail(
+			Chapter::default(),
+			&Some("https://cdn.asurascans.com/asura-images/covers/series.webp".into()),
+		);
+		assert_eq!(chapter.thumbnail.as_deref(), Some("https://cdn.asurascans.com/asura-images/covers/series.webp"));
+		assert!(with_series_thumbnail(Chapter::default(), &None).thumbnail.is_none());
 	}
 
 	#[aidoku_test]

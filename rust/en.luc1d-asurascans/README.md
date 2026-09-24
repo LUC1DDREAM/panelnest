@@ -109,3 +109,5 @@ additional dynamic fields. That keeps the visible genre list aligned with the
 site without manual tag-file updates. If the browse payload is unavailable,
 Aidoku still receives the creator and chapter-count filters plus the static
 sort/status/type filters.
+
+Version 13 populates chapter thumbnails with the already available series cover URL; missing covers stay unset.
