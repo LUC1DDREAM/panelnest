@@ -610,9 +610,9 @@ impl aidoku::Home for Webtoon {
 		use aidoku::ListingProvider;
 		let language = selected_language();
 		let sections = [
-			("popular", "Drama: By Popularity"),
-			("likes", "Drama: By Likes"),
-			("date", "Drama: By Date"),
+			("genre-sort-dramaMANA", "Drama: By Popularity"),
+			("genre-sort-dramaLIKEIT", "Drama: By Likes"),
+			("genre-sort-dramaUPDATE", "Drama: By Date"),
 		];
 		let mut layout = empty_home_layout();
 		send_partial_result(&HomePartialResult::Layout(layout.clone()));

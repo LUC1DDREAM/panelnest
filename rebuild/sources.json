@@ -176,25 +176,7 @@
       "image-request"
     ],
     "listings": [
-      "Drama: By Popularity",
-      "Drama: By Likes",
-      "Drama: By Date",
-      "Fantasy",
-      "Romance",
-      "Action",
-      "Comedy",
-      "Slice of Life: By Popularity",
-      "Superhero: By Popularity",
-      "Sci-Fi: By Popularity",
-      "Thriller: By Popularity",
-      "Supernatural: By Popularity",
-      "Mystery: By Popularity",
-      "Sports: By Popularity",
-      "Historical: By Popularity",
-      "Heartwarming: By Popularity",
-      "Horror: By Popularity",
-      "Graphic Novel: By Popularity",
-      "Informative: By Popularity"
+      "17 official genres: Popularity, Likes, Date"
     ],
     "package_verified": true,
     "runtime_tested": false,

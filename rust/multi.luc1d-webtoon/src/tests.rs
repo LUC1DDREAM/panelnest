@@ -106,6 +106,26 @@ fn dynamic_listings_keep_existing_genres_in_the_static_catalog() {
 }
 
 #[aidoku_test]
+fn static_discovery_manifest_has_unique_canonical_genre_sort_listings() {
+	let manifest: serde_json::Value = serde_json::from_str(include_str!("../res/source.json")).unwrap();
+	let listings = manifest["listings"].as_array().unwrap();
+	let mut ids = Vec::new();
+	let mut names = Vec::new();
+	for listing in listings {
+		ids.push(listing["id"].as_str().unwrap());
+		names.push(listing["name"].as_str().unwrap());
+	}
+	ids.sort_unstable();
+	ids.dedup();
+	names.sort_unstable();
+	names.dedup();
+	assert_eq!(listings.len(), 51);
+	assert_eq!(ids.len(), listings.len());
+	assert_eq!(names.len(), listings.len());
+	assert!(listings.iter().all(|listing| listing["id"].as_str().unwrap().starts_with("genre-sort-")));
+}
+
+#[aidoku_test]
 fn discovery_components_keep_listings_and_site_order() {
 	let component = discovery_component(
 		"popular",

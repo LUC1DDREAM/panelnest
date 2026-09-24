@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-webtoon",
-  "version": 15,
-  "sha256": "bdfb20d1c5c9fa079baa7632a69b3dcf0b5254acae385045299141707d108ab7",
-  "bytes": 74116,
+  "version": 16,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "en",
     "zh",
@@ -13,11 +13,11 @@
     "de"
   ],
   "contentRating": 1,
-  "package_verified": true,
+  "package_verified": false,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 23,
-  "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. The official episode API's viewerLink includes both title_no and episode_no; the source now maps these links to exact series and chapter keys. All-results pagination now follows page numbers and stops on empty results. This is source/API fixture evidence, not a live Aidoku/device run. WASM fixtures verify discovery menus, new genres, and episode deep-link routing.",
+  "fixture_tests_passed": 24,
+  "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. The official episode API's viewerLink includes both title_no and episode_no; the source now maps these links to exact series and chapter keys. All-results pagination now follows page numbers and stops on empty results. This is source/API fixture evidence, not a live Aidoku/device run. WASM fixtures verify discovery menus, new genres, and episode deep-link routing. Regression testing now enforces exactly 51 unique canonical genre-sort listings (17 genres \u00d7 3 sorts) and maps Home sections to those same canonical listing IDs.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

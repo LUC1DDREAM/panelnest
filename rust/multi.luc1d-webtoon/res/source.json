@@ -2,7 +2,7 @@
   "info": {
     "id": "multi.luc1d-webtoon",
     "name": "WEBTOON [PN]",
-    "version": 15,
+    "version": 16,
     "url": "https://m.webtoons.com",
     "contentRating": 1,
     "languages": [
@@ -17,94 +17,6 @@
     "minAppVersion": "0.7.1"
   },
   "listings": [
-    {
-      "id": "popular",
-      "name": "Drama: By Popularity"
-    },
-    {
-      "id": "genre-sort-dramaMANA",
-      "name": "Drama: By Popularity"
-    },
-    {
-      "id": "genre-sort-dramaLIKEIT",
-      "name": "Drama: By Likes"
-    },
-    {
-      "id": "genre-sort-dramaUPDATE",
-      "name": "Drama: By Date"
-    },
-    {
-      "id": "likes",
-      "name": "Drama: By Likes"
-    },
-    {
-      "id": "date",
-      "name": "Drama: By Date"
-    },
-    {
-      "id": "genre-fantasy",
-      "name": "Fantasy: By Popularity"
-    },
-    {
-      "id": "genre-romance",
-      "name": "Romance: By Popularity"
-    },
-    {
-      "id": "genre-action",
-      "name": "Action: By Popularity"
-    },
-    {
-      "id": "genre-comedy",
-      "name": "Comedy: By Popularity"
-    },
-    {
-      "id": "genre-slice_of_life",
-      "name": "Slice of Life: By Popularity"
-    },
-    {
-      "id": "genre-super_hero",
-      "name": "Superhero: By Popularity"
-    },
-    {
-      "id": "genre-sf",
-      "name": "Sci-Fi: By Popularity"
-    },
-    {
-      "id": "genre-thriller",
-      "name": "Thriller: By Popularity"
-    },
-    {
-      "id": "genre-supernatural",
-      "name": "Supernatural: By Popularity"
-    },
-    {
-      "id": "genre-mystery",
-      "name": "Mystery: By Popularity"
-    },
-    {
-      "id": "genre-sports",
-      "name": "Sports: By Popularity"
-    },
-    {
-      "id": "genre-historical",
-      "name": "Historical: By Popularity"
-    },
-    {
-      "id": "genre-heartwarming",
-      "name": "Heartwarming: By Popularity"
-    },
-    {
-      "id": "genre-horror",
-      "name": "Horror: By Popularity"
-    },
-    {
-      "id": "genre-graphic_novel",
-      "name": "Graphic Novel: By Popularity"
-    },
-    {
-      "id": "genre-tiptoon",
-      "name": "Informative: By Popularity"
-    },
     {
       "id": "genre-sort-dramaMANA",
       "name": "Drama: By Popularity"
