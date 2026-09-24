@@ -73,13 +73,15 @@ fn series_description_includes_associated_names_and_related_series() {
 	let html = Html::parse_with_url(
 		r#"
 		<section id="details">
-			<li><strong>Description</strong><p>A sample description.</p></li>
-			<li><strong>Associated Name(s)</strong><ul>
-				<li>Alternate Title</li><li>Another Title</li>
-			</ul></li>
-			<li><strong>Related Series(s)</strong><ul>
-				<li><a href="/series/related">Related Title</a><span>(Prequel)</span></li>
-			</ul></li>
+			<ul>
+				<li><strong>Description</strong><p>A sample description.</p></li>
+				<li><strong>Associated Name(s)</strong><ul>
+					<li>Alternate Title</li><li>Another Title</li>
+				</ul></li>
+				<li><strong>Related Series(s)</strong><ul>
+					<li><a href="/series/related">Related Title</a><span>(Prequel)</span></li>
+				</ul></li>
+			</ul>
 		</section>
 		"#,
 		BASE_URL,
@@ -102,7 +104,7 @@ fn series_description_includes_associated_names_and_related_series() {
 
 #[aidoku_test]
 fn series_description_metadata_is_optional_and_preserves_description() {
-	let html = Html::parse("<section><li><strong>Description</strong><p>Only description.</p></li></section>").unwrap();
+	let html = Html::parse("<section><ul><li><strong>Description</strong><p>Only description.</p></li></ul></section>").unwrap();
 	let details = html.select_first("section").unwrap();
 	let description = append_detail_metadata(
 		&details,
