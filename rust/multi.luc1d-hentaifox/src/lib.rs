@@ -79,7 +79,7 @@ fn search_url_with_filters(query: Option<&str>, page: i32, filters: &[FilterValu
 	let popular = filters.iter().any(|filter| {
 		matches!(filter, FilterValue::Sort { id, index: 1, .. } if id.as_str() == "sort")
 	});
-	if query.is_empty() {
+	if query.is_empty() && !popular {
 		return Ok(if IS_IM {
 			format!("{BASE_URL}/?page={page}")
 		} else if page == 1 {

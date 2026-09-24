@@ -244,5 +244,9 @@ fn search_sort_filter_preserves_latest_and_maps_popular_to_site_parameter() {
 		search_url(Some("two words"), 3).unwrap()
 	);
 	assert_eq!(search_filters().len(), 1);
-	assert_eq!(search_url_with_filters(None, 1, &popular).unwrap(), search_url(None, 1).unwrap());
+	assert_eq!(
+		search_url_with_filters(None, 1, &popular).unwrap(),
+		format!("{BASE_URL}/search/?q=&page=1&sort=popular")
+	);
+	assert_eq!(search_url_with_filters(None, 1, &latest).unwrap(), search_url(None, 1).unwrap());
 }
