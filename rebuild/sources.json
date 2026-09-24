@@ -128,8 +128,8 @@
       "deep-links"
     ],
     "features": ["search", "details", "chapters", "pages"],
-    "listings": ["Latest"],
-    "limitations": "Public requests returned HTTP 403 during checks; availability is not guaranteed.",
+    "listings": ["Latest", "Popular", "Top Rated", "Downloaded"],
+    "limitations": "Public requests returned HTTP 403 during worker checks; availability is not guaranteed. Popular, Top Rated and Downloaded routes have been checked on the public site; search sort filters are not live-verified.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -137,7 +137,7 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Worker public HTTP 403; offline discovery and filter parameter mapping are validated against provider source and synthetic fixtures, no bypass.",
+    "live_evidence": "Public Home, Popular, Top Rated and Downloaded pages expose browseable paginated galleries; route families are wired as listings. Worker live checks returned HTTP 403; offline search filter parameter mapping is validated against provider source and synthetic fixtures, no bypass.",
     "fixture_tests_passed": 9,
     "release_authorized": true
   },

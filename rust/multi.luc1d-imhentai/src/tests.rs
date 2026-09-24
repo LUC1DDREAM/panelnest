@@ -83,17 +83,38 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 	let browse = search_url_with_filters(None, 1, &filters).unwrap();
 	assert!(browse.starts_with(&format!("{BASE_URL}/search/?")));
 	assert_eq!(discovery_filters().len(), 3);
-	let popular_only = search_url_with_filters(None, 1, &[FilterValue::Sort {
-		id: "sort".into(), index: 0, ascending: false,
-	}]).unwrap();
+	let popular_only = search_url_with_filters(
+		None,
+		1,
+		&[FilterValue::Sort {
+			id: "sort".into(),
+			index: 0,
+			ascending: false,
+		}],
+	)
+	.unwrap();
 	assert!(popular_only.starts_with(&format!("{BASE_URL}/search/?pp=1&lt=0&dl=0&tr=0")));
-	let downloads_only = search_url_with_filters(None, 1, &[FilterValue::Sort {
-		id: "sort".into(), index: 2, ascending: false,
-	}]).unwrap();
+	let downloads_only = search_url_with_filters(
+		None,
+		1,
+		&[FilterValue::Sort {
+			id: "sort".into(),
+			index: 2,
+			ascending: false,
+		}],
+	)
+	.unwrap();
 	assert!(downloads_only.starts_with(&format!("{BASE_URL}/search/?pp=0&lt=0&dl=1&tr=0")));
-	let latest_only = search_url_with_filters(None, 1, &[FilterValue::Sort {
-		id: "sort".into(), index: 1, ascending: false,
-	}]).unwrap();
+	let latest_only = search_url_with_filters(
+		None,
+		1,
+		&[FilterValue::Sort {
+			id: "sort".into(),
+			index: 1,
+			ascending: false,
+		}],
+	)
+	.unwrap();
 	assert_eq!(latest_only, format!("{BASE_URL}/?page=1"));
 }
 #[aidoku_test]
@@ -118,18 +139,47 @@ fn synthetic_pages_order_formats_and_validation() {
 fn discovery_home_has_working_latest_listing() {
 	let doc = Html::parse_with_url(r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"></a></div><div class="caption">Sample</div></div>"#, BASE_URL).unwrap();
 	let home = parse_home(&doc).unwrap();
-	assert_eq!(home.components[0].title.as_deref(), Some("Latest"));
-	if let aidoku::HomeComponentValue::Scroller { entries, listing } = &home.components[0].value {
-		assert_eq!(entries.len(), 1);
-		let listing = listing.as_ref().unwrap();
-		assert_eq!(listing.id, "latest");
-		assert_eq!(
-			listing_url(&listing.id, 2).unwrap(),
-			search_url(None, 2).unwrap()
-		);
-	} else {
-		panic!("expected scroller");
+	assert_eq!(home.components.len(), 4);
+	for (index, (id, title)) in [
+		("latest", "Latest"),
+		("popular", "Popular"),
+		("top-rated", "Top Rated"),
+		("downloaded", "Downloaded"),
+	]
+	.iter()
+	.enumerate()
+	{
+		assert_eq!(home.components[index].title.as_deref(), Some(*title));
+		if let aidoku::HomeComponentValue::Scroller { entries, listing } =
+			&home.components[index].value
+		{
+			assert_eq!(entries.len(), 1);
+			let listing = listing.as_ref().unwrap();
+			assert_eq!(listing.id, *id);
+		} else {
+			panic!("expected scroller");
+		}
 	}
+	assert_eq!(
+		listing_url("latest", 2).unwrap(),
+		search_url(None, 2).unwrap()
+	);
+	assert_eq!(
+		listing_url("popular", 1).unwrap(),
+		format!("{BASE_URL}/popular/")
+	);
+	assert_eq!(
+		listing_url("popular", 2).unwrap(),
+		format!("{BASE_URL}/popular/2/")
+	);
+	assert_eq!(
+		listing_url("top-rated", 2).unwrap(),
+		format!("{BASE_URL}/top-rated/2/")
+	);
+	assert_eq!(
+		listing_url("downloaded", 3).unwrap(),
+		format!("{BASE_URL}/downloaded/3/")
+	);
 	assert!(listing_url("popular-today", 1).is_err());
 	assert!(listing_url("latest", 0).is_err());
 	assert!(
@@ -171,10 +221,16 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
 	assert_eq!(manifest["info"]["version"], 8);
-	assert!(manifest["info"]["name"].as_str().unwrap().ends_with(" [PN]"));
+	assert!(
+		manifest["info"]["name"]
+			.as_str()
+			.unwrap()
+			.ends_with(" [PN]")
+	);
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
+	assert_eq!(manifest["info"]["version"], 9);
 }
 
 use super::*;
@@ -198,13 +254,21 @@ fn synthetic_search() {
 fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 	use aidoku::DeepLinkHandler;
 	let source = GallerySource;
-	assert_eq!(deep_link_key("https://imhentai.xxx/gallery/123/"), Some("123".into()));
-	assert_eq!(deep_link_key("https://imhentai.xxx/gallery/123?from=share#reader"), Some("123".into()));
+	assert_eq!(
+		deep_link_key("https://imhentai.xxx/gallery/123/"),
+		Some("123".into())
+	);
+	assert_eq!(
+		deep_link_key("https://imhentai.xxx/gallery/123?from=share#reader"),
+		Some("123".into())
+	);
 	assert!(deep_link_key("https://imhentai.xxx.evil/gallery/123/").is_none());
 	assert!(deep_link_key("https://example.org/gallery/123/").is_none());
 	assert!(deep_link_key("https://imhentai.xxx/gallery/nope/").is_none());
 	assert_eq!(
-		source.handle_deep_link("https://imhentai.xxx/gallery/123/".into()).unwrap(),
+		source
+			.handle_deep_link("https://imhentai.xxx/gallery/123/".into())
+			.unwrap(),
 		Some(DeepLinkResult::Manga { key: "123".into() })
 	);
 }

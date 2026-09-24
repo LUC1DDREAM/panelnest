@@ -2,7 +2,7 @@
   "info": {
     "id": "multi.luc1d-imhentai",
     "name": "IMHentai [PN]",
-    "version": 8,
+    "version": 9,
     "url": "https://imhentai.xxx",
     "contentRating": 2,
     "languages": [
@@ -13,6 +13,18 @@
     {
       "id": "latest",
       "name": "Latest"
+    },
+    {
+      "id": "popular",
+      "name": "Popular"
+    },
+    {
+      "id": "top-rated",
+      "name": "Top Rated"
+    },
+    {
+      "id": "downloaded",
+      "name": "Downloaded"
     }
   ]
 }
