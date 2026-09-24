@@ -247,7 +247,7 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Fixtures verify that gallery chapter records preserve the stable gallery ID key and validated canonical IMHentai /view/<gallery>/<page>/ URL, and get_page_list requests that exact reader URL. Malformed and cross-gallery reader URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified. Dynamic listings map the six supported category flags and seven language flags to the already implemented and fixture-verified intermediate-search route, with pagination and fail-closed ID validation.",
+    "live_evidence": "Fixtures verify that gallery chapter records preserve the stable gallery ID key and validated canonical IMHentai /view/<gallery>/<page>/ URL, and get_page_list requests that exact reader URL. Malformed and cross-gallery reader URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified. Dynamic listings map the six supported category flags and seven language flags to the already implemented and fixture-verified intermediate-search route, with pagination and fail-closed ID validation. Version 19 marks completed single-gallery titles as static for Aidoku library refreshes across search and details.",
     "fixture_tests_passed": 17,
     "release_authorized": true,
     "dynamic_listings": [

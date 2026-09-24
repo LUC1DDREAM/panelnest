@@ -14,6 +14,7 @@ fn synthetic_details_and_chapter_flags() {
 	assert_eq!(m.title, "Sample 2");
 	assert_eq!(m.authors.unwrap()[0], "Artist 7");
 	assert_eq!(m.chapters.unwrap()[0].key, "42");
+	assert_eq!(m.update_strategy, UpdateStrategy::Never);
 	let with_reader = Html::parse_with_url(
 		r#"<div class="gallery_top"><h1>Reader sample</h1><a href="/view/42/3/">Read</a></div>"#,
 		BASE_URL,
@@ -550,7 +551,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 18);
+	assert_eq!(manifest["info"]["version"], 19);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -560,7 +561,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 18);
+	assert_eq!(manifest["info"]["version"], 19);
 }
 
 use super::*;
@@ -573,6 +574,7 @@ fn synthetic_search() {
 	assert_eq!(result.entries.len(), 1);
 	assert_eq!(result.entries[0].key, "42");
 	assert_eq!(result.entries[0].title, "Sample");
+	assert_eq!(result.entries[0].update_strategy, UpdateStrategy::Never);
 	assert_eq!(
 		result.entries[0].cover,
 		Some(format!("{BASE_URL}/cover.png"))

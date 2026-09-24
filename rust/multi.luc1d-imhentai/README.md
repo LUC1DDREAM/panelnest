@@ -1,7 +1,9 @@
 # imhentai (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 18)
+## Discovery (source version 19)
+Version 19 uses Aidoku’s UpdateStrategy::Never for completed single-gallery titles so routine library refreshes skip their immutable one-chapter list.
+Version 18 adds 13 dynamic browse feeds for six content categories and seven languages.
 Version 18 adds 13 dynamic browse feeds: one for each of the six supported content categories and seven supported languages. They use the existing search flags and keep page navigation; existing Latest, Popular, Top Rated and Downloaded listings are unchanged.
 Version 15 handles protected CDN images with a validated per-page Referer from Aidoku PageContext. Cover images use the source root; unsupported hosts and formats are rejected. Reader manifests are validated and each page uses its own file format. Device rendering remains untested.
 

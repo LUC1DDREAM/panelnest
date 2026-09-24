@@ -3,7 +3,7 @@ use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
 	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider, Manga,
 	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, PageDescriptionProvider,
-	Result, SortFilter, Source, TextFilter, Viewer,
+	Result, SortFilter, Source, TextFilter, UpdateStrategy, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -53,6 +53,7 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 					cover: el.select_first(".inner_thumb img").and_then(|e| image(&e)),
 					content_rating: ContentRating::NSFW,
 					status: MangaStatus::Completed,
+					update_strategy: UpdateStrategy::Never,
 					viewer: Viewer::RightToLeft,
 					..Default::default()
 				})
@@ -351,6 +352,7 @@ fn discovery_listings() -> Vec<aidoku::Listing> {
 	listings
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
+	manga.update_strategy = UpdateStrategy::Never;
 	ensure!(
 		!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()),
 		"Invalid gallery key"
@@ -423,6 +425,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 			names("ul.tags a")
 		});
 		manga.status = MangaStatus::Completed;
+		manga.update_strategy = UpdateStrategy::Never;
 		manga.content_rating = ContentRating::NSFW;
 		manga.viewer = Viewer::RightToLeft;
 		manga.url = Some(format!("{BASE_URL}/gallery/{}/", manga.key));
@@ -969,10 +972,11 @@ impl Source for GallerySource {
 	}
 	fn get_manga_update(
 		&self,
-		manga: Manga,
+		mut manga: Manga,
 		needs_details: bool,
 		needs_chapters: bool,
 	) -> Result<Manga> {
+		manga.update_strategy = UpdateStrategy::Never;
 		if !needs_details && !needs_chapters {
 			return Ok(manga);
 		}
