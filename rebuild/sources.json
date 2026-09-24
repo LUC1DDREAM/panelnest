@@ -12,10 +12,13 @@
       "chapters",
       "pages",
       "home",
-      "listings"
+      "listings",
+      "dynamic-listings"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Ranking", "Popular This Week", "Popular This Month", "Popular All Time"],
+    "dynamic_listings": ["Bookmarks"],
+    "limitations": "The Bookmarks listing requires web login.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -139,11 +142,13 @@
       "chapters",
       "pages",
       "home",
-      "listings"
+      "listings",
+      "dynamic-listings"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Latest", "Top Rated"],
-    "limitations": "No temporal popularity filters or language selector; Top Rated is available.",
+    "dynamic_listings": ["Most Faved", "Most Fapped", "Most Downloaded"],
+    "limitations": "Sidebar rankings are finite; no temporal popularity lists or language selector.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -151,8 +156,8 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Worker homepage HTTP 200 and Top Rated sidebar metadata; no live WASM or device test.",
-    "fixture_tests_passed": 8,
+    "live_evidence": "Live HTTP check: homepage CSRF token and all three sidebar POST rankings returned HTTP 200 with 10 items each; no live WASM or device test.",
+    "fixture_tests_passed": 9,
     "release_authorized": true
   }
 ]

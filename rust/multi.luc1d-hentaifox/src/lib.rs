@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, FilterValue, ImageRequestProvider, Manga, MangaPageResult, MangaStatus,
-	Page, PageContent, Result, Source, Viewer,
+	Chapter, ContentRating, DynamicListings, FilterValue, ImageRequestProvider, Listing, Manga,
+	MangaPageResult, MangaStatus, Page, PageContent, Result, Source, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -18,6 +18,12 @@ macro_rules! ensure {
 }
 const BASE_URL: &str = "https://hentaifox.com";
 const IS_IM: bool = false;
+const SIDEBAR_URL: &str = "https://hentaifox.com/includes/sidebar.php";
+const SIDEBAR_LISTINGS: [(&str, &str, &str); 3] = [
+	("most-faved", "Most Faved", "top_faved"),
+	("most-fapped", "Most Fapped", "top_fapped"),
+	("most-downloaded", "Most Downloaded", "top_downloaded"),
+];
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
 	let key = path.strip_prefix("/gallery/")?.trim_end_matches('/');
@@ -264,6 +270,55 @@ fn listing_url(id: &str, page: i32) -> Result<String> {
 		_ => bail!("Unsupported listing"),
 	}
 }
+fn sidebar_type(id: &str) -> Option<&'static str> {
+	SIDEBAR_LISTINGS
+		.iter()
+		.find(|(listing_id, _, _)| *listing_id == id)
+		.map(|(_, _, category)| *category)
+}
+fn parse_sidebar_items(doc: &Document) -> Result<MangaPageResult> {
+	let entries = doc
+		.select("div.item")
+		.map(|els| {
+			els.filter_map(|el| {
+				let key = key_from_url(&el.select_first("a")?.attr("href")?)?;
+				let img = el.select_first("img")?;
+				let title = img.attr("alt").filter(|v| !v.trim().is_empty())?;
+				Some(Manga {
+					key,
+					title,
+					cover: image(&img),
+					content_rating: ContentRating::NSFW,
+					status: MangaStatus::Completed,
+					viewer: Viewer::RightToLeft,
+					..Default::default()
+				})
+			})
+			.collect::<Vec<_>>()
+		})
+		.unwrap_or_default();
+	ensure!(!entries.is_empty(), "Sidebar ranking unavailable or layout changed");
+	Ok(MangaPageResult { entries, has_next_page: false })
+}
+fn fetch_sidebar_listing(category: &str) -> Result<MangaPageResult> {
+	ensure!(
+		SIDEBAR_LISTINGS.iter().any(|(_, _, value)| *value == category),
+		"Unsupported sidebar ranking"
+	);
+	let page = Request::get(format!("{BASE_URL}/"))?.html()?;
+	let token = page
+		.select_first("[name=csrf-token]")
+		.and_then(|el| el.attr("content"))
+		.filter(|value| !value.trim().is_empty())
+		.ok_or(error!("Missing homepage CSRF token"))?;
+	let response = Request::post(SIDEBAR_URL)?
+		.header("X-Csrf-Token", &token)
+		.header("X-Requested-With", "XMLHttpRequest")
+		.header("Content-Type", "application/x-www-form-urlencoded")
+		.body(format!("type={category}"))
+		.html()?;
+	parse_sidebar_items(&response)
+}
 fn latest_component(doc: &Document) -> Result<aidoku::HomeComponent> {
 	let result = parse_search(doc);
 	ensure!(
@@ -311,6 +366,14 @@ impl aidoku::Home for GallerySource {
 }
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
+		if let Some(category) = sidebar_type(&listing.id) {
+			ensure!(page > 0, "Invalid page");
+			return if page == 1 {
+				fetch_sidebar_listing(category)
+			} else {
+				Ok(MangaPageResult::default())
+			};
+		}
 		let url = listing_url(&listing.id, page)?;
 		if listing.id == "top-rated" {
 			if page > 1 {
@@ -325,6 +388,18 @@ impl aidoku::ListingProvider for GallerySource {
 			"Listing unavailable or site layout changed"
 		);
 		Ok(result)
+	}
+}
+impl DynamicListings for GallerySource {
+	fn get_dynamic_listings(&self) -> Result<Vec<Listing>> {
+		Ok(SIDEBAR_LISTINGS
+			.iter()
+			.map(|(id, name, _)| Listing {
+				id: (*id).into(),
+				name: (*name).into(),
+				..Default::default()
+			})
+			.collect())
 	}
 }
 
@@ -421,7 +496,7 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider);
+aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicListings);
 
 #[cfg(test)]
 mod tests;

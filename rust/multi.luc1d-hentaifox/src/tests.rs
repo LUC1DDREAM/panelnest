@@ -110,9 +110,42 @@ fn top_rated_is_scoped_finite_and_not_today() {
 }
 
 #[aidoku_test]
+fn dynamic_sidebar_rankings_are_registered_and_parse_scoped_entries() {
+	let listings = SIDEBAR_LISTINGS
+		.iter()
+		.map(|(id, name, _)| (*id, *name))
+		.collect::<Vec<_>>();
+	assert_eq!(listings[0], ("most-faved", "Most Faved"));
+	assert_eq!(listings[1], ("most-fapped", "Most Fapped"));
+	assert_eq!(listings[2], ("most-downloaded", "Most Downloaded"));
+	assert_eq!(sidebar_type("most-downloaded"), Some("top_downloaded"));
+	assert_eq!(sidebar_type("unknown"), None);
+	let doc = Html::parse_with_url(
+		r#"<div class="item"><a href="/gallery/77/"><img alt="Sample Ranked" src="/cover.png"></a></div><div class="item"><a href="https://invalid.example/gallery/78/"><img alt="Foreign"></a></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let result = parse_sidebar_items(&doc).unwrap();
+	assert_eq!(result.entries.len(), 1);
+	assert_eq!(result.entries[0].key, "77");
+	assert_eq!(result.entries[0].title, "Sample Ranked");
+	assert!(!result.has_next_page);
+	assert!(parse_sidebar_items(&Html::parse("<html></html>").unwrap()).is_err());
+}
+
+#[aidoku_test]
 fn listing_dispatch_rejects_unknown_and_invalid_pages_without_network() {
 	use aidoku::ListingProvider;
 	let source = GallerySource;
+	assert_eq!(sidebar_type("most-faved"), Some("top_faved"));
+	assert!(source
+		.get_manga_list(
+			aidoku::Listing { id: "most-faved".into(), ..Default::default() },
+			2
+		)
+		.unwrap()
+		.entries
+		.is_empty());
 	assert!(
 		source
 			.get_manga_list(

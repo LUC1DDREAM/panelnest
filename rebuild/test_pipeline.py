@@ -57,7 +57,9 @@ class PipelineTests(unittest.TestCase):
             row = next(row for row in rows if row['id'] == item['id'])
             self.assertEqual(set(item['features']), {'search','details','chapters','pages'})
             manifest = json.loads((pipeline.ROOT/row['path']/'res/source.json').read_text())
-            self.assertEqual(item['listings'], [x.get('name', x.get('id','')) for x in manifest.get('listings', [])])
+            expected_listings = [x.get('name', x.get('id','')) for x in manifest.get('listings', [])]
+            expected_listings.extend(name for name in row.get('dynamic_listings', []) if name not in expected_listings)
+            self.assertEqual(item['listings'], expected_listings)
         self.assertTrue(any(item.get('limitations') for item in enriched['sources']))
 
     def test_catalog_enrichment_rejects_missing_features_and_duplicate_ids(self):

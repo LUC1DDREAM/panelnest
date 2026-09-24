@@ -69,9 +69,12 @@ def enrich_catalog(catalog, rows):
         # Only expose capabilities implemented and manually declared for this build.
         if not declared <= set(row.get('implemented', [])):
             raise ValueError(f"Feature metadata exceeds implementation record for {item['id']}")
-        listings = manifest.get('listings', [])
+        listings = [listing.get('name', listing.get('id', '')) for listing in manifest.get('listings', [])]
+        for name in row.get('dynamic_listings', []):
+            if name not in listings:
+                listings.append(name)
         item['features'] = sorted(declared & FEATURES)
-        item['listings'] = [listing.get('name', listing.get('id', '')) for listing in listings]
+        item['listings'] = listings
         if row.get('limitations'):
             item['limitations'] = row['limitations']
     return catalog
