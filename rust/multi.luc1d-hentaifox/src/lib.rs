@@ -120,10 +120,16 @@ fn search_url_with_filters(
 	let selected_taxonomies = filters
 		.iter()
 		.filter_map(|filter| match filter {
-			FilterValue::Select { id, value } if !value.is_empty() => POPULAR_TAXONOMIES
-				.iter()
-				.find(|(_, filter_id, _)| *filter_id == id)
-				.map(|(_, kind, _)| (*kind, value.as_str())),
+			FilterValue::Select { id, value } if !value.is_empty() => {
+				if id == "tag" {
+					Some(("tag", value.as_str()))
+				} else {
+					POPULAR_TAXONOMIES
+						.iter()
+						.find(|(_, filter_id, _)| *filter_id == id)
+						.map(|(_, kind, _)| (*kind, value.as_str()))
+				}
+			}
 			_ => None,
 		})
 		.collect::<Vec<_>>();
@@ -133,7 +139,11 @@ fn search_url_with_filters(
 	);
 	if let Some((kind, slug)) = selected_taxonomies.first() {
 		ensure!(query.is_empty(), "Clear text search to browse a category");
-		return taxonomy_url(kind, slug, page, popular);
+		return if *kind == "tag" {
+			popular_tag_url(&format!("popular-tag-{slug}"), page)
+		} else {
+			taxonomy_url(kind, slug, page, popular)
+		};
 	}
 	if query.is_empty() && !popular {
 		return Ok(if IS_IM {
@@ -656,6 +666,21 @@ impl DynamicFilters for GallerySource {
 				continue;
 			};
 			filters.push(taxonomy_filter(kind, title, values));
+		}
+		if let Ok(doc) = Request::get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
+			.and_then(|request| request.html())
+		{
+			if let Ok(listings) = parse_popular_tag_listings(&doc) {
+				let values = listings
+					.into_iter()
+					.filter_map(|listing| {
+						let slug = popular_tag_slug(&listing.id)?;
+						let name = listing.name.strip_prefix("Tag: ")?;
+						Some((name.into(), slug.into()))
+					})
+					.collect();
+				filters.push(taxonomy_filter("tag", "Tag", values));
+			}
 		}
 		Ok(filters)
 	}

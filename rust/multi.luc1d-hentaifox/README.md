@@ -1,8 +1,10 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 11)
+## Discovery (source version 12)
 Latest home scroller and paginated Latest listing use `/` then `/page/N/`. Top Rated reads the server-rendered default `#middle_sidebar div.item` only when `#top_rated_btn.sidebar_btn_active` is present. Most Faved, Most Fapped and Most Downloaded are dynamic listings loaded from the documented `includes/sidebar.php` endpoint with the site's CSRF token and XHR header. Those rankings are finite sidebar responses, not paginated archives: page 2 returns empty without a request. Dynamic listings include the 25 most popular tags from `/tags/popular/`; each opens the official `/tag/<slug>/` gallery list. Search filters also load up to 50 popular artists, characters, parodies and groups from the site's official taxonomy directories. Selecting one opens its canonical latest or popular gallery route, with server pagination under `/pag/N/`. If a directory is unavailable, its selection filter is omitted while the other filters remain. Live taxonomy directory and representative paginated gallery routes were checked; no live Aidoku/device playback is claimed.
+
+The top tags from the public `/tags/popular/` directory are now also selectable in the search filter menu; selecting one opens its official paginated tag route. Artist, character, parody and group filters remain limited to each public directory's first 50 entries.
 
 Home links and manifest listings use the registered `Home` / `ListingProvider` implementations. Unknown listing IDs and nonpositive pages fail rather than silently opening Latest. Challenge/empty home documents fail instead of producing a misleading empty success.
 

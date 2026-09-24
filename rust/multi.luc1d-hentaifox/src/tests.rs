@@ -224,7 +224,29 @@ fn popular_taxonomy_filter_exposes_names_and_validated_slugs() {
 }
 
 #[aidoku_test]
+fn popular_tag_filter_exposes_directory_entries() {
+	let filter = taxonomy_filter(
+		"tag",
+		"Tag",
+		vec![("Big Breasts".into(), "big-breasts".into())],
+	);
+	assert_eq!(filter.id, "tag");
+	match filter.kind {
+		aidoku::FilterKind::Select { options, ids, .. } => {
+			assert_eq!(options[0].as_ref(), "Any");
+			assert_eq!(options[1].as_ref(), "Big Breasts");
+			assert_eq!(ids.as_ref().unwrap()[1].as_ref(), "big-breasts");
+		}
+		_ => panic!("Popular tags should be a single-select filter"),
+	}
+}
+
+#[aidoku_test]
 fn popular_taxonomy_filters_map_to_official_latest_and_popular_routes() {
+	assert_eq!(
+		popular_tag_url("popular-tag-big-breasts", 2).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/pag/2/")
+	);
 	assert_eq!(
 		taxonomy_url("artist", "ankoman", 1, false).unwrap(),
 		format!("{BASE_URL}/artist/ankoman/")
@@ -259,6 +281,14 @@ fn popular_taxonomy_filters_map_to_official_latest_and_popular_routes() {
 	assert_eq!(
 		search_url_with_filters(None, 2, &filters).unwrap(),
 		format!("{BASE_URL}/character/2b/popular/pag/2/")
+	);
+	let tag_filter = vec![FilterValue::Select {
+		id: "tag".into(),
+		value: "big-breasts".into(),
+	}];
+	assert_eq!(
+		search_url_with_filters(None, 3, &tag_filter).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/pag/3/")
 	);
 	assert!(search_url_with_filters(Some("query"), 1, &filters).is_err());
 	let conflicting = vec![
