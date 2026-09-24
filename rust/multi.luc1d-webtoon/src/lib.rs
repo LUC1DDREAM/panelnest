@@ -260,15 +260,10 @@ impl Source for Webtoon {
 		}
 		let scope = search_scope(&filters)?;
 		if let Some(query) = query.filter(|q| !q.trim().is_empty()) {
-			if scope == "all" && page > 1 {
-				return Ok(MangaPageResult::default());
-			}
 			let path = search_path_for_language(&query, scope, page, selected_language())?;
 			let html = request(&path)?.html()?;
 			let mut result = parse_search(&html);
-			if scope != "all" {
-				result.has_next_page = has_next_search_page(&html, page);
-			}
+			result.has_next_page = has_search_next_page_for_scope(scope, &result, &html, page);
 			return Ok(result);
 		}
 		if page > 1 {
@@ -524,7 +519,7 @@ fn search_path_for_language(query: &str, scope: &str, page: i32, language: &str)
 	let query = encode_query(query);
 	match scope {
 		"all" if page == 1 => Ok(format!("/{language}/search?keyword={query}")),
-		"all" => Err(error!("All-results preview is not paginated")),
+		"all" => Ok(format!("/{language}/search?keyword={query}&page={page}")),
 		"originals" | "canvas" => Ok(format!(
 			"/{language}/search/{scope}?keyword={query}&page={page}"
 		)),
@@ -543,6 +538,20 @@ fn has_next_search_page(html: &Document, page: i32) -> bool {
 			})
 		})
 		.unwrap_or(false)
+}
+fn has_search_next_page_for_scope(
+	scope: &str,
+	result: &MangaPageResult,
+	html: &Document,
+	page: i32,
+) -> bool {
+	if scope == "all" {
+		// The combined search response omits pagination links, but accepts page=N.
+		// A nonempty page is the only reliable signal that another request may succeed.
+		!result.entries.is_empty()
+	} else {
+		has_next_search_page(html, page)
+	}
 }
 impl DeepLinkHandler for Webtoon {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {

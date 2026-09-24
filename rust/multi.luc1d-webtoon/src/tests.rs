@@ -132,6 +132,10 @@ fn selected_language_routes_cover_search_and_discovery() {
 			search_path_for_language("space boy", "canvas", 2, site).unwrap(),
 			format!("/{site}/search/canvas?keyword=space%20boy&page=2")
 		);
+		assert_eq!(
+			search_path_for_language("space boy", "all", 2, site).unwrap(),
+			format!("/{site}/search?keyword=space%20boy&page=2")
+		);
 	}
 	assert_eq!(locale_for_language_code("xx"), "en");
 }
@@ -239,7 +243,10 @@ fn official_search_scopes_build_paginated_routes() {
 		search_path("space boy", "all", 1).unwrap(),
 		"/en/search?keyword=space%20boy"
 	);
-	assert!(search_path("space boy", "all", 2).is_err());
+	assert_eq!(
+		search_path("space boy", "all", 2).unwrap(),
+		"/en/search?keyword=space%20boy&page=2"
+	);
 	assert_eq!(
 		search_path("space boy", "originals", 1).unwrap(),
 		"/en/search/originals?keyword=space%20boy&page=1"
@@ -264,6 +271,34 @@ fn official_search_scopes_build_paginated_routes() {
 		}])
 		.is_err()
 	);
+}
+
+#[aidoku_test]
+fn combined_search_uses_nonempty_page_as_next_page_signal() {
+	let html = Html::parse_with_url(
+		"<a href='/en/sf/space-boy/list?title_no=400'><strong class='title'>Space Boy</strong></a>",
+		"https://www.webtoons.com",
+	)
+	.unwrap();
+	let populated = parse_search(&html);
+	assert!(has_search_next_page_for_scope("all", &populated, &html, 1));
+
+	let empty_html = Html::parse("<div class='empty'>No results</div>").unwrap();
+	let empty = parse_search(&empty_html);
+	assert!(!has_search_next_page_for_scope(
+		"all",
+		&empty,
+		&empty_html,
+		2
+	));
+
+	let paginated = Html::parse(
+		"<div class='list_pagination'><a class='pagination' href='/en/search/canvas?page=2'>2</a></div>",
+	)
+	.unwrap();
+	assert!(has_search_next_page_for_scope(
+		"canvas", &empty, &paginated, 1
+	));
 }
 
 #[aidoku_test]

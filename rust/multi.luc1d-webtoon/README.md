@@ -1,17 +1,17 @@
 # Official WEBTOON (LUC1D)
 
-Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 10).
+Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 11).
 SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
 ## Support and limits
 
-- English public search with an All-results preview and selectable WEBTOON Originals or CANVAS catalogs. Originals and CANVAS result pages use their official page links for pagination.
+- English public search with All-results, WEBTOON Originals and CANVAS scopes. All-results accepts the official `page` query parameter even though its HTML omits next-page links; the source continues while a page contains series and stops after the first empty page. Originals and CANVAS use their official page links for pagination.
 - Default popular genre browse, metadata, cursor-paginated episodes, public reader image URLs, vertical viewer, image Referer.
 - Official mobile episode API; HTML requests use the official desktop site with its documented-in-URLs platform redirect switch because mobile search is JS-only. This is not an authentication or payment workaround.
 - Full live WASM-host smoke: Space Boy search, details, all API episode batches, public episode 1 image URL parsing, default browse.
 - Discovery home: Drama by Popularity / Likes / Date, plus direct browse links for all 17 English site genres. Search filters expose all genres and the official Popularity / Likes / Date sort orders (`MANA`, `LIKEIT`, `UPDATE`); clearing the text query browses the selected genre and sort. Named listings retain existing IDs and now include the remaining genre archives. Shelf previews show 20 entries, and opening a listing returns the complete server-rendered genre result. These pages are not paginated: page > 1 is empty.
 - Important: the site's bare `/en/genre` redirects to a Drama-selected page, NOT a global popularity chart. New discovery uses explicit `/en/genres/drama` routes and labels. No WEBTOON Popular Today or invented ranking period.
-- The Aidoku language selector supports English (`en`), Traditional Chinese (`zh-hant`), Thai (`th`), Indonesian (`id`), Spanish (`es`), French (`fr`), and German (`de`). Search and genre routes use the selected locale; unknown values fall back to English. The combined All-results route is a first-page preview; use the Originals or CANVAS scope for complete paginated search. Optional-page filtering, season-title normalization, and Canvas end-to-end reader verification remain unavailable or unverified.
+- The Aidoku language selector supports English (`en`), Traditional Chinese (`zh-hant`), Thai (`th`), Indonesian (`id`), Spanish (`es`), French (`fr`), and German (`de`). Search and genre routes use the selected locale; unknown values fall back to English. All three search scopes paginate. Optional-page filtering, season-title normalization, and Canvas end-to-end reader verification remain unavailable or unverified.
 - Canonical mobile and desktop WEBTOON series links resolve to manga entries after validating the host, path and numeric `title_no`.
 - No login, app-only chapters, Fast Pass, Daily Pass, purchases, or paywall bypass. Missing reader images returns an explicit error. No image bytes downloaded in tests. Actual iOS installation/image rendering not verified.
 
