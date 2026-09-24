@@ -20,7 +20,7 @@ mod tests;
 
 const BASE_URL: &str = "https://weebcentral.com";
 const REFERER: &str = "https://weebcentral.com/";
-const FETCH_LIMIT: i32 = 24;
+const FETCH_LIMIT: i32 = 32;
 
 struct WeebCentral;
 
@@ -64,7 +64,9 @@ fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResul
 		})
 		.unwrap_or_default();
 
-	let has_next_page = !entries.is_empty();
+	let has_next_page = html
+		.select_first("button[hx-get*='/search/data'][hx-get*='offset=']")
+		.is_some();
 
 	Ok(MangaPageResult {
 		entries,

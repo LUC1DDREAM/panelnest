@@ -89,6 +89,19 @@ fn search_query_does_not_inject_parameters() {
 }
 
 #[aidoku_test]
+fn fixture_search_pagination_uses_real_htmx_more_button() {
+	let terminal = Html::parse_with_url(r#"
+		<article><section><a href="/series/fixture/Sample">Sample</a></section></article>
+	"#, BASE_URL).unwrap();
+	assert!(!parse_search(&terminal).unwrap().has_next_page);
+	let more = Html::parse_with_url(r#"
+		<article><section><a href="/series/fixture/Sample">Sample</a></section></article>
+		<button hx-get="/search/data?limit=32&amp;offset=32&amp;display_mode=Full+Display"><span>View More Results...</span></button>
+	"#, BASE_URL).unwrap();
+	assert!(parse_search(&more).unwrap().has_next_page);
+}
+
+#[aidoku_test]
 fn search_rejects_nonpositive_page_before_request() {
 	use aidoku::Source;
 	let source = WeebCentral::new();

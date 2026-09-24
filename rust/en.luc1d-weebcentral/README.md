@@ -4,7 +4,8 @@
 
 Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
 the existing Advanced Search endpoint, its website sort values and explicit
-Descending order. Pagination uses the same 24-entry offset requests as search.
+Descending order. Search pages use the live endpoint's 32-entry HTMX offsets;
+the View More Results button accurately indicates whether another page exists.
 Home Latest Updates now links to its full listing. Existing Hot Updates and
 Recommendations sections are retained; Hot Updates does not repeat on page two.
 No daily/weekly/monthly popularity is exposed: the website Advanced Search
