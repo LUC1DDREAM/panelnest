@@ -222,6 +222,23 @@ fn official_path(url: &str) -> Option<String> {
 	}
 	Some(path.into())
 }
+fn episode_deep_link(path: &str) -> Option<(String, String)> {
+	let title_no = parameter(path, "title_no")?.parse::<u64>().ok()?;
+	let episode_no = parameter(path, "episode_no")?.parse::<u64>().ok()?;
+	if title_no == 0 || episode_no == 0 {
+		return None;
+	}
+	let route = path.split_once('?')?.0;
+	let (series_route, episode_route) = route.rsplit_once("/ep-")?;
+	let episode_slug = episode_route.strip_suffix("/viewer")?;
+	if episode_slug.is_empty() || !episode_slug.bytes().all(|byte| byte.is_ascii_digit()) {
+		return None;
+	}
+	Some((
+		format!("{series_route}/list?title_no={title_no}"),
+		path.into(),
+	))
+}
 fn encode_query(query: &str) -> String {
 	query
 		.bytes()
@@ -722,7 +739,15 @@ fn has_search_next_page_for_scope(
 }
 impl DeepLinkHandler for Webtoon {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
-		Ok(official_path(&url).map(|key| DeepLinkResult::Manga { key }))
+		let Some(path) = official_path(&url) else {
+			return Ok(None);
+		};
+		if parameter(&path, "episode_no").is_some() {
+			return Ok(episode_deep_link(&path).map(|(manga_key, key)| {
+				DeepLinkResult::Chapter { manga_key, key }
+			}));
+		}
+		Ok(Some(DeepLinkResult::Manga { key: path }))
 	}
 }
 aidoku::register_source!(

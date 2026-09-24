@@ -1,6 +1,6 @@
 # Official WEBTOON (LUC1D)
 
-Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 14).
+Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 15).
 SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
 ## Support and limits
@@ -14,7 +14,7 @@ SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 - Home sends its stable section layout first and streams each discovery section as it loads; a failed section does not hide successful sections or the genre browser.
 - Important: the site's bare `/en/genre` redirects to a Drama-selected page, NOT a global popularity chart. New discovery uses explicit `/en/genres/drama` routes and labels. No WEBTOON Popular Today or invented ranking period.
 - The Aidoku language selector supports English (`en`), Traditional Chinese (`zh-hant`), Thai (`th`), Indonesian (`id`), Spanish (`es`), French (`fr`), and German (`de`). Search and genre routes use the selected locale; unknown values fall back to English. All three search scopes paginate. Optional-page filtering, season-title normalization, and Canvas end-to-end reader verification remain unavailable or unverified.
-- Canonical mobile and desktop WEBTOON series links resolve to manga entries after validating the host, path and numeric `title_no`.
+- Canonical mobile and desktop WEBTOON series links resolve to manga entries; official episode viewer links resolve directly to chapters after validating the host, series path, `title_no`, and `episode_no`.
 - No login, app-only chapters, Fast Pass, Daily Pass, purchases, or paywall bypass. Missing reader images returns an explicit error. No image bytes downloaded in tests. Actual iOS installation/image rendering not verified.
 
 ## Reproduce

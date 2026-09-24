@@ -525,6 +525,32 @@ fn series_deep_links_resolve_supported_hosts_and_reject_foreign_hosts() {
 	);
 }
 
+#[aidoku_test]
+fn official_episode_deep_links_open_the_matching_chapter() {
+	use aidoku::{DeepLinkHandler, DeepLinkResult};
+	let source = Webtoon;
+	let mobile = "https://m.webtoons.com/en/sf/space-boy/ep-1/viewer?title_no=400&episode_no=1";
+	assert_eq!(
+		source.handle_deep_link(mobile.into()).unwrap(),
+		Some(DeepLinkResult::Chapter {
+			manga_key: "/en/sf/space-boy/list?title_no=400".into(),
+			key: "/en/sf/space-boy/ep-1/viewer?title_no=400&episode_no=1".into(),
+		})
+	);
+	let desktop = "https://www.webtoons.com/en/sf/space-boy/ep-1/viewer?title_no=400&episode_no=1";
+	assert_eq!(
+		source.handle_deep_link(desktop.into()).unwrap(),
+		source.handle_deep_link(mobile.into()).unwrap()
+	);
+	for invalid in [
+		"https://m.webtoons.com/en/sf/space-boy/ep-x/viewer?title_no=400&episode_no=1",
+		"https://m.webtoons.com/en/sf/space-boy/ep-1/viewer?title_no=0&episode_no=1",
+		"https://m.webtoons.com/en/sf/space-boy/ep-1/viewer?title_no=400&episode_no=nope",
+	] {
+		assert_eq!(source.handle_deep_link(invalid.into()).unwrap(), None, "{invalid}");
+	}
+}
+
 #[cfg(feature = "live-tests")]
 #[aidoku_test]
 fn live_public_end_to_end() {
