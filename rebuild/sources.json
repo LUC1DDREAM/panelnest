@@ -123,6 +123,7 @@
   {
     "id": "multi.luc1d-webtoon",
     "url": "https://m.webtoons.com/?webtoon-platform-redirect=true",
+    "upstream_version": 9,
     "implemented": [
       "search",
       "details",
@@ -168,8 +169,8 @@
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "limitations": "The combined search view is a first-page preview; full Originals and CANVAS results are paginated. Canvas rendering is not verified in Aidoku.",
-    "live_evidence": "Official public pages confirm 17 English genres with three sorts and paginated /en/search/originals and /en/search/canvas result pages.",
-    "fixture_tests_passed": 14,
+    "live_evidence": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links.",
+    "fixture_tests_passed": 15,
     "release_authorized": true
   },
   {

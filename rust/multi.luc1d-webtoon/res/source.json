@@ -2,11 +2,17 @@
   "info": {
     "id": "multi.luc1d-webtoon",
     "name": "WEBTOON [PN]",
-    "version": 8,
+    "version": 9,
     "url": "https://m.webtoons.com",
     "contentRating": 1,
     "languages": [
-      "en"
+      "en",
+      "zh",
+      "th",
+      "id",
+      "es",
+      "fr",
+      "de"
     ],
     "minAppVersion": "0.7.1"
   },
@@ -88,5 +94,7 @@
       "name": "Informative: By Popularity"
     }
   ],
-  "config": {}
+  "config": {
+    "languageSelectType": "single"
+  }
 }

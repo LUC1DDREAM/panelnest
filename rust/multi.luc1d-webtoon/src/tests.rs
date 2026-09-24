@@ -1,4 +1,5 @@
 use super::*;
+use aidoku::FilterKind;
 #[aidoku_test]
 fn captured_discovery_retains_site_order_and_full_list() {
 	let html = Html::parse(include_str!("../tests/fixtures/discovery.html")).unwrap();
@@ -105,6 +106,30 @@ fn discovery_listing_routes_are_site_specific() {
 	}
 	assert_eq!(discovery_path("popular-today"), None);
 	assert_eq!(discovery_path("https://example.invalid"), None);
+}
+
+#[aidoku_test]
+fn selected_language_routes_cover_search_and_discovery() {
+	for (code, site) in [
+		("en", "en"),
+		("zh", "zh-hant"),
+		("th", "th"),
+		("id", "id"),
+		("es", "es"),
+		("fr", "fr"),
+		("de", "de"),
+	] {
+		assert_eq!(locale_for_language_code(code), site);
+		assert_eq!(
+			discovery_path_for_language("genre-drama", site).as_deref(),
+			Some(format!("/{site}/genres/drama?sortOrder=MANA").as_str())
+		);
+		assert_eq!(
+			search_path_for_language("space boy", "canvas", 2, site).unwrap(),
+			format!("/{site}/search/canvas?keyword=space%20boy&page=2")
+		);
+	}
+	assert_eq!(locale_for_language_code("xx"), "en");
 }
 
 #[aidoku_test]

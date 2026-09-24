@@ -1,10 +1,11 @@
 #![no_std]
 use aidoku::{
-	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterKind, FilterValue,
+	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterValue,
 	ImageRequestProvider, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
 	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
 	alloc::{String, Vec, borrow::Cow, vec},
 	imports::{
+		defaults::defaults_get,
 		html::Document,
 		net::{Request, TimeUnit, set_rate_limit},
 	},
@@ -13,6 +14,22 @@ use aidoku::{
 use serde_json::Value;
 const BASE: &str = "https://m.webtoons.com";
 struct Webtoon;
+fn locale_for_language_code(code: &str) -> &'static str {
+	match code {
+		"zh" => "zh-hant",
+		"th" => "th",
+		"id" => "id",
+		"es" => "es",
+		"fr" => "fr",
+		"de" => "de",
+		_ => "en",
+	}
+}
+fn selected_language() -> &'static str {
+	defaults_get::<String>("language")
+		.map(|language| locale_for_language_code(&language))
+		.unwrap_or("en")
+}
 const GENRES: &[(&str, &str)] = &[
 	("drama", "Drama"),
 	("fantasy", "Fantasy"),
@@ -43,6 +60,9 @@ const SEARCH_SCOPES: &[(&str, &str)] = &[
 	("canvas", "CANVAS"),
 ];
 fn discovery_path(id: &str) -> Option<String> {
+	discovery_path_for_language(id, selected_language())
+}
+fn discovery_path_for_language(id: &str, language: &str) -> Option<String> {
 	let (genre, sort) = match id {
 		"popular" => ("drama", "MANA"),
 		"likes" => ("drama", "LIKEIT"),
@@ -55,7 +75,7 @@ fn discovery_path(id: &str) -> Option<String> {
 			(slug, "MANA")
 		}
 	};
-	Some(format!("/en/genres/{genre}?sortOrder={sort}"))
+	Some(format!("/{language}/genres/{genre}?sortOrder={sort}"))
 }
 fn parameter<'a>(path: &'a str, name: &str) -> Option<&'a str> {
 	path.split_once('?')?
@@ -243,7 +263,7 @@ impl Source for Webtoon {
 			if scope == "all" && page > 1 {
 				return Ok(MangaPageResult::default());
 			}
-			let path = search_path(&query, scope, page)?;
+			let path = search_path_for_language(&query, scope, page, selected_language())?;
 			let html = request(&path)?.html()?;
 			let mut result = parse_search(&html);
 			if scope != "all" {
@@ -439,8 +459,8 @@ impl aidoku::Home for Webtoon {
 						aidoku::Link {
 							title: (*name).into(),
 							value: Some(aidoku::LinkValue::Listing(aidoku::Listing {
-							id,
-							name: (*name).into(),
+								id,
+								name: (*name).into(),
 								..Default::default()
 							})),
 							..Default::default()
@@ -453,6 +473,9 @@ impl aidoku::Home for Webtoon {
 	}
 }
 fn filtered_discovery_path(filters: &[FilterValue]) -> Result<String> {
+	filtered_discovery_path_for_language(filters, selected_language())
+}
+fn filtered_discovery_path_for_language(filters: &[FilterValue], language: &str) -> Result<String> {
 	let mut genre = "drama";
 	let mut sort = "MANA";
 	for filter in filters {
@@ -475,7 +498,7 @@ fn filtered_discovery_path(filters: &[FilterValue]) -> Result<String> {
 			_ => {}
 		}
 	}
-	Ok(format!("/en/genres/{genre}?sortOrder={sort}"))
+	Ok(format!("/{language}/genres/{genre}?sortOrder={sort}"))
 }
 fn search_scope(filters: &[FilterValue]) -> Result<&'static str> {
 	let Some(value) = filters.iter().find_map(|filter| match filter {
@@ -490,15 +513,21 @@ fn search_scope(filters: &[FilterValue]) -> Result<&'static str> {
 		.map(|(id, _)| *id)
 		.ok_or_else(|| error!("Unknown WEBTOON search scope"))
 }
+#[cfg(test)]
 fn search_path(query: &str, scope: &str, page: i32) -> Result<String> {
+	search_path_for_language(query, scope, page, "en")
+}
+fn search_path_for_language(query: &str, scope: &str, page: i32, language: &str) -> Result<String> {
 	if page < 1 {
 		return Err(error!("Invalid page"));
 	}
 	let query = encode_query(query);
 	match scope {
-		"all" if page == 1 => Ok(format!("/en/search?keyword={query}")),
+		"all" if page == 1 => Ok(format!("/{language}/search?keyword={query}")),
 		"all" => Err(error!("All-results preview is not paginated")),
-		"originals" | "canvas" => Ok(format!("/en/search/{scope}?keyword={query}&page={page}")),
+		"originals" | "canvas" => Ok(format!(
+			"/{language}/search/{scope}?keyword={query}&page={page}"
+		)),
 		_ => Err(error!("Unknown WEBTOON search scope")),
 	}
 }
