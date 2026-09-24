@@ -1,13 +1,15 @@
 #![no_std]
 use aidoku::{
 	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
-	ImageRequestProvider, Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page,
-	PageContent, PageContext, Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
+	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider,
+	Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
+	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
 	alloc::{String, Vec, borrow::Cow, vec},
 	imports::{
 		defaults::defaults_get,
 		html::Document,
 		net::{Request, TimeUnit, set_rate_limit},
+		std::send_partial_result,
 	},
 	prelude::*,
 };
@@ -467,6 +469,47 @@ fn discovery_component(id: &str, title: &str, entries: Vec<Manga>) -> aidoku::Ho
 		},
 	}
 }
+fn empty_discovery_component(title: &str) -> HomeComponent {
+	HomeComponent {
+		title: Some(title.into()),
+		subtitle: Some("Drama genre; site order (not a daily chart)".into()),
+		value: HomeComponentValue::empty_scroller(),
+	}
+}
+fn browse_genres_component(genres: &[(String, String)]) -> HomeComponent {
+	HomeComponent {
+		title: Some("Browse Genres".into()),
+		subtitle: Some("Genres from WEBTOON Discovery".into()),
+		value: HomeComponentValue::Links(
+			genres
+				.iter()
+				.map(|(slug, name)| aidoku::Link {
+					title: name.clone(),
+					value: Some(aidoku::LinkValue::Listing(Listing {
+						id: format!("genre-{slug}"),
+						name: name.clone(),
+						..Default::default()
+					})),
+					..Default::default()
+				})
+				.collect(),
+		),
+	}
+}
+fn empty_home_layout() -> HomeLayout {
+	let sections = [
+		("popular", "Drama: By Popularity"),
+		("likes", "Drama: By Likes"),
+		("date", "Drama: By Date"),
+	];
+	HomeLayout {
+		components: sections
+			.iter()
+			.map(|(_, title)| empty_discovery_component(title))
+			.chain(core::iter::once(browse_genres_component(&[])))
+			.collect(),
+	}
+}
 impl DynamicFilters for Webtoon {
 	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
 		let (discovered_genres, discovered_sorts) = discovery_options(selected_language());
@@ -549,41 +592,46 @@ impl aidoku::Home for Webtoon {
 	fn get_home(&self) -> Result<aidoku::HomeLayout> {
 		use aidoku::ListingProvider;
 		let language = selected_language();
-		let (genres, _sorts) = discovery_options(language);
-		let mut components = Vec::new();
-		for (id, title) in [
+		let sections = [
 			("popular", "Drama: By Popularity"),
 			("likes", "Drama: By Likes"),
 			("date", "Drama: By Date"),
-		] {
-			let result = self.get_manga_list(
+		];
+		let mut layout = empty_home_layout();
+		send_partial_result(&HomePartialResult::Layout(layout.clone()));
+
+		for (id, title) in sections {
+			let Ok(result) = self.get_manga_list(
 				aidoku::Listing {
 					id: id.into(),
 					..Default::default()
 				},
 				1,
-			)?;
-			components.push(discovery_component(id, title, result.entries));
+			) else {
+				continue;
+			};
+			let component = discovery_component(id, title, result.entries);
+			send_partial_result(&HomePartialResult::Component(component.clone()));
+			if let Some(existing) = layout
+				.components
+				.iter_mut()
+				.find(|existing| existing.title == component.title)
+			{
+				*existing = component;
+			}
 		}
-		components.push(aidoku::HomeComponent {
-			title: Some("Browse Genres".into()),
-			subtitle: Some("Genres from WEBTOON Discovery".into()),
-			value: aidoku::HomeComponentValue::Links(
-				genres
-					.iter()
-					.map(|(slug, name)| aidoku::Link {
-						title: name.clone(),
-						value: Some(aidoku::LinkValue::Listing(aidoku::Listing {
-							id: format!("genre-{slug}"),
-							name: name.clone(),
-							..Default::default()
-						})),
-						..Default::default()
-					})
-					.collect(),
-			),
-		});
-		Ok(aidoku::HomeLayout { components })
+
+		let (genres, _sorts) = discovery_options(language);
+		let component = browse_genres_component(&genres);
+		send_partial_result(&HomePartialResult::Component(component.clone()));
+		if let Some(existing) = layout
+			.components
+			.iter_mut()
+			.find(|existing| existing.title == component.title)
+		{
+			*existing = component;
+		}
+		Ok(layout)
 	}
 }
 fn filtered_discovery_path(filters: &[FilterValue]) -> Result<String> {

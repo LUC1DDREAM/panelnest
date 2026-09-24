@@ -128,6 +128,32 @@ fn discovery_components_keep_listings_and_site_order() {
 		_ => panic!("expected browsable scroller"),
 	}
 }
+
+#[aidoku_test]
+fn progressive_home_starts_with_stable_sections_and_dynamic_genre_links() {
+	let layout = empty_home_layout();
+	assert_eq!(layout.components.len(), 4);
+	assert_eq!(
+		layout.components[0].title.as_deref(),
+		Some("Drama: By Popularity")
+	);
+	assert_eq!(layout.components[3].title.as_deref(), Some("Browse Genres"));
+	let genres = vec![("new_site_genre".into(), "New Genre".into())];
+	let component = browse_genres_component(&genres);
+	match component.value {
+		aidoku::HomeComponentValue::Links(links) => {
+			assert_eq!(links.len(), 1);
+			assert_eq!(links[0].title, "New Genre");
+			match links[0].value.as_ref().unwrap() {
+				aidoku::LinkValue::Listing(listing) => {
+					assert_eq!(listing.id, "genre-new_site_genre");
+				}
+				_ => panic!("genre link must open its listing"),
+			}
+		}
+		_ => panic!("expected genre links"),
+	}
+}
 #[cfg(feature = "live-tests")]
 #[aidoku_test]
 fn live_discovery_home_and_listings() {

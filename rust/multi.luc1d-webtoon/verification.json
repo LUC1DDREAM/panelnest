@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-webtoon",
-  "version": 13,
+  "version": 14,
   "sha256": "70e0b12aa13319bd7daffe6a62bb18b31a71ca98bf051e1c21067e259aa8401a",
   "bytes": 65972,
   "languages": [
@@ -16,7 +16,7 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 21,
+  "fixture_tests_passed": 22,
   "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. All-results pagination now follows page numbers and stops on empty results. This was direct official-site HTTP validation, not a live Aidoku/device run. WASM fixtures verify runtime menu parsing against the official genre and sort links, plus routing for new genres.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
