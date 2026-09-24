@@ -100,6 +100,94 @@ fn discovery_listing_routes_are_site_specific() {
 	assert_eq!(discovery_path("popular-today"), None);
 	assert_eq!(discovery_path("https://example.invalid"), None);
 }
+
+#[aidoku_test]
+fn dynamic_filters_expose_every_official_genre_and_sort() {
+	let filters = Webtoon.get_dynamic_filters().unwrap();
+	assert_eq!(filters.len(), 2);
+	match &filters[0].kind {
+		FilterKind::Select {
+			is_genre,
+			options,
+			ids,
+			..
+		} => {
+			assert!(*is_genre);
+			assert_eq!(options.len(), 17);
+			assert_eq!(ids.as_ref().unwrap().len(), 17);
+			assert_eq!(ids.as_ref().unwrap()[6].as_ref(), "super_hero");
+			assert_eq!(ids.as_ref().unwrap()[7].as_ref(), "sf");
+		}
+		_ => panic!("expected genre selector"),
+	}
+	match &filters[1].kind {
+		FilterKind::Sort {
+			options,
+			can_ascend,
+			..
+		} => {
+			assert!(!can_ascend);
+			assert_eq!(options.len(), 3);
+		}
+		_ => panic!("expected sort selector"),
+	}
+}
+
+#[aidoku_test]
+fn dynamic_genre_and_sort_route_to_official_catalogs() {
+	assert_eq!(
+		filtered_discovery_path(&[
+			FilterValue::Select {
+				id: "genre".into(),
+				value: "sf".into()
+			},
+			FilterValue::Sort {
+				id: "sort".into(),
+				index: 2,
+				ascending: false
+			},
+		])
+		.unwrap(),
+		"/en/genres/sf?sortOrder=UPDATE"
+	);
+	assert_eq!(
+		filtered_discovery_path(&[FilterValue::Select {
+			id: "genre".into(),
+			value: "drama".into(),
+		}])
+		.unwrap(),
+		"/en/genres/drama?sortOrder=MANA"
+	);
+	assert_eq!(
+		filtered_discovery_path(&[FilterValue::Sort {
+			id: "sort".into(),
+			index: 1,
+			ascending: false,
+		}])
+		.unwrap(),
+		"/en/genres/drama?sortOrder=LIKEIT"
+	);
+	assert!(
+		filtered_discovery_path(&[FilterValue::Select {
+			id: "genre".into(),
+			value: "untrusted/path".into(),
+		}])
+		.is_err()
+	);
+	assert!(
+		filtered_discovery_path(&[FilterValue::Sort {
+			id: "sort".into(),
+			index: 99,
+			ascending: false,
+		}])
+		.is_err()
+	);
+}
+
+#[aidoku_test]
+fn search_rejects_nonpositive_pages() {
+	assert!(Webtoon.get_search_manga_list(None, 0, vec![]).is_err());
+}
 use aidoku::imports::html::Html;
 use aidoku_test::aidoku_test;
 #[aidoku_test]
@@ -159,21 +247,33 @@ fn series_deep_links_resolve_supported_hosts_and_reject_foreign_hosts() {
 	let desktop = "https://www.webtoons.com/en/sf/space-boy/list?title_no=400";
 	assert_eq!(
 		source.handle_deep_link(mobile.into()).unwrap(),
-		Some(DeepLinkResult::Manga { key: "/en/sf/space-boy/list?title_no=400".into() })
+		Some(DeepLinkResult::Manga {
+			key: "/en/sf/space-boy/list?title_no=400".into()
+		})
 	);
 	assert_eq!(official_path(desktop), official_path(mobile));
-	assert!(source
-		.handle_deep_link("https://www.webtoons.com.evil/en/sf/space-boy/list?title_no=400".into())
-		.unwrap()
-		.is_none());
-	assert!(source
-		.handle_deep_link("https://example.org/en/sf/space-boy/list?title_no=400".into())
-		.unwrap()
-		.is_none());
-	assert!(source
-		.handle_deep_link("https://m.webtoons.com/en/sf/space-boy/list?title_no=notnumeric".into())
-		.unwrap()
-		.is_none());
+	assert!(
+		source
+			.handle_deep_link(
+				"https://www.webtoons.com.evil/en/sf/space-boy/list?title_no=400".into()
+			)
+			.unwrap()
+			.is_none()
+	);
+	assert!(
+		source
+			.handle_deep_link("https://example.org/en/sf/space-boy/list?title_no=400".into())
+			.unwrap()
+			.is_none()
+	);
+	assert!(
+		source
+			.handle_deep_link(
+				"https://m.webtoons.com/en/sf/space-boy/list?title_no=notnumeric".into()
+			)
+			.unwrap()
+			.is_none()
+	);
 }
 
 #[cfg(feature = "live-tests")]

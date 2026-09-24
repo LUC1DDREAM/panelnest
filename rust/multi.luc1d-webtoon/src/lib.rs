@@ -1,8 +1,9 @@
 #![no_std]
 use aidoku::{
-	Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, ImageRequestProvider, Manga,
-	MangaPageResult, MangaStatus, Page, PageContent, PageContext, Result, Source, Viewer,
-	alloc::{String, Vec, vec},
+	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter, FilterKind, FilterValue,
+	ImageRequestProvider, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
+	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
+	alloc::{String, Vec, borrow::Cow, vec},
 	imports::{
 		html::Document,
 		net::{Request, TimeUnit, set_rate_limit},
@@ -12,6 +13,30 @@ use aidoku::{
 use serde_json::Value;
 const BASE: &str = "https://m.webtoons.com";
 struct Webtoon;
+const GENRES: &[(&str, &str)] = &[
+	("drama", "Drama"),
+	("fantasy", "Fantasy"),
+	("comedy", "Comedy"),
+	("action", "Action"),
+	("slice_of_life", "Slice of Life"),
+	("romance", "Romance"),
+	("super_hero", "Superhero"),
+	("sf", "Sci-Fi"),
+	("thriller", "Thriller"),
+	("supernatural", "Supernatural"),
+	("mystery", "Mystery"),
+	("sports", "Sports"),
+	("historical", "Historical"),
+	("heartwarming", "Heartwarming"),
+	("horror", "Horror"),
+	("graphic_novel", "Graphic Novel"),
+	("tiptoon", "Informative"),
+];
+const SORTS: &[(&str, &str)] = &[
+	("MANA", "Popularity"),
+	("LIKEIT", "Likes"),
+	("UPDATE", "Date"),
+];
 fn discovery_path(id: &str) -> Option<&'static str> {
 	match id {
 		"popular" => Some("/en/genres/drama?sortOrder=MANA"),
@@ -200,14 +225,17 @@ impl Source for Webtoon {
 		&self,
 		query: Option<String>,
 		page: i32,
-		_filters: Vec<FilterValue>,
+		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
+		if page < 1 {
+			return Err(error!("Invalid page"));
+		}
 		if page > 1 {
 			return Ok(MangaPageResult::default());
 		}
 		let path = match query.filter(|q| !q.trim().is_empty()) {
 			Some(q) => format!("/en/search?keyword={}", encode_query(&q)),
-			None => String::from("/en/genres/drama?sortOrder=MANA"),
+			None => filtered_discovery_path(&filters)?,
 		};
 		Ok(parse_search(&request(&path)?.html()?))
 	}
@@ -283,6 +311,45 @@ fn discovery_component(id: &str, title: &str, entries: Vec<Manga>) -> aidoku::Ho
 		},
 	}
 }
+impl DynamicFilters for Webtoon {
+	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
+		let genres = GENRES
+			.iter()
+			.map(|(_, name)| Cow::Borrowed(*name))
+			.collect();
+		let genre_ids = GENRES
+			.iter()
+			.map(|(slug, _)| Cow::Borrowed(*slug))
+			.collect();
+		let sorts = SORTS
+			.iter()
+			.map(|(_, label)| Cow::Borrowed(*label))
+			.collect();
+		Ok(vec![
+			SelectFilter {
+				id: Cow::Borrowed("genre"),
+				title: Some(Cow::Borrowed("Genre")),
+				is_genre: true,
+				options: genres,
+				ids: Some(genre_ids),
+				..Default::default()
+			}
+			.into(),
+			SortFilter {
+				id: Cow::Borrowed("sort"),
+				title: Some(Cow::Borrowed("Sort by")),
+				can_ascend: false,
+				options: sorts,
+				default: Some(SortFilterDefault {
+					index: 0,
+					ascending: false,
+				}),
+				..Default::default()
+			}
+			.into(),
+		])
+	}
+}
 impl aidoku::ListingProvider for Webtoon {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
 		let path = discovery_path(&listing.id).ok_or_else(|| error!("Unknown WEBTOON listing"))?;
@@ -344,11 +411,43 @@ impl aidoku::Home for Webtoon {
 		Ok(aidoku::HomeLayout { components })
 	}
 }
+fn filtered_discovery_path(filters: &[FilterValue]) -> Result<String> {
+	let mut genre = "drama";
+	let mut sort = "MANA";
+	for filter in filters {
+		match filter {
+			FilterValue::Select { id, value } if id == "genre" => {
+				if !GENRES.iter().any(|(slug, _)| *slug == value.as_str()) {
+					return Err(error!("Unknown WEBTOON genre"));
+				}
+				genre = value.as_str();
+			}
+			FilterValue::Sort { id, index, .. } if id == "sort" => {
+				if *index < 0 {
+					return Err(error!("Unknown WEBTOON sort order"));
+				}
+				sort = SORTS
+					.get(*index as usize)
+					.map(|(key, _)| *key)
+					.ok_or_else(|| error!("Unknown WEBTOON sort order"))?;
+			}
+			_ => {}
+		}
+	}
+	Ok(format!("/en/genres/{genre}?sortOrder={sort}"))
+}
 impl DeepLinkHandler for Webtoon {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
 		Ok(official_path(&url).map(|key| DeepLinkResult::Manga { key }))
 	}
 }
-aidoku::register_source!(Webtoon, ImageRequestProvider, ListingProvider, Home, DeepLinkHandler);
+aidoku::register_source!(
+	Webtoon,
+	ImageRequestProvider,
+	ListingProvider,
+	Home,
+	DeepLinkHandler,
+	DynamicFilters
+);
 #[cfg(test)]
 mod tests;
