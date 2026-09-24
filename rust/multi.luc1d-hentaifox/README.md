@@ -1,7 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 16)
+## Discovery (source version 17)
+Version 17 expands the Home page with browsable Latest, Top Rated, Most Faved, Most Fapped and Most Downloaded sections. The three sidebar rankings are requested independently and omitted individually when unavailable, so a ranking failure does not hide the rest of Home. The ranking HTML uses the same CSRF-protected official sidebar route as its existing dynamic catalog listings.
 Version 16 adds a Language filter from the site's official `/languages/popular/` directory. All 26 listed categories are available, including the site's translated, rewrite and text-cleaning classifications. Selected values open the corresponding `/language/<slug>/` routes and preserve Latest/Popular sorting and pagination.
 Version 15 adds freeform name/slug filters for tags, artists, characters, parodies and groups. They open official category routes beyond the quick-select lists and preserve Latest/Popular sorting and pagination. Names are converted to lowercase hyphenated route slugs; exact ASCII site slugs can also be entered.
 Version 14 fixes Popular sorting for selected tags: the official tag page has a paginated /popular/ route just like other taxonomy pages. Earlier builds always returned the latest tag route even when Popular was selected. Both sort modes now retain pagination.
@@ -9,7 +10,7 @@ Latest home scroller and paginated Latest listing use `/` then `/page/N/`. Top R
 
 Quick-select menus show the 25 most popular tags and up to 50 popular entries for each taxonomy other than languages, whose official directory currently contains 26 entries. The version 15 text filters can open additional categories when their ASCII site name or slug is known. Names with non-ASCII characters are not converted automatically; enter their official ASCII slug instead.
 
-Home links and manifest listings use the registered `Home` / `ListingProvider` implementations. Unknown listing IDs and nonpositive pages fail rather than silently opening Latest. Challenge/empty home documents fail instead of producing a misleading empty success.
+Home links and manifest listings use the registered `Home` / `ListingProvider` implementations. Unknown listing IDs and nonpositive pages fail rather than silently opening Latest. Challenge/empty latest-home documents fail instead of producing a misleading empty success.
 
 Canonical `https://hentaifox.com/gallery/<numeric-id>/` links resolve to their manga entries. Host matching requires the exact HTTPS hostname, rejecting lookalike suffix hosts, HTTP links and nonnumeric IDs.
 

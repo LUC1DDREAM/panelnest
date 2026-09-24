@@ -229,7 +229,8 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home"
     ],
     "listings": [
       "Latest",
@@ -240,7 +241,7 @@
       "Most Fapped",
       "Most Downloaded"
     ],
-    "limitations": "Sidebar rankings are finite; no temporal popularity listings. Quick-select menus show 25 popular tags and up to 50 popular entries per other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site's ASCII slug.",
+    "limitations": "Sidebar rankings are finite; no temporal popularity listings. Home displays Latest, Top Rated and the three sidebar rankings when available; each sidebar feed may fail independently. Quick-select menus show 25 popular tags and up to 50 popular entries per other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site's ASCII slug.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -248,8 +249,8 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Live official /languages/ and /languages/popular/ directories each expose 26 language classifications. Sample /language/english/ Latest and Popular page-1/page-2 routes returned HTTP 200. Live site routes also confirm /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. Regression tests cover language directory parsing, route sorting and pagination plus quick-select and freeform taxonomy routing.",
-    "fixture_tests_passed": 20,
+    "live_evidence": "Live official /languages/ and /languages/popular/ directories each expose 26 language classifications. Sample /language/english/ Latest and Popular page-1/page-2 routes returned HTTP 200. Live site routes also confirm /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. The official homepage returns HTTP 200 with CSRF token and Top Rated panel. The three official sidebar POST routes top_faved, top_fapped and top_downloaded each return HTTP 200 and current div.item gallery markup through the same XHR/CSRF request shape used by the source. Regression tests cover language directory parsing, route sorting and pagination, quick-select and freeform taxonomy routing, browsable Home scrollers, and independent handling of failed sidebar markup.",
+    "fixture_tests_passed": 23,
     "release_authorized": true
   }
 ]

@@ -183,8 +183,9 @@ fn search_url_with_filters(
 				}
 			}
 			FilterValue::Text { id, value } if !value.trim().is_empty() => {
-				if let Some((_, kind, _)) =
-					TEXT_TAXONOMIES.iter().find(|(filter_id, _, _)| *filter_id == id)
+				if let Some((_, kind, _)) = TEXT_TAXONOMIES
+					.iter()
+					.find(|(filter_id, _, _)| *filter_id == id)
 				{
 					selected_taxonomies.push((*kind, taxonomy_text_slug(value)?));
 				}
@@ -606,13 +607,23 @@ fn fetch_sidebar_listing(category: &str) -> Result<MangaPageResult> {
 		"Unsupported sidebar ranking"
 	);
 	let page = Request::get(format!("{BASE_URL}/"))?.html()?;
-	let token = page
-		.select_first("[name=csrf-token]")
+	let token = sidebar_csrf_token(&page).ok_or(error!("Missing homepage CSRF token"))?;
+	post_sidebar_listing(category, &token)
+}
+fn sidebar_csrf_token(doc: &Document) -> Option<String> {
+	doc.select_first("[name=csrf-token]")
 		.and_then(|el| el.attr("content"))
 		.filter(|value| !value.trim().is_empty())
-		.ok_or(error!("Missing homepage CSRF token"))?;
+}
+fn post_sidebar_listing(category: &str, token: &str) -> Result<MangaPageResult> {
+	ensure!(
+		SIDEBAR_LISTINGS
+			.iter()
+			.any(|(_, _, value)| *value == category),
+		"Unsupported sidebar ranking"
+	);
 	let response = Request::post(SIDEBAR_URL)?
-		.header("X-Csrf-Token", &token)
+		.header("X-Csrf-Token", token)
 		.header("X-Requested-With", "XMLHttpRequest")
 		.header("Content-Type", "application/x-www-form-urlencoded")
 		.body(format!("type={category}"))
@@ -638,6 +649,20 @@ fn latest_component(doc: &Document) -> Result<aidoku::HomeComponent> {
 		..Default::default()
 	})
 }
+fn sidebar_home_component(id: &str, title: &str, result: MangaPageResult) -> aidoku::HomeComponent {
+	aidoku::HomeComponent {
+		title: Some(title.into()),
+		value: aidoku::HomeComponentValue::Scroller {
+			entries: result.entries.into_iter().map(Into::into).collect(),
+			listing: Some(Listing {
+				id: id.into(),
+				name: title.into(),
+				..Default::default()
+			}),
+		},
+		..Default::default()
+	}
+}
 fn parse_home(doc: &Document) -> Result<aidoku::HomeLayout> {
 	let components = vec![latest_component(doc)?];
 	let mut components = components;
@@ -661,7 +686,17 @@ fn parse_home(doc: &Document) -> Result<aidoku::HomeLayout> {
 }
 impl aidoku::Home for GallerySource {
 	fn get_home(&self) -> Result<aidoku::HomeLayout> {
-		parse_home(&Request::get(listing_url("latest", 1)?)?.html()?)
+		let homepage = Request::get(listing_url("latest", 1)?)?.html()?;
+		let mut home = parse_home(&homepage)?;
+		if let Some(token) = sidebar_csrf_token(&homepage) {
+			for (id, title, category) in SIDEBAR_LISTINGS {
+				if let Ok(result) = post_sidebar_listing(category, &token) {
+					home.components
+						.push(sidebar_home_component(id, title, result));
+				}
+			}
+		}
+		Ok(home)
 	}
 }
 impl aidoku::ListingProvider for GallerySource {

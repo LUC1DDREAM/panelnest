@@ -134,6 +134,61 @@ fn dynamic_sidebar_rankings_are_registered_and_parse_scoped_entries() {
 }
 
 #[aidoku_test]
+fn sidebar_rankings_become_browsable_home_scrollers() {
+	let doc = Html::parse_with_url(
+		r#"<div class="item"><a href="/gallery/77/"><img alt="Sample Ranked" src="/cover.png"></a></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	for (id, title, _) in SIDEBAR_LISTINGS {
+		let result = parse_sidebar_items(&doc).unwrap();
+		let component = sidebar_home_component(id, title, result);
+		assert_eq!(component.title.as_deref(), Some(title));
+		if let aidoku::HomeComponentValue::Scroller { entries, listing } = component.value {
+			assert_eq!(entries.len(), 1);
+			assert_eq!(listing.unwrap().id, id);
+		} else {
+			panic!("expected browsable ranking scroller");
+		}
+	}
+	assert!(parse_sidebar_items(&Html::parse("<html></html>").unwrap()).is_err());
+}
+
+#[aidoku_test]
+fn sidebar_home_reuses_only_a_nonempty_homepage_csrf_token() {
+	let doc = Html::parse(r#"<meta name="csrf-token" content="valid-token">"#).unwrap();
+	assert_eq!(sidebar_csrf_token(&doc).as_deref(), Some("valid-token"));
+	assert_eq!(
+		sidebar_csrf_token(&Html::parse(r#"<meta name="csrf-token" content=" ">"#).unwrap()),
+		None
+	);
+	assert_eq!(
+		sidebar_csrf_token(&Html::parse("<html></html>").unwrap()),
+		None
+	);
+}
+
+#[aidoku_test]
+fn home_sidebar_components_fail_independently_from_latest() {
+	let latest = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"></a></div><div class="caption">Latest Sample</div></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let mut home = parse_home(&latest).unwrap();
+	let failed_sidebar = Html::parse("<html></html>").unwrap();
+	if let Ok(result) = parse_sidebar_items(&failed_sidebar) {
+		home.components.push(sidebar_home_component(
+			SIDEBAR_LISTINGS[0].0,
+			SIDEBAR_LISTINGS[0].1,
+			result,
+		));
+	}
+	assert_eq!(home.components[0].title.as_deref(), Some("Latest"));
+	assert_eq!(home.components.len(), 1);
+}
+
+#[aidoku_test]
 fn popular_tag_directory_builds_safe_paginated_gallery_routes() {
 	assert_eq!(POPULAR_TAGS_PATH, "/tags/popular/");
 	assert_eq!(
@@ -232,7 +287,10 @@ fn language_directory_values_and_routes_are_supported() {
 
 #[aidoku_test]
 fn freeform_taxonomy_filters_reach_categories_outside_the_popular_top_fifty() {
-	assert_eq!(taxonomy_text_slug("Naruto Uzumaki").unwrap(), "naruto-uzumaki");
+	assert_eq!(
+		taxonomy_text_slug("Naruto Uzumaki").unwrap(),
+		"naruto-uzumaki"
+	);
 	assert_eq!(taxonomy_text_slug(".EXE").unwrap(), ".exe");
 	assert!(taxonomy_text_slug("../escape").is_err());
 	assert!(taxonomy_text_slug("日本語").is_err());
