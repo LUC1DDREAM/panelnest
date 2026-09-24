@@ -241,6 +241,20 @@ fn dynamic_taxonomy_filter_ids_match_search_syntax() {
 }
 
 #[aidoku_test]
+fn freeform_parody_and_character_filters_reach_the_matching_query_taxonomy() {
+	for (id, value, expected) in [
+		("parodies", "Star Series", "parody:Star Series"),
+		("characters", "Hero One", "character:Hero One"),
+	] {
+		assert_eq!(
+			super::text_filter_query(id, value.into()).as_deref(),
+			Some(expected)
+		);
+	}
+	assert!(super::text_filter_query("other", "term".into()).is_none());
+}
+
+#[aidoku_test]
 fn blocklist_setting_starts_empty_without_excluding_a_placeholder_tag() {
 	let settings: serde_json::Value =
 		serde_json::from_str(include_str!("../res/settings.json")).unwrap();

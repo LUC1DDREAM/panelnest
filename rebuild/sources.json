@@ -111,14 +111,14 @@
       "Popular All",
       "Latest"
     ],
-    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable. Dynamic quick-select filters expose the 120 most popular entries from each artist, group, parody and character directory first page; free-text artist and group search remains available for other values.",
+    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable. Dynamic quick-select filters expose the 120 most popular entries from each artist, group, parody and character directory first page; free-text artist, group, parody and character search remains available for other values.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). Runtime filters select unique entries of each taxonomy type; source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
-    "fixture_tests_passed": 13,
+    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). Runtime filters select unique entries of each taxonomy type; freeform artist, group, parody and character fields now map to their official search operators. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
+    "fixture_tests_passed": 14,
     "release_authorized": true
   },
   {

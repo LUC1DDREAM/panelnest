@@ -12,6 +12,18 @@
 		"placeholder": "Group name"
 	},
 	{
+		"type": "text",
+		"id": "parodies",
+		"title": "Parody",
+		"placeholder": "Parody name"
+	},
+	{
+		"type": "text",
+		"id": "characters",
+		"title": "Character",
+		"placeholder": "Character name"
+	},
+	{
 		"type": "sort",
 		"title": "Sort",
 		"canAscend": false,

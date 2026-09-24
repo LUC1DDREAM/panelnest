@@ -44,6 +44,17 @@ fn taxonomy_type(filter_id: &str) -> Option<&'static str> {
 	}
 }
 
+fn text_filter_query(id: &str, value: String) -> Option<String> {
+	match id {
+		"author" => Some(value),
+		"artist" => Some(format!("artist:{value}")),
+		"groups" => Some(format!("group:{value}")),
+		"parodies" => Some(format!("parody:{value}")),
+		"characters" => Some(format!("character:{value}")),
+		_ => None,
+	}
+}
+
 impl Source for NHentai {
 	fn new() -> Self {
 		set_rate_limit(1, 1, TimeUnit::Seconds);
@@ -86,18 +97,11 @@ impl Source for NHentai {
 		// parse filters
 		for filter in filters {
 			match filter {
-				FilterValue::Text { id, value } => match id.as_str() {
-					"author" => {
-						query_parts.push(value);
+				FilterValue::Text { id, value } => {
+					if let Some(part) = text_filter_query(&id, value) {
+						query_parts.push(part);
 					}
-					"artist" => {
-						query_parts.push(format!("artist:{value}"));
-					}
-					"groups" => {
-						query_parts.push(format!("group:{value}"));
-					}
-					_ => continue,
-				},
+				}
 				FilterValue::Sort { index, .. } => {
 					sort = match index {
 						0 => "date",          // Latest
@@ -377,6 +381,16 @@ impl DynamicFilters for NHentai {
 			{
 				filters.push(filter);
 			}
+		}
+		for (id, title, placeholder) in [
+			("parodies", "Parody", "Parody name"),
+			("characters", "Character", "Character name"),
+		] {
+			let mut filter = aidoku::TextFilter::default();
+			filter.id = Cow::Borrowed(id);
+			filter.title = Some(Cow::Borrowed(title));
+			filter.placeholder = Some(Cow::Borrowed(placeholder));
+			filters.push(filter.into());
 		}
 		Ok(filters)
 	}
