@@ -111,3 +111,5 @@ Aidoku still receives the creator and chapter-count filters plus the static
 sort/status/type filters.
 
 Version 13 populates chapter thumbnails with the already available series cover URL; missing covers stay unset.
+
+Version 14 writes the source manifest language (en) into chapter metadata.

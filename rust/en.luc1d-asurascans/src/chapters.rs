@@ -69,6 +69,7 @@ pub fn chapter_from_astro(
 		title,
 		chapter_number: Some(chapter_number),
 		date_uploaded,
+		language: Some("en".into()),
 		url: Some(url),
 		locked,
 		..Default::default()
@@ -131,6 +132,7 @@ mod tests {
 			assert_eq!(chapter.chapter_number, Some(12.5));
 			// Preserve a valid publication timestamp; never weaken this to None.
 			assert_eq!(chapter.date_uploaded, Some(1788792487));
+			assert_eq!(chapter.language.as_deref(), Some("en"));
 			assert_eq!(
 				chapter.url.as_deref(),
 				Some("https://asurascans.com/comics/series/chapter/12.5")
