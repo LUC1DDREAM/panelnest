@@ -69,6 +69,52 @@ fn fixture_search_parses_and_skips_invalid_cards() {
 }
 
 #[aidoku_test]
+fn series_description_includes_associated_names_and_related_series() {
+	let html = Html::parse_with_url(
+		r#"
+		<section id="details">
+			<li><strong>Description</strong><p>A sample description.</p></li>
+			<li><strong>Associated Name(s)</strong><ul>
+				<li>Alternate Title</li><li>Another Title</li>
+			</ul></li>
+			<li><strong>Related Series(s)</strong><ul>
+				<li><a href="/series/related">Related Title</a><span>(Prequel)</span></li>
+			</ul></li>
+		</section>
+		"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let details = html.select_first("#details").unwrap();
+	let description = append_detail_metadata(
+		&details,
+		details
+			.select_first("li:has(strong:contains(Description)) > p")
+			.and_then(|element| element.text()),
+	);
+	assert_eq!(
+		description.as_deref(),
+		Some(
+			"A sample description.\n\nAssociated Name(s):\n- Alternate Title\n- Another Title\n\nRelated Series(s):\n- Related Title (Prequel)"
+		)
+	);
+}
+
+#[aidoku_test]
+fn series_description_metadata_is_optional_and_preserves_description() {
+	let html = Html::parse("<section><li><strong>Description</strong><p>Only description.</p></li></section>").unwrap();
+	let details = html.select_first("section").unwrap();
+	let description = append_detail_metadata(
+		&details,
+		details
+			.select_first("li:has(strong:contains(Description)) > p")
+			.and_then(|element| element.text()),
+	);
+	assert_eq!(description.as_deref(), Some("Only description."));
+	assert_eq!(append_detail_metadata(&details, None), None);
+}
+
+#[aidoku_test]
 fn hot_updates_cards_resolve_to_deduplicated_series_keys_from_cover_ids() {
 	let html = Html::parse_with_url(
 		r#"

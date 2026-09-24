@@ -79,6 +79,56 @@ fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResul
 	})
 }
 
+fn append_detail_metadata(details: &Element, description: Option<String>) -> Option<String> {
+	let mut sections = Vec::new();
+	for (label, selector) in [
+		("Associated Name(s)", "li:has(strong:contains(Associated Name)) li"),
+		("Related Series(s)", "li:has(strong:contains(Related Series)) li"),
+	] {
+		let entries = details
+			.select(selector)
+			.map(|elements| {
+				elements
+					.filter_map(|element| {
+						let title = element
+							.select_first("a")
+							.and_then(|link| link.text())
+							.or_else(|| element.text())
+							.unwrap_or_default()
+							.trim()
+							.to_owned();
+						if title.is_empty() {
+							return None;
+						}
+						let relation = element
+							.select_first("span")
+							.and_then(|span| span.text())
+							.unwrap_or_default()
+							.trim()
+							.to_owned();
+						Some(if relation.is_empty() {
+							title
+						} else {
+							format!("{title} {relation}")
+						})
+					})
+					.collect::<Vec<_>>()
+			})
+			.unwrap_or_default();
+		if !entries.is_empty() {
+			sections.push(format!("{label}:\n- {}", entries.join("\n- ")));
+		}
+	}
+	if sections.is_empty() {
+		return description;
+	}
+	let metadata = sections.join("\n\n");
+	Some(match description.filter(|text| !text.trim().is_empty()) {
+		Some(description) => format!("{}\n\n{metadata}", description.trim()),
+		None => metadata,
+	})
+}
+
 fn hot_series_key_from_cover(url: &str) -> Option<String> {
 	let path = url.strip_prefix("https://temp.compsci88.com/cover/")?;
 	let (variant, filename) = path.split_once('/')?;
@@ -206,8 +256,10 @@ impl Source for WeebCentral {
 			manga.authors = info_element
 				.select("ul > li:has(strong:contains(Author)) > span > a")
 				.map(|els| els.filter_map(|el| el.text()).collect::<Vec<String>>());
-			manga.description =
-				get_text(&title_element, "li:has(strong:contains(Description)) > p");
+			manga.description = append_detail_metadata(
+				&title_element,
+				get_text(&title_element, "li:has(strong:contains(Description)) > p"),
+			);
 			manga.url = Some(manga_url.clone());
 			manga.tags = info_element
 				.select("ul > li:has(strong:contains(Tag),strong:contains(Type)) a")

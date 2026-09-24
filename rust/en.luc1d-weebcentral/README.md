@@ -1,6 +1,6 @@
 # Weeb Central (LUC1D)
 
-## Discovery (package version 11)
+## Discovery (package version 12)
 
 Adds tri-state filters for Official Translation, Anime Adaptation, and Adult
 Content, mapped to the site's corresponding advanced-search parameters. Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
@@ -16,6 +16,10 @@ Updates listing is finite and does not repeat on page two. Recommendations are
 retained on Home.
 No daily/weekly/monthly popularity is exposed: the website Advanced Search
 verified via public text extraction only offers unqualified Popularity.
+
+Series details include the site's associated names and related series alongside
+the description when those fields are present. This preserves alternate title
+search terms and relationship labels in Aidoku's detail view.
 
 Evidence: https://weebcentral.com/search exposes Best Match, Alphabet,
 Popularity, Subscribers, Recently Added, Latest Updates and Ascending/Descending.

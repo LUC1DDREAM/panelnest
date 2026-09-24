@@ -1,17 +1,17 @@
 {
   "id": "en.luc1d-weebcentral",
-  "version": 11,
-  "sha256": "518f0a0e8e35e909f0942d2f58a19c167afaba731dab70a9b4497c1a0eba0865",
-  "bytes": 70013,
+  "version": 12,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "en"
   ],
   "contentRating": 1,
-  "package_verified": true,
+  "package_verified": false,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 12,
-  "official_site_checks": "Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Official public /search HTML exposes tri-state Official Translation, Anime Adaptation, and Adult Content controls. Regression tests verify each filter routes its Any/True/False state to the matching form field; Cloudflare challenge pages are rejected across search, details, chapter-list, reader and Home requests rather than accepted as empty results.",
+  "fixture_tests_passed": 14,
+  "official_site_checks": "Official public series pages expose Associated Name(s) and Related Series(s), which are retained in the Aidoku details description with relationship labels when present. Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Official public /search HTML exposes tri-state Official Translation, Anime Adaptation, and Adult Content controls. Regression tests verify each filter routes its Any/True/False state to the matching form field; Cloudflare challenge pages are rejected across search, details, chapter-list, reader and Home requests rather than accepted as empty results.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",
