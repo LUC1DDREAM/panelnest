@@ -81,40 +81,52 @@ fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResul
 
 fn append_detail_metadata(details: &Element, description: Option<String>) -> Option<String> {
 	let mut sections = Vec::new();
-	for (label, selector) in [
-		("Associated Name(s)", "li:has(strong:contains(Associated Name)) li"),
-		("Related Series(s)", "li:has(strong:contains(Related Series)) li"),
+	let mut associated_names = Vec::new();
+	let mut related_series = Vec::new();
+	if let Some(rows) = details.select("li") {
+		for row in rows {
+			let label = row
+				.select_first("strong")
+				.and_then(|element| element.text())
+				.unwrap_or_default();
+			let output = if label.starts_with("Associated Name") {
+				&mut associated_names
+			} else if label.starts_with("Related Series") {
+				&mut related_series
+			} else {
+				continue;
+			};
+			if let Some(entries) = row.select("ul li") {
+				for element in entries {
+					let title = element
+						.select_first("a")
+						.and_then(|link| link.text())
+						.or_else(|| element.text())
+						.unwrap_or_default()
+						.trim()
+						.to_owned();
+					if title.is_empty() {
+						continue;
+					}
+					let relation = element
+						.select_first("span")
+						.and_then(|span| span.text())
+						.unwrap_or_default()
+						.trim()
+						.to_owned();
+					output.push(if relation.is_empty() {
+						title
+					} else {
+						format!("{title} {relation}")
+					});
+				}
+			}
+		}
+	}
+	for (label, entries) in [
+		("Associated Name(s)", associated_names),
+		("Related Series(s)", related_series),
 	] {
-		let entries = details
-			.select(selector)
-			.map(|elements| {
-				elements
-					.filter_map(|element| {
-						let title = element
-							.select_first("a")
-							.and_then(|link| link.text())
-							.or_else(|| element.text())
-							.unwrap_or_default()
-							.trim()
-							.to_owned();
-						if title.is_empty() {
-							return None;
-						}
-						let relation = element
-							.select_first("span")
-							.and_then(|span| span.text())
-							.unwrap_or_default()
-							.trim()
-							.to_owned();
-						Some(if relation.is_empty() {
-							title
-						} else {
-							format!("{title} {relation}")
-						})
-					})
-					.collect::<Vec<_>>()
-			})
-			.unwrap_or_default();
 		if !entries.is_empty() {
 			sections.push(format!("{label}:\n- {}", entries.join("\n- ")));
 		}

@@ -90,9 +90,7 @@ fn series_description_includes_associated_names_and_related_series() {
 	let details = html.select_first("#details").unwrap();
 	let description = append_detail_metadata(
 		&details,
-		details
-			.select_first("li:has(strong:contains(Description)) > p")
-			.and_then(|element| element.text()),
+		Some("A sample description.".into()),
 	);
 	assert_eq!(
 		description.as_deref(),
@@ -106,12 +104,7 @@ fn series_description_includes_associated_names_and_related_series() {
 fn series_description_metadata_is_optional_and_preserves_description() {
 	let html = Html::parse("<section><ul><li><strong>Description</strong><p>Only description.</p></li></ul></section>").unwrap();
 	let details = html.select_first("section").unwrap();
-	let description = append_detail_metadata(
-		&details,
-		details
-			.select_first("li:has(strong:contains(Description)) > p")
-			.and_then(|element| element.text()),
-	);
+	let description = append_detail_metadata(&details, Some("Only description.".into()));
 	assert_eq!(description.as_deref(), Some("Only description."));
 	assert_eq!(append_detail_metadata(&details, None), None);
 }
