@@ -80,6 +80,31 @@ pub struct BookmarkResponseMeta {
 	pub total: i32,
 }
 
+impl BookmarkResponse {
+	pub fn has_next_page(&self, offset: i32) -> bool {
+		offset.saturating_add(self.data.len() as i32) < self.meta.total
+	}
+}
+
+#[cfg(test)]
+mod bookmark_pagination_tests {
+	use super::*;
+	use alloc::vec;
+	use aidoku_test::aidoku_test;
+
+	#[aidoku_test]
+	fn bookmark_pagination_uses_offset_and_page_length() {
+		let response: BookmarkResponse = serde_json::from_str(r#"{
+			"data":[{"series":{"cover_url":"https://example.invalid/cover.jpg","slug":"fixture","title":"Fixture"}}],
+			"meta":{"total":21}
+		}"#).unwrap();
+		assert!(response.has_next_page(0));
+		assert!(!response.has_next_page(20));
+		let empty = BookmarkResponse { data: vec![], meta: BookmarkResponseMeta { total: 0 } };
+		assert!(!empty.has_next_page(0));
+	}
+}
+
 #[derive(Deserialize)]
 pub struct BookmarkItem {
 	// pub id: i32,

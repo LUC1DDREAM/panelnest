@@ -10,6 +10,10 @@ No Popular Today listing is exposed: no daily option was evidenced in that UI.
 Existing Trending Comics, Latest Updates, Ranking and authenticated Bookmarks
 remain. Browse filters, deeplinks and chapter/authentication guards are unchanged.
 
+Bookmark pagination now stops using the API's total item count and the current
+offset plus returned page length. This prevents nearly every page from being
+marked as having another page when the total exceeds the page number.
+
 `fixtures/popular-week.json` is a reduced capture of the first two public entries
 from the week endpoint on 2026-09-08; only slug, title, cover URL and public URL
 are retained. No images or reader pages were downloaded.

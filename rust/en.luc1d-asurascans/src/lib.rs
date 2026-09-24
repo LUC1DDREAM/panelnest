@@ -498,8 +498,8 @@ impl ListingProvider for AsuraScans {
 				let json: BookmarkResponse = Request::get(url)?
 					.header("Authorization", &format!("Bearer {token}"))
 					.json_owned()?;
+				let has_next_page = json.has_next_page(offset);
 				let entries = json.data.into_iter().map(Into::into).collect();
-				let has_next_page = page < json.meta.total;
 				Ok(MangaPageResult {
 					entries,
 					has_next_page,
