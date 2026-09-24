@@ -37,10 +37,19 @@ fn locale_for_language_code(code: &str) -> &'static str {
 		_ => "en",
 	}
 }
+fn selected_language_code() -> &'static str {
+	match defaults_get::<String>("language").as_deref() {
+		Some("zh") => "zh",
+		Some("th") => "th",
+		Some("id") => "id",
+		Some("es") => "es",
+		Some("fr") => "fr",
+		Some("de") => "de",
+		_ => "en",
+	}
+}
 fn selected_language() -> &'static str {
-	defaults_get::<String>("language")
-		.map(|language| locale_for_language_code(&language))
-		.unwrap_or("en")
+	locale_for_language_code(selected_language_code())
 }
 const GENRES: &[(&str, &str)] = &[
 	("drama", "Drama"),
@@ -330,7 +339,7 @@ fn parse_details(mut m: Manga, h: &Document) -> Result<Manga> {
 	m.url = Some(format!("{BASE}{}", m.key));
 	Ok(m)
 }
-fn parse_episodes(v: Value) -> Result<(Vec<Chapter>, Option<u64>)> {
+fn parse_episodes(v: Value, language: &str) -> Result<(Vec<Chapter>, Option<u64>)> {
 	let result = v
 		.get("result")
 		.ok_or_else(|| error!("WEBTOON episode response missing result"))?;
@@ -357,6 +366,7 @@ fn parse_episodes(v: Value) -> Result<(Vec<Chapter>, Option<u64>)> {
 				.get("exposureDateMillis")
 				.and_then(Value::as_i64)
 				.map(|n| n / 1000),
+			language: Some(language.into()),
 			..Default::default()
 		});
 	}
@@ -463,7 +473,7 @@ impl Source for Webtoon {
 					"/api/v1/{kind}/{id}/episodes?pageSize=100&cursor={cursor}"
 				))?
 				.json_owned()?;
-				let (entries, next) = parse_episodes(value)?;
+				let (entries, next) = parse_episodes(value, selected_language_code())?;
 				for chapter in entries {
 					if !chapters.iter().any(|c| c.key == chapter.key) {
 						chapters.push(chapter);

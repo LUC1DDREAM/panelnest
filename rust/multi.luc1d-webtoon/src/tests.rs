@@ -512,12 +512,19 @@ fn details_fixture() {
 #[aidoku_test]
 fn episodes_fixture_and_cursor() {
 	let value = serde_json::from_str(include_str!("../tests/fixtures/episodes.json")).unwrap();
-	let (chapters, cursor) = parse_episodes(value).unwrap();
+	let (chapters, cursor) = parse_episodes(value, "en").unwrap();
 	assert_eq!(chapters.len(), 100);
 	assert_eq!(cursor, Some(102));
 	assert_eq!(chapters[0].title.as_deref(), Some("Ep. 1"));
 	assert_eq!(chapters[0].date_uploaded, Some(1425564010));
-	assert!(parse_episodes(serde_json::json!({"error":"denied"})).is_err());
+	assert_eq!(chapters[0].language.as_deref(), Some("en"));
+	let (translated, _) = parse_episodes(
+		serde_json::from_str(include_str!("../tests/fixtures/episodes.json")).unwrap(),
+		"zh",
+	)
+	.unwrap();
+	assert_eq!(translated[0].language.as_deref(), Some("zh"));
+	assert!(parse_episodes(serde_json::json!({"error":"denied"}), "en").is_err());
 }
 #[aidoku_test]
 fn pages_fixture_and_restricted_response() {
