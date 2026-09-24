@@ -41,7 +41,8 @@
       "chapters",
       "pages",
       "home",
-      "listings"
+      "listings",
+      "deep-links"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Hot Updates", "Popular", "Most Subscribed", "Recently Added", "Latest Updates"],
@@ -91,7 +92,8 @@
       "chapters",
       "pages",
       "home",
-      "listings"
+      "listings",
+      "deep-links"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Drama: By Popularity", "Drama: By Likes", "Drama: By Date", "Fantasy", "Romance", "Action", "Comedy"],
@@ -102,9 +104,9 @@
     "path": "rust/multi.luc1d-webtoon",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Worker live-tests suite: 10 passed (including fixture tests); English Drama sorts and four additional genre listings; Canvas unverified.",
+    "live_evidence": "Worker live-tests suite: 10 passed (including fixture tests); English Drama sorts and four additional genre listings; deep-link URLs are fixture-validated; Canvas unverified.",
     "limitations": "Canvas rendering is not verified in Aidoku.",
-    "fixture_tests_passed": 8,
+    "fixture_tests_passed": 9,
     "release_authorized": true
   },
   {

@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
-	Chapter, FilterValue, ImageRequestProvider, Manga, MangaPageResult, MangaStatus, Page,
-	PageContent, PageContext, Result, Source, Viewer,
+	Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, ImageRequestProvider, Manga,
+	MangaPageResult, MangaStatus, Page, PageContent, PageContext, Result, Source, Viewer,
 	alloc::{String, Vec, vec},
 	imports::{
 		html::Document,
@@ -344,6 +344,11 @@ impl aidoku::Home for Webtoon {
 		Ok(aidoku::HomeLayout { components })
 	}
 }
-aidoku::register_source!(Webtoon, ImageRequestProvider, ListingProvider, Home);
+impl DeepLinkHandler for Webtoon {
+	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
+		Ok(official_path(&url).map(|key| DeepLinkResult::Manga { key }))
+	}
+}
+aidoku::register_source!(Webtoon, ImageRequestProvider, ListingProvider, Home, DeepLinkHandler);
 #[cfg(test)]
 mod tests;

@@ -151,6 +151,31 @@ fn reject_foreign_links_and_query_injection() {
 	assert_eq!(encode_query("a&b é"), "a%26b%20%C3%A9");
 }
 
+#[aidoku_test]
+fn series_deep_links_resolve_supported_hosts_and_reject_foreign_hosts() {
+	use aidoku::{DeepLinkHandler, DeepLinkResult};
+	let source = Webtoon;
+	let mobile = "https://m.webtoons.com/en/sf/space-boy/list?title_no=400";
+	let desktop = "https://www.webtoons.com/en/sf/space-boy/list?title_no=400";
+	assert_eq!(
+		source.handle_deep_link(mobile.into()).unwrap(),
+		Some(DeepLinkResult::Manga { key: "/en/sf/space-boy/list?title_no=400".into() })
+	);
+	assert_eq!(official_path(desktop), official_path(mobile));
+	assert!(source
+		.handle_deep_link("https://www.webtoons.com.evil/en/sf/space-boy/list?title_no=400".into())
+		.unwrap()
+		.is_none());
+	assert!(source
+		.handle_deep_link("https://example.org/en/sf/space-boy/list?title_no=400".into())
+		.unwrap()
+		.is_none());
+	assert!(source
+		.handle_deep_link("https://m.webtoons.com/en/sf/space-boy/list?title_no=notnumeric".into())
+		.unwrap()
+		.is_none());
+}
+
 #[cfg(feature = "live-tests")]
 #[aidoku_test]
 fn live_public_end_to_end() {
