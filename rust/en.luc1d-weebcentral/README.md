@@ -64,3 +64,5 @@ existing image request provider, which sets the site Referer for chapter page
 requests.
 
 Version 18 populates chapter thumbnails with the existing series cover when available.
+
+Version 19 fills Chapter.language with en, as declared by this source manifest.

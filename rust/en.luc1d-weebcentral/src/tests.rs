@@ -391,6 +391,7 @@ fn chapters_reuse_the_existing_series_cover_as_thumbnail() {
 		&Some("https://weebcentral.com/cover.jpg".into()),
 	);
 	assert_eq!(chapter.thumbnail.as_deref(), Some("https://weebcentral.com/cover.jpg"));
+	assert_eq!(chapter.language.as_deref(), Some("en"));
 	assert!(with_series_thumbnail(Chapter::default(), &None).thumbnail.is_none());
 }
 

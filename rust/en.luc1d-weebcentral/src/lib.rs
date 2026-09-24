@@ -36,6 +36,7 @@ fn library_update_strategy(status: MangaStatus) -> UpdateStrategy {
 
 fn with_series_thumbnail(mut chapter: Chapter, cover: &Option<String>) -> Chapter {
 	chapter.thumbnail = cover.clone();
+	chapter.language = Some("en".into());
 	chapter
 }
 
