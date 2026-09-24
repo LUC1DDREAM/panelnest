@@ -6,6 +6,12 @@
 		"placeholder": "Author name"
 	},
 	{
+		"type": "text",
+		"id": "artist",
+		"title": "Artist",
+		"placeholder": "Artist name"
+	},
+	{
 		"type": "sort",
 		"name": "Sort",
 		"canAscend": true,

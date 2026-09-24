@@ -32,9 +32,9 @@ pub fn get_filters(query: Option<String>, filters: Vec<FilterValue>) -> String {
 
 	for filter in filters {
 		match filter {
-			FilterValue::Text { ref value, .. } => {
+			FilterValue::Text { ref id, ref value } if id == "author" || id == "artist" => {
 				if !value.is_empty() {
-					qs.push("author", Some(value));
+					qs.push(id, Some(value));
 				}
 			}
 			FilterValue::Sort {

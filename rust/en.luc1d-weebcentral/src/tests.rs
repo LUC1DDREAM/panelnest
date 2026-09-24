@@ -111,6 +111,28 @@ fn search_query_does_not_inject_parameters() {
 }
 
 #[aidoku_test]
+fn author_and_artist_filters_use_their_matching_advanced_search_fields() {
+	let author = filter::get_filters(
+		None,
+		vec![FilterValue::Text {
+			id: "author".into(),
+			value: "Author Name".into(),
+		}],
+	);
+	let artist = filter::get_filters(
+		None,
+		vec![FilterValue::Text {
+			id: "artist".into(),
+			value: "Artist Name".into(),
+		}],
+	);
+	assert!(author.contains("author=Author%20Name"));
+	assert!(!author.contains("artist="));
+	assert!(artist.contains("artist=Artist%20Name"));
+	assert!(!artist.contains("author="));
+}
+
+#[aidoku_test]
 fn fixture_search_pagination_uses_real_htmx_more_button() {
 	let terminal = Html::parse_with_url(
 		r#"
@@ -154,7 +176,11 @@ fn deep_links_require_exact_https_host_and_supported_path() {
 	use aidoku::{DeepLinkHandler, DeepLinkResult};
 	let source = WeebCentral::new();
 	assert!(matches!(
-		source.handle_deep_link("https://weebcentral.com/series/01J76XYEZYBE7Y3MEY7AEQ8MQN/Test".into()).unwrap(),
+		source
+			.handle_deep_link(
+				"https://weebcentral.com/series/01J76XYEZYBE7Y3MEY7AEQ8MQN/Test".into()
+			)
+			.unwrap(),
 		Some(DeepLinkResult::Manga { .. })
 	));
 	for url in [
@@ -163,6 +189,9 @@ fn deep_links_require_exact_https_host_and_supported_path() {
 		"https://weebcentral.com.evil.example/chapters/01JXNANGY619TDR9F4FST2M5E8",
 		"https://weebcentral.com/account/login",
 	] {
-		assert!(source.handle_deep_link(url.into()).unwrap().is_none(), "{url}");
+		assert!(
+			source.handle_deep_link(url.into()).unwrap().is_none(),
+			"{url}"
+		);
 	}
 }

@@ -44,6 +44,7 @@
   {
     "id": "en.luc1d-weebcentral",
     "path": "rust/en.luc1d-weebcentral",
+    "upstream_version": 9,
     "upstream_id": "en.weebcentral",
     "upstream_version": 8,
     "upstream_commit": "0f537147588d7fec7d70a22a9d7084376cd5c2b7",
@@ -76,9 +77,9 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Public search sort evidence exists, while live WASM checks can be blocked by Cloudflare HTTP 403.",
+    "live_evidence": "Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Public /search routes with author= and artist= both return HTTP 200; regression tests prove the corresponding independent filter values route to the matching advanced-search fields.",
     "limitations": "Cloudflare returned HTTP 403 in CI live checks; access may depend on network and site policy.",
-    "fixture_tests_passed": 10,
+    "fixture_tests_passed": 11,
     "release_authorized": true
   },
   {
