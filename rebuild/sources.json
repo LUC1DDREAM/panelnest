@@ -37,7 +37,7 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Live /browse HTML exposed the BrowseFilters Astro payload with stable genre names/slugs; the frontend confirms status, type, sort, author, artist and min_chapters query values. Dynamic Aidoku filters use those values. No device test.",
+    "live_evidence": "Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Regression tests verify the Aidoku creator and artist text filters are carried into the matching browse query parameters; previous builds dropped both text values. Dynamic genre names/slugs continue to come from the BrowseFilters payload.",
     "fixture_tests_passed": 15,
     "release_authorized": true
   },

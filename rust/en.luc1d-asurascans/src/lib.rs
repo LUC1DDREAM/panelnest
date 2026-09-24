@@ -72,6 +72,11 @@ fn browse_url(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result
 					qs.push(id, Some(&value.to_string()));
 				}
 			}
+			FilterValue::Text { id, value } => {
+				if !value.trim().is_empty() && (id == "author" || id == "artist") {
+					qs.push(id, Some(value.trim()));
+				}
+			}
 			_ => continue,
 		}
 	}
@@ -350,8 +355,8 @@ fn dynamic_search_filters(genres: Vec<(String, String)>) -> Vec<Filter> {
 
 	let mut author = TextFilter::default();
 	author.id = "author".into();
-	author.title = Some("Author".into());
-	author.placeholder = Some("Search author".into());
+	author.title = Some("Creator".into());
+	author.placeholder = Some("Search creator".into());
 
 	let mut artist = TextFilter::default();
 	artist.id = "artist".into();
@@ -700,6 +705,14 @@ mod filter_tests {
 				from: Some(10.0),
 				to: None,
 			},
+			FilterValue::Text {
+				id: "author".into(),
+				value: "Daum".into(),
+			},
+			FilterValue::Text {
+				id: "artist".into(),
+				value: "Studio".into(),
+			},
 		];
 		let url = browse_url(Some("dragon"), 2, &values).unwrap();
 		assert!(url.starts_with("https://asurascans.com/browse?page=2&q=dragon"));
@@ -707,6 +720,8 @@ mod filter_tests {
 		assert!(url.contains("status=ongoing"));
 		assert!(url.contains("genres=action%2Cfantasy"));
 		assert!(url.contains("min_chapters=10"));
+		assert!(url.contains("author=Daum"));
+		assert!(url.contains("artist=Studio"));
 		assert!(!url.contains("type=all"));
 		assert!(browse_url(None, 0, &[]).is_err());
 	}

@@ -1,6 +1,6 @@
 # Asura Scans
 
-## Discovery (package version 7)
+## Discovery (package version 8)
 
 The comic website PopularSidebar offers Weekly, Monthly and All Time, using
 `https://api.asurascans.com/api/trending/{week|month|all}?limit=10`.
@@ -8,9 +8,12 @@ These are now Home scrollers and named listings. Each is the website's top ten,
 in server order, with no pagination or all-time fallback for a failed period.
 No Popular Today listing is exposed: no daily option was evidenced in that UI.
 Existing Trending Comics, Latest Updates, Ranking and authenticated Bookmarks
-remain. Package version 7 now exposes the live browse facets in Aidoku: sort,
-status (including Axed), series type, the site's current genre list, author,
-artist and minimum chapter count. Genre names and slugs are read from the public
+remain. Package version 8 exposes the live browse facets in Aidoku: sort,
+status (including Axed), series type, the site's current genre list, creator,
+artist and minimum chapter count. Creator and artist filters now submit their
+values as the site's `author` and `artist` query parameters; previously those
+text filters appeared in Aidoku but were dropped when building the browse URL.
+Genre names and slugs are read from the public
 BrowseFilters payload, so new and renamed genres do not rely on a stale copy.
 Search emits the same query parameter names and values as the site's browse
 page. If that payload is unavailable, the other browse filters remain usable.
