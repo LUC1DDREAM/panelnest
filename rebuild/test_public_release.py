@@ -21,7 +21,11 @@ class PublicReleaseTests(unittest.TestCase):
             previous=installed[info['id']]
             self.assertIn(info['version'],(previous['version'],previous['version']+1))
             self.assertEqual(info['name'],previous['name'].replace(' (LUC1D)',' [PN]'))
-            for key in set(previous)-{'name','version'}: self.assertEqual(info.get(key),previous[key],key)
+            for key in set(previous)-{'name','version','languages'}: self.assertEqual(info.get(key),previous[key],key)
+            # A new source version may add site languages while retaining all
+            # previously advertised locales. Existing installs keep their
+            # immutable package metadata and checksum.
+            self.assertTrue(set(previous['languages']) <= set(info['languages']))
         for info in infos:
             self.assertTrue(info['name'].endswith(' [PN]'),info['name'])
         self.assertEqual({i['id'] for i in infos},{'en.luc1d-asurascans','en.luc1d-weebcentral','multi.luc1d-nhentai','multi.luc1d-webtoon','multi.luc1d-imhentai','multi.luc1d-hentaifox'})
