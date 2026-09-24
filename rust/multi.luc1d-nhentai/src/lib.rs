@@ -47,6 +47,7 @@ fn taxonomy_type(filter_id: &str) -> Option<&'static str> {
 fn text_filter_query(id: &str, value: String) -> Option<String> {
 	match id {
 		"author" => Some(value),
+		"tag" => Some(format!("tag:\"{value}\"")),
 		"artist" => Some(format!("artist:{value}")),
 		"groups" => Some(format!("group:{value}")),
 		"parody" => Some(format!("parody:{value}")),

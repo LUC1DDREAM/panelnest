@@ -1,6 +1,12 @@
 [
 	{
 		"type": "text",
+		"id": "tag",
+		"title": "Tag",
+		"placeholder": "Tag name or slug"
+	},
+	{
+		"type": "text",
 		"id": "author",
 		"title": "Artist",
 		"placeholder": "Artist name"

@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-nhentai",
-  "version": 15,
+  "version": 16,
   "sha256": "a3fb60cece0e7908c2165b39faca15bd271316e36f988802396a4bbdf1a28291",
   "bytes": 100570,
   "languages": [
@@ -13,8 +13,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 15,
-  "official_site_checks": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). Runtime filters select unique entries of each taxonomy type; freeform artist, group, parody and character fields now map to their official search operators. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
+  "fixture_tests_passed": 16,
+  "official_site_checks": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries; the freeform Tag field now routes additional names through the official tag search operator. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). Runtime filters select unique entries of each taxonomy type; freeform artist, group, parody, character and tag fields now map to their official search operators. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

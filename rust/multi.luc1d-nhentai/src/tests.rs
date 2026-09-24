@@ -267,6 +267,7 @@ fn dynamic_taxonomy_filter_ids_match_search_syntax() {
 #[aidoku_test]
 fn freeform_parody_and_character_filters_reach_the_matching_query_taxonomy() {
 	for (id, value, expected) in [
+		("tag", "textless narrative", "tag:\"textless narrative\""),
 		("parody", "Star Series", "parody:Star Series"),
 		("character", "Hero One", "character:Hero One"),
 	] {
@@ -276,6 +277,11 @@ fn freeform_parody_and_character_filters_reach_the_matching_query_taxonomy() {
 		);
 	}
 	assert!(super::text_filter_query("other", "term".into()).is_none());
+	let filters: serde_json::Value =
+		serde_json::from_str(include_str!("../res/filters.json")).unwrap();
+	assert!(filters.as_array().unwrap().iter().any(|filter| {
+		filter["type"] == "text" && filter["id"] == "tag" && filter["title"] == "Tag"
+	}));
 	assert_eq!(super::taxonomy_type("parodies"), Some("parody"));
 	assert_eq!(super::taxonomy_type("characters"), Some("character"));
 	assert!(super::text_filter_query("parodies", "term".into()).is_none());
