@@ -1,7 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 19)
+## Discovery (source version 20)
+Version 20 adds the official Daily Top Rated Today and Yesterday picks to Home as direct gallery spotlights. Both are already present in the homepage HTML and toggle locally; no extra request is needed.
 Version 19 exposes Aidoku page descriptions using the already validated reader image filenames, so each page shows its page number without another network request.
 Version 18 streams the initial Latest/Top Rated home layout immediately, then sends each available sidebar ranking as soon as it returns. Users can browse the core sections while the remaining rankings load.
 Version 17 expands the Home page with browsable Latest, Top Rated, Most Faved, Most Fapped and Most Downloaded sections. The three sidebar rankings are requested independently and omitted individually when unavailable, so a ranking failure does not hide the rest of Home. The ranking HTML uses the same CSRF-protected official sidebar route as its existing dynamic catalog listings.
@@ -32,7 +33,7 @@ aidoku verify package.aix
 Neutral synthetic WASM fixtures cover home/listing routing, schema identity/language/rating, pagination, search escaping, metadata flags and page manifests. Tests do not fetch content or images. Package verification is not device testing.
 
 ## Limits
-No Popular Today/Week/Month listings, generic Popular listing, account favorites or new dates. Keep runtime_tested=false and publish=false pending authorized runtime checks. No thumbnail guessing fallback. IDs, `languages: ["multi"]`, content rating 2, icons, Cargo lockfile and SDK pin are preserved.
+No paginated Popular Today/Week/Month listings, generic Popular listing or account favorites. Home now includes the site's single current and previous Daily Top Rated spotlight. Keep runtime_tested=false; no Aidoku/device playback is claimed. No thumbnail guessing fallback. IDs, `languages: ["multi"]`, content rating 2, icons, Cargo lockfile and SDK pin are preserved.
 
 ## Provenance
 Public technical route/schema reference: Keiyoushi extensions-source `GalleryAdults.kt`, `IMHentai.kt`, `HentaiFox.kt` (Apache-2.0; LICENSE retained). HentaiFox Top Rated additionally grounded in its public homepage technical markup. Existing icon retained unchanged. No source package copied. Full discovery feature matrix and check results: `C:/Users/LUC1D/aidoku-research/DISCOVERY-IM-HF.md`.

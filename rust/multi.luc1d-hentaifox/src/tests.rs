@@ -139,6 +139,40 @@ fn initial_home_layout_contains_all_server_rendered_sections() {
 }
 
 #[aidoku_test]
+fn daily_top_rated_today_and_yesterday_are_home_spotlights() {
+	let doc = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"></a></div><div class="caption">Latest</div></div>
+		<div id="main_top_daily">
+			<a id="today_content" href="/gallery/173623/"><img src="//i3.hentaifox.com/today.jpg" alt="Today Pick"></a>
+			<a id="yesterday_content" href="/gallery/173529/"><img src="//i3.hentaifox.com/yesterday.jpg" alt="Yesterday Pick"></a>
+		</div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let daily = parse_daily_top_rated(&doc);
+	assert_eq!(daily.len(), 2);
+	assert_eq!(daily[0].0, "Daily Top Rated Today");
+	assert_eq!(daily[0].1.key, "173623");
+	assert_eq!(daily[0].1.title, "Today Pick");
+	assert_eq!(daily[0].1.cover.as_deref(), Some("https://i3.hentaifox.com/today.jpg"));
+	assert_eq!(daily[1].0, "Daily Top Rated Yesterday");
+	assert_eq!(daily[1].1.key, "173529");
+
+	let home = parse_home(&doc).unwrap();
+	assert_eq!(home.components[1].title.as_deref(), Some("Daily Top Rated Today"));
+	assert_eq!(home.components[2].title.as_deref(), Some("Daily Top Rated Yesterday"));
+	for component in &home.components[1..=2] {
+		if let aidoku::HomeComponentValue::Scroller { entries, listing } = &component.value {
+			assert_eq!(entries.len(), 1);
+			assert!(listing.is_none());
+		} else {
+			panic!("expected a daily spotlight scroller");
+		}
+	}
+	assert!(parse_daily_top_rated(&Html::parse("<div class='top_daily'></div>").unwrap()).is_empty());
+}
+
+#[aidoku_test]
 fn top_rated_is_scoped_finite_and_not_today() {
 	let doc = Html::parse_with_url(r#"<button id="top_rated_btn" class="sidebar_btn_active">Top Rated</button><div id="middle_sidebar"><div class="item"><a href="/gallery/77/"><img alt="Sample Rated" src="/cover.png"></a></div><div class="item"><a href="https://invalid.example/gallery/78/"><img alt="Foreign"></a></div></div><div class="item"><a href="/gallery/99/"><img alt="Unrelated"></a></div>"#, BASE_URL).unwrap();
 	let result = parse_top_rated(&doc).unwrap();

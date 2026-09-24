@@ -687,6 +687,16 @@ fn sidebar_home_component(id: &str, title: &str, result: MangaPageResult) -> aid
 fn parse_home(doc: &Document) -> Result<aidoku::HomeLayout> {
 	let components = vec![latest_component(doc)?];
 	let mut components = components;
+	for (title, manga) in parse_daily_top_rated(doc) {
+		components.push(aidoku::HomeComponent {
+			title: Some(title.into()),
+			value: aidoku::HomeComponentValue::Scroller {
+				entries: vec![manga.into()],
+				listing: None,
+			},
+			..Default::default()
+		});
+	}
 	if let Ok(result) = parse_top_rated(doc) {
 		components.push(aidoku::HomeComponent {
 			title: Some("Top Rated".into()),
@@ -705,6 +715,34 @@ fn parse_home(doc: &Document) -> Result<aidoku::HomeLayout> {
 	}
 	Ok(aidoku::HomeLayout { components })
 }
+
+fn parse_daily_top_rated(doc: &Document) -> Vec<(&'static str, Manga)> {
+	[
+		("#today_content", "Daily Top Rated Today"),
+		("#yesterday_content", "Daily Top Rated Yesterday"),
+	]
+	.into_iter()
+	.filter_map(|(selector, title)| {
+		let link = doc.select_first(selector)?;
+		let key = key_from_url(&link.attr("href")?)?;
+		let img = link.select_first("img")?;
+		let title_text = img.attr("alt").filter(|value| !value.trim().is_empty())?;
+		Some((
+			title,
+			Manga {
+				key,
+				title: title_text,
+				cover: image(&img),
+				content_rating: ContentRating::NSFW,
+				status: MangaStatus::Completed,
+				viewer: Viewer::RightToLeft,
+				..Default::default()
+			},
+		))
+	})
+	.collect()
+}
+
 impl aidoku::Home for GallerySource {
 	fn get_home(&self) -> Result<aidoku::HomeLayout> {
 		let homepage = Request::get(listing_url("latest", 1)?)?.html()?;
