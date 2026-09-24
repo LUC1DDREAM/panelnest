@@ -186,12 +186,18 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 #[aidoku_test]
 fn synthetic_pages_order_formats_and_validation() {
 	let doc=Html::parse_with_url(r#"<input id="load_id" value="81"><input id="load_dir" value="001"><input id="load_server" value="2"><input id="load_pages" value="2"><script>var images=$.parseJSON('{"2":"w,10,20","1":"p,30,40"}');</script>"#,BASE_URL).unwrap();
-	let pages = parse_pages(&doc).unwrap();
+	let reader_url = "https://imhentai.xxx/view/1743990/1/";
+	let pages = parse_pages_with_referer(&doc, reader_url).unwrap();
 	assert_eq!(pages.len(), 2);
 	if let PageContent::Url(url, _) = &pages[0].content {
 		assert!(url.ends_with("/001/81/1.png"));
 	} else {
 		panic!("not a URL")
+	}
+	if let PageContent::Url(_, Some(context)) = &pages[0].content {
+		assert_eq!(context.get("url").map(String::as_str), Some(reader_url));
+	} else {
+		panic!("reader page must carry its referer context");
 	}
 	if let PageContent::Url(url, _) = &pages[1].content {
 		assert!(url.ends_with("/001/81/2.webp"));
@@ -254,12 +260,18 @@ fn current_live_imhentai_reader_fixture_builds_all_pages() {
 		manifest
 	);
 	let doc = Html::parse_with_url(&html, "https://imhentai.xxx/view/1743990/1/").unwrap();
-	let pages = parse_pages(&doc).unwrap();
+	let reader_url = "https://imhentai.xxx/view/1743990/1/";
+	let pages = parse_pages_with_referer(&doc, reader_url).unwrap();
 	assert_eq!(pages.len(), 50);
 	if let PageContent::Url(url, _) = &pages[0].content {
 		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/1.jpg");
 	} else {
 		panic!("page must be a URL");
+	}
+	if let PageContent::Url(_, Some(context)) = &pages[0].content {
+		assert_eq!(context.get("url").map(String::as_str), Some(reader_url));
+	} else {
+		panic!("reader page must carry its referer context");
 	}
 	if let PageContent::Url(url, _) = &pages[1].content {
 		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/2.webp");
@@ -449,7 +461,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 15);
+	assert_eq!(manifest["info"]["version"], 16);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -459,7 +471,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 15);
+	assert_eq!(manifest["info"]["version"], 16);
 }
 
 use super::*;

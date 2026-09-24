@@ -412,6 +412,9 @@ fn input(doc: &Document, id: &str) -> Result<String> {
 		.ok_or(error!("Missing reader metadata"))
 }
 fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
+	parse_pages_with_referer(doc, &format!("{BASE_URL}/view/1/1/"))
+}
+fn parse_pages_with_referer(doc: &Document, reader_url: &str) -> Result<Vec<Page>> {
 	if doc.select_first("#gimg").is_some() {
 		let current = doc
 			.select_first("#gimg")
@@ -492,7 +495,10 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 					.ok_or(error!("Incomplete reader page manifest"))?,
 			)?;
 			pages.push(Page {
-				content: PageContent::url(format!("https://{current_host}/{prefix}{number}.{ext}")),
+				content: reader_page_content(
+					format!("https://{current_host}/{prefix}{number}.{ext}"),
+					reader_url,
+				)?,
 				has_description: true,
 				..Default::default()
 			});
@@ -564,12 +570,39 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 			_ => bail!("Unknown page format"),
 		};
 		pages.push(Page {
-			content: PageContent::url(format!("https://{host}/{dir}/{id}/{n}.{ext}")),
+			content: reader_page_content(
+				format!("https://{host}/{dir}/{id}/{n}.{ext}"),
+				reader_url,
+			)?,
 			has_description: true,
 			..Default::default()
 		});
 	}
 	Ok(pages)
+}
+fn reader_page_content(image_url: String, reader_url: &str) -> Result<PageContent> {
+	let rest = reader_url
+		.strip_prefix("https://")
+		.ok_or(error!("Reader URL must use HTTPS"))?;
+	let (host, path) = rest
+		.split_once('/')
+		.ok_or(error!("Invalid reader URL"))?;
+	ensure!(host == BASE_URL.trim_start_matches("https://"), "Unexpected reader host");
+	let path = path.split(['?', '#']).next().unwrap_or_default();
+	let path = path.strip_prefix("view/").ok_or(error!("Invalid reader URL"))?;
+	let mut parts = path.split('/');
+	let gallery_id = parts.next().unwrap_or_default();
+	let page = parts.next().unwrap_or_default();
+	ensure!(
+		!gallery_id.is_empty()
+			&& gallery_id.bytes().all(|byte| byte.is_ascii_digit())
+			&& !page.is_empty()
+			&& page.bytes().all(|byte| byte.is_ascii_digit()),
+		"Invalid reader URL"
+	);
+	let mut context = aidoku::PageContext::new();
+	context.insert("url".into(), format!("{BASE_URL}/view/{gallery_id}/{page}/"));
+	Ok(PageContent::url_context(image_url, context))
 }
 fn image_request_referer(url: &str, context: Option<&aidoku::PageContext>) -> Result<String> {
 	let rest = url
@@ -867,7 +900,8 @@ impl Source for GallerySource {
 				&& chapter.key.bytes().all(|b| b.is_ascii_digit()),
 			"Invalid gallery key"
 		);
-		parse_pages(&Request::get(format!("{BASE_URL}/view/{}/1/", chapter.key))?.html()?)
+		let reader_url = format!("{BASE_URL}/view/{}/1/", chapter.key);
+		parse_pages_with_referer(&Request::get(reader_url.clone())?.html()?, &reader_url)
 	}
 }
 impl ImageRequestProvider for GallerySource {

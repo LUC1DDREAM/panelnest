@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-imhentai",
-  "version": 15,
+  "version": 16,
   "sha256": "d8c0fd4b174b7eed8987b136bdbba2be6241746f717aec7c41cdc7ccb093fa50",
   "bytes": 75687,
   "languages": [
@@ -10,8 +10,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 14,
-  "official_site_checks": "Official IMHentai gallery 1743990 currently reports 50 pages; /view/1743990/1/ exposes #gimg at m11.imhentai.xxx and a contiguous 50-entry g_th manifest. The sanitized live-schema fixture verifies 50 generated page URLs and per-page formats. The registered ImageRequestProvider now validates HTTPS IMHentai image hosts and uses PageContext reader URLs as Referer, with root fallback for covers and missing page context. Device rendering remains untested.",
+  "fixture_tests_passed": 15,
+  "official_site_checks": "Official IMHentai gallery 1743990 reports 50 pages; /view/1743990/1/ exposes #gimg at m11.imhentai.xxx and a contiguous 50-entry g_th manifest. Fixtures verify 50 generated image URLs, per-page formats, and propagation of the concrete reader URL into each PageContent context. ImageRequestProvider validates HTTPS IMHentai image hosts and uses the reader PageContext Referer, with root fallback for covers. Device rendering remains untested.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

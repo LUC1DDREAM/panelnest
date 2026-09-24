@@ -229,7 +229,7 @@
       "Top Rated",
       "Downloaded"
     ],
-    "limitations": "HTTP requests from the worker environment returned 403. Current reader structure is validated against the official site and fixture-tested; Aidoku runtime and device rendering remain unverified.",
+    "limitations": "HTTP requests from the worker environment returned 403. Reader URL, manifest, image host and Aidoku PageContext propagation are validated with official site evidence and fixtures; native runtime/device rendering remain unverified.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -237,7 +237,7 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Official gallery 1743990 reports 50 pages, links to /view/1743990/1/ through later page routes and uses a g_th manifest with #gimg images on m11.imhentai.xxx. The reader parser uses the manifest format for each page. ImageRequestProvider sends a reader-page Referer from Aidoku PageContext, validates official HTTPS image hosts, and falls back to the site root for covers or absent page context. This is browser/fixture evidence, not a native Aidoku device test.",
+    "live_evidence": "Official gallery 1743990 reports 50 pages and /view/1743990/1/ exposes a g_th manifest and #gimg on m11.imhentai.xxx. Each generated PageContent now includes the canonical reader URL in Aidoku PageContext, and ImageRequestProvider uses that context as the reader Referer for validated HTTPS IMHentai CDN images. Covers use the source root. Reader schema, per-page formats, and context propagation are fixture-tested; native runtime and device rendering remain unverified.",
     "fixture_tests_passed": 12,
     "release_authorized": true
   },
