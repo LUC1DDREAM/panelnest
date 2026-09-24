@@ -239,8 +239,8 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Official gallery 1743990 reports 50 pages and /view/1743990/1/ exposes a g_th manifest and #gimg on m11.imhentai.xxx. Each generated PageContent now includes the canonical reader URL in Aidoku PageContext, and ImageRequestProvider uses that context as the reader Referer for validated HTTPS IMHentai CDN images. Covers use the source root. Reader schema, per-page formats, and context propagation are fixture-tested; native runtime and device rendering remain unverified.",
-    "fixture_tests_passed": 12,
+    "live_evidence": "Fixtures verify that gallery chapter records preserve the stable gallery ID key and validated canonical IMHentai /view/<gallery>/<page>/ URL, and get_page_list requests that exact reader URL. Malformed and cross-gallery reader URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified.",
+    "fixture_tests_passed": 17,
     "release_authorized": true
   },
   {

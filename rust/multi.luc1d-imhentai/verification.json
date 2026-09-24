@@ -1,17 +1,17 @@
 {
   "id": "multi.luc1d-imhentai",
-  "version": 16,
-  "sha256": "10e16e959b75c0cdb81eb7494e61f1bf4defbb072167e2c20c23c66362190728",
-  "bytes": 79868,
+  "version": 17,
+  "sha256": null,
+  "bytes": 0,
   "languages": [
     "multi"
   ],
   "contentRating": 2,
-  "package_verified": true,
+  "package_verified": false,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 15,
-  "official_site_checks": "Official IMHentai gallery 1743990 reports 50 pages; /view/1743990/1/ exposes #gimg at m11.imhentai.xxx and a contiguous 50-entry g_th manifest. Fixtures verify 50 generated image URLs, per-page formats, and propagation of the concrete reader URL into each PageContent context. ImageRequestProvider validates HTTPS IMHentai image hosts and uses the reader PageContext Referer, with root fallback for covers. Device rendering remains untested.",
+  "fixture_tests_passed": 17,
+  "official_site_checks": "Fixtures verify that gallery chapter keys preserve the validated canonical IMHentai /view/<gallery>/<page>/ URL, get_page_list requests that exact reader URL, and malformed or cross-gallery URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

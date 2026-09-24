@@ -14,6 +14,23 @@ fn synthetic_details_and_chapter_flags() {
 	assert_eq!(m.title, "Sample 2");
 	assert_eq!(m.authors.unwrap()[0], "Artist 7");
 	assert_eq!(m.chapters.unwrap()[0].key, "42");
+	let with_reader = Html::parse_with_url(
+		r#"<div class="gallery_top"><h1>Reader sample</h1><a href="/view/42/3/">Read</a></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let chapter = update(
+		&with_reader,
+		Manga { key: "42".into(), ..Default::default() },
+		false,
+		true,
+	)
+	.unwrap()
+	.chapters
+	.unwrap()
+	.remove(0);
+	assert_eq!(chapter.key, "42");
+	assert_eq!(chapter.url.as_deref(), Some("https://imhentai.xxx/view/42/3/"));
 	assert!(
 		update(
 			&doc,
@@ -40,6 +57,48 @@ fn synthetic_details_and_chapter_flags() {
 		)
 		.is_err()
 	);
+}
+
+#[aidoku_test]
+fn reader_url_requires_same_gallery_and_page_path() {
+	let doc = Html::parse_with_url(
+		r#"<a href="https://imhentai.xxx/view/42/7/">Read</a>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert_eq!(reader_url_for_gallery(&doc, "42").unwrap(), "https://imhentai.xxx/view/42/7/");
+	for href in [
+		"https://imhentai.xxx.evil/view/42/7/",
+		"http://imhentai.xxx/view/42/7/",
+		"https://imhentai.xxx/view/43/7/",
+		"https://imhentai.xxx/view/42/nope/",
+		"https://imhentai.xxx/view/42/7/extra/",
+	] {
+		let html = format!(r#"<a href="{href}">Read</a>"#);
+		let doc = Html::parse_with_url(&html, BASE_URL).unwrap();
+		assert!(reader_url_for_gallery(&doc, "42").is_err(), "{href}");
+	}
+}
+
+#[aidoku_test]
+fn stored_reader_url_is_used_only_for_its_matching_gallery() {
+	let chapter = Chapter {
+		key: "42".into(),
+		url: Some("https://imhentai.xxx/view/42/7/".into()),
+		..Default::default()
+	};
+	assert_eq!(reader_url_for_chapter("42", &chapter).unwrap(), "https://imhentai.xxx/view/42/7/");
+	assert_eq!(reader_url_for_chapter("42", &Chapter { key: "42".into(), ..Default::default() }).unwrap(), "https://imhentai.xxx/view/42/1/");
+	for url in [
+		"https://imhentai.xxx.evil/view/42/7/",
+		"https://imhentai.xxx/view/43/7/",
+		"https://imhentai.xxx/view/42/nope/",
+		"https://imhentai.xxx/view/42/7/?external=1",
+	] {
+		let invalid = Chapter { key: "42".into(), url: Some(url.into()), ..Default::default() };
+		assert!(reader_url_for_chapter("42", &invalid).is_err(), "{url}");
+	}
+	assert!(reader_url_for_chapter("43", &chapter).is_err());
 }
 #[aidoku_test]
 fn search_urls_escape_query_and_validate_page() {

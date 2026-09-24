@@ -395,11 +395,12 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 		manga.url = Some(format!("{BASE_URL}/gallery/{}/", manga.key));
 	}
 	if chapters {
+		let reader_url = reader_url_for_gallery(doc, &manga.key)?;
 		manga.chapters = Some(vec![Chapter {
 			key: manga.key.clone(),
 			title: Some("Gallery".into()),
 			chapter_number: Some(1.0),
-			url: Some(format!("{BASE_URL}/gallery/{}/", manga.key)),
+			url: Some(reader_url),
 			..Default::default()
 		}]);
 	}
@@ -410,6 +411,33 @@ fn input(doc: &Document, id: &str) -> Result<String> {
 		.and_then(|e| e.attr("value"))
 		.filter(|s| !s.is_empty())
 		.ok_or(error!("Missing reader metadata"))
+}
+fn reader_url_for_gallery(doc: &Document, gallery_id: &str) -> Result<String> {
+	let fallback = format!("{BASE_URL}/view/{gallery_id}/1/");
+	let Some(link) = doc.select_first("a[href*='/view/']") else { return Ok(fallback); };
+	let Some(href) = link.attr("href") else { return Ok(fallback); };
+	if !href.contains("/view/") { return Ok(fallback); }
+	let url = if href.starts_with("https://") { href } else if href.starts_with('/') { format!("{BASE_URL}{href}") } else { return Ok(fallback); };
+	let rest = url.strip_prefix("https://").ok_or(error!("Invalid reader URL"))?;
+	let (host, path) = rest.split_once('/').ok_or(error!("Invalid reader URL"))?;
+	ensure!(host == BASE_URL.trim_start_matches("https://"), "Unexpected reader host");
+	let path = path.split(['?', '#']).next().unwrap_or_default();
+	let path = path.strip_prefix("view/").ok_or(error!("Invalid reader URL"))?;
+	let mut parts = path.trim_end_matches('/').split('/');
+	let id = parts.next().unwrap_or_default();
+	let page = parts.next().unwrap_or_default();
+	ensure!(id == gallery_id && !page.is_empty() && page.bytes().all(|b| b.is_ascii_digit()) && parts.next().is_none(), "Invalid gallery reader URL");
+	Ok(format!("{BASE_URL}/view/{id}/{page}/"))
+}
+fn reader_url_for_chapter(gallery_id: &str, chapter: &Chapter) -> Result<String> {
+	ensure!(chapter.key == gallery_id, "Invalid gallery chapter key");
+	let prefix = format!("{BASE_URL}/view/{gallery_id}/");
+	let Some(page) = chapter.url.as_deref().and_then(|url| url.strip_prefix(&prefix)) else {
+		return Ok(format!("{prefix}1/"));
+	};
+	let page = page.strip_suffix('/').ok_or(error!("Invalid gallery reader URL"))?;
+	ensure!(!page.is_empty() && page.bytes().all(|byte| byte.is_ascii_digit()), "Invalid gallery reader URL");
+	Ok(format!("{prefix}{page}/"))
 }
 fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 	parse_pages_with_referer(doc, &format!("{BASE_URL}/view/1/1/"))
@@ -894,14 +922,11 @@ impl Source for GallerySource {
 		update(&doc, manga, needs_details, needs_chapters)
 	}
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
-		ensure!(
-			chapter.key == manga.key
-				&& !chapter.key.is_empty()
-				&& chapter.key.bytes().all(|b| b.is_ascii_digit()),
-			"Invalid gallery key"
-		);
-		let reader_url = format!("{BASE_URL}/view/{}/1/", chapter.key);
-		parse_pages_with_referer(&Request::get(reader_url.clone())?.html()?, &reader_url)
+		ensure!(!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()), "Invalid gallery key");
+		let reader_url = reader_url_for_chapter(&manga.key, &chapter)?;
+		let reader_doc = Request::get(reader_url.clone())?.html()?;
+		ensure!(reader_doc.select_first("#gimg, input#load_id").is_some(), "Reader unavailable or site layout changed");
+		parse_pages_with_referer(&reader_doc, &reader_url)
 	}
 }
 impl ImageRequestProvider for GallerySource {
