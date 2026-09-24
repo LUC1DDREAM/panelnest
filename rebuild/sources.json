@@ -158,7 +158,7 @@
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Latest", "Top Rated"],
     "dynamic_listings": ["Most Faved", "Most Fapped", "Most Downloaded"],
-    "limitations": "Sidebar rankings are finite; no temporal popularity lists, language selector or advanced tag filters.",
+    "limitations": "Sidebar rankings are finite; no temporal popularity listings or language selector. Taxonomy filters expose the current 50 most popular entries per category.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -166,8 +166,8 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Live HTTP checks confirmed all three sidebar rankings and the public /tags/popular/ index; tag pages expose server-side pagination. No live WASM or device test.",
-    "fixture_tests_passed": 13,
+    "live_evidence": "Live HTTP checks confirmed all three sidebar rankings, the /tags/popular/ index, popular artist/character/parody/group directories, canonical gallery routes and /pag/N/ pagination. No live WASM or device test.",
+    "fixture_tests_passed": 16,
     "release_authorized": true
   }
 ]

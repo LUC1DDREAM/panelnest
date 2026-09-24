@@ -2,7 +2,7 @@
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
 	Filter, FilterValue, ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page,
-	PageContent, Result, SortFilter, Source, Viewer,
+	PageContent, Result, SelectFilter, SortFilter, Source, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -26,6 +26,12 @@ const SIDEBAR_LISTINGS: [(&str, &str, &str); 3] = [
 	("most-downloaded", "Most Downloaded", "top_downloaded"),
 ];
 const POPULAR_TAGS_PATH: &str = "/tags/popular/";
+const POPULAR_TAXONOMIES: [(&str, &str, &str); 4] = [
+	("artists", "artist", "Artist"),
+	("characters", "character", "Character"),
+	("parodies", "parody", "Parody"),
+	("groups", "group", "Group"),
+];
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
 	let path = path.split(['?', '#']).next()?;
@@ -74,6 +80,33 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 	search_url_with_filters(query, page, &[])
 }
+fn taxonomy_url(kind: &str, slug: &str, page: i32, popular: bool) -> Result<String> {
+	ensure!(page > 0, "Invalid page");
+	ensure!(
+		POPULAR_TAXONOMIES
+			.iter()
+			.any(|(_, value, _)| *value == kind),
+		"Unsupported gallery category"
+	);
+	ensure!(
+		!slug.is_empty()
+			&& slug.bytes().all(|byte| {
+				byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-' || byte == b'.'
+			}),
+		"Invalid category"
+	);
+	Ok(if page == 1 {
+		if popular {
+			format!("{BASE_URL}/{kind}/{slug}/popular/")
+		} else {
+			format!("{BASE_URL}/{kind}/{slug}/")
+		}
+	} else if popular {
+		format!("{BASE_URL}/{kind}/{slug}/popular/pag/{page}/")
+	} else {
+		format!("{BASE_URL}/{kind}/{slug}/pag/{page}/")
+	})
+}
 fn search_url_with_filters(
 	query: Option<&str>,
 	page: i32,
@@ -84,6 +117,24 @@ fn search_url_with_filters(
 	let popular = filters.iter().any(
 		|filter| matches!(filter, FilterValue::Sort { id, index: 1, .. } if id.as_str() == "sort"),
 	);
+	let selected_taxonomies = filters
+		.iter()
+		.filter_map(|filter| match filter {
+			FilterValue::Select { id, value } if !value.is_empty() => POPULAR_TAXONOMIES
+				.iter()
+				.find(|(_, filter_id, _)| *filter_id == id)
+				.map(|(_, kind, _)| (*kind, value.as_str())),
+			_ => None,
+		})
+		.collect::<Vec<_>>();
+	ensure!(
+		selected_taxonomies.len() <= 1,
+		"Choose only one gallery category"
+	);
+	if let Some((kind, slug)) = selected_taxonomies.first() {
+		ensure!(query.is_empty(), "Clear text search to browse a category");
+		return taxonomy_url(kind, slug, page, popular);
+	}
 	if query.is_empty() && !popular {
 		return Ok(if IS_IM {
 			format!("{BASE_URL}/?page={page}")
@@ -126,6 +177,19 @@ fn search_filters() -> Vec<Filter> {
 		ascending: false,
 	});
 	vec![sort.into()]
+}
+fn taxonomy_filter(id: &'static str, title: &'static str, values: Vec<(String, String)>) -> Filter {
+	let mut filter = SelectFilter::default();
+	filter.id = id.into();
+	filter.title = Some(title.into());
+	filter.options = vec!["Any".into()];
+	filter.ids = Some(vec!["".into()]);
+	for (name, slug) in values {
+		filter.options.push(name.into());
+		filter.ids.as_mut().unwrap().push(slug.into());
+	}
+	filter.default = Some("".into());
+	filter.into()
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
 	ensure!(
@@ -376,6 +440,53 @@ fn parse_popular_tag_listings(doc: &Document) -> Result<Vec<Listing>> {
 	);
 	Ok(listings)
 }
+fn parse_popular_taxonomy(doc: &Document, kind: &str) -> Result<Vec<(String, String)>> {
+	ensure!(
+		POPULAR_TAXONOMIES
+			.iter()
+			.any(|(_, value, _)| *value == kind),
+		"Unsupported gallery category"
+	);
+	let prefix = format!("/{kind}/");
+	let mut values = Vec::new();
+	if let Some(tags) = doc.select(".tags_overview .tag_item a.tag_btn") {
+		for tag in tags.into_iter().take(50) {
+			let Some(href) = tag.attr("href") else {
+				continue;
+			};
+			let Some(slug) = href
+				.strip_prefix(&prefix)
+				.and_then(|value| value.strip_suffix('/'))
+			else {
+				continue;
+			};
+			if slug.is_empty()
+				|| !slug.bytes().all(|byte| {
+					byte.is_ascii_lowercase()
+						|| byte.is_ascii_digit()
+						|| byte == b'-' || byte == b'.'
+				}) {
+				continue;
+			}
+			if values
+				.iter()
+				.any(|(_, existing): &(String, String)| existing == slug)
+			{
+				continue;
+			}
+			let Some(name) = tag
+				.select_first("h3.list_tag")
+				.and_then(|element| element.text())
+				.filter(|name| !name.trim().is_empty())
+			else {
+				continue;
+			};
+			values.push((name, slug.into()));
+		}
+	}
+	ensure!(!values.is_empty(), "Popular gallery categories unavailable");
+	Ok(values)
+}
 fn parse_sidebar_items(doc: &Document) -> Result<MangaPageResult> {
 	let entries = doc
 		.select("div.item")
@@ -534,7 +645,19 @@ impl DeepLinkHandler for GallerySource {
 }
 impl DynamicFilters for GallerySource {
 	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
-		Ok(search_filters())
+		let mut filters = search_filters();
+		for (directory, kind, title) in POPULAR_TAXONOMIES {
+			let Ok(doc) = Request::get(format!("{BASE_URL}/{directory}/popular/"))
+				.and_then(|request| request.html())
+			else {
+				continue;
+			};
+			let Ok(values) = parse_popular_taxonomy(&doc, kind) else {
+				continue;
+			};
+			filters.push(taxonomy_filter(kind, title, values));
+		}
+		Ok(filters)
 	}
 }
 

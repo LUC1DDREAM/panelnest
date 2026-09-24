@@ -170,6 +170,111 @@ fn popular_tag_directory_exposes_valid_deduplicated_tags() {
 }
 
 #[aidoku_test]
+fn popular_taxonomy_filters_parse_safe_live_categories() {
+	let doc = Html::parse_with_url(
+		r#"<div class="tags_overview">
+		<div class="tag_item"><a class="tag_btn" href="/artist/ankoman/"><h3 class="list_tag">ankoman</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="/artist/.exe/"><h3 class="list_tag">.exe</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="/character/ignore/"><h3 class="list_tag">Wrong category</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="https://evil.example/artist/attack/"><h3 class="list_tag">Foreign</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="/artist/bad_slug/"><h3 class="list_tag">Invalid slug</h3></a></div>
+	</div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let values = parse_popular_taxonomy(&doc, "artist").unwrap();
+	assert_eq!(
+		values,
+		vec![
+			("ankoman".into(), "ankoman".into()),
+			(".exe".into(), ".exe".into())
+		]
+	);
+	assert!(parse_popular_taxonomy(&doc, "unknown").is_err());
+	assert!(parse_popular_taxonomy(&Html::parse("<html></html>").unwrap(), "artist").is_err());
+}
+
+#[aidoku_test]
+fn popular_taxonomy_filter_exposes_names_and_validated_slugs() {
+	let filter = taxonomy_filter(
+		"artist",
+		"Artist",
+		vec![
+			("ankoman".into(), "ankoman".into()),
+			(".exe".into(), ".exe".into()),
+		],
+	);
+	assert_eq!(filter.id, "artist");
+	match filter.kind {
+		aidoku::FilterKind::Select {
+			options,
+			ids,
+			default,
+			..
+		} => {
+			assert_eq!(options[0].as_ref(), "Any");
+			assert_eq!(options[1].as_ref(), "ankoman");
+			assert_eq!(options[2].as_ref(), ".exe");
+			assert_eq!(ids.as_ref().unwrap()[0].as_ref(), "");
+			assert_eq!(ids.as_ref().unwrap()[2].as_ref(), ".exe");
+			assert_eq!(default.as_deref(), Some(""));
+		}
+		_ => panic!("Popular categories should be a single-select filter"),
+	}
+}
+
+#[aidoku_test]
+fn popular_taxonomy_filters_map_to_official_latest_and_popular_routes() {
+	assert_eq!(
+		taxonomy_url("artist", "ankoman", 1, false).unwrap(),
+		format!("{BASE_URL}/artist/ankoman/")
+	);
+	assert_eq!(
+		taxonomy_url("artist", "ankoman", 2, false).unwrap(),
+		format!("{BASE_URL}/artist/ankoman/pag/2/")
+	);
+	assert_eq!(
+		taxonomy_url("character", "2b", 1, true).unwrap(),
+		format!("{BASE_URL}/character/2b/popular/")
+	);
+	assert_eq!(
+		taxonomy_url("parody", "hack", 3, true).unwrap(),
+		format!("{BASE_URL}/parody/hack/popular/pag/3/")
+	);
+	assert!(taxonomy_url("group", "../evil", 1, false).is_err());
+	assert!(taxonomy_url("unknown", "valid", 1, false).is_err());
+	assert!(taxonomy_url("artist", "ankoman", 0, false).is_err());
+
+	let filters = vec![
+		FilterValue::Select {
+			id: "character".into(),
+			value: "2b".into(),
+		},
+		FilterValue::Sort {
+			id: "sort".into(),
+			index: 1,
+			ascending: false,
+		},
+	];
+	assert_eq!(
+		search_url_with_filters(None, 2, &filters).unwrap(),
+		format!("{BASE_URL}/character/2b/popular/pag/2/")
+	);
+	assert!(search_url_with_filters(Some("query"), 1, &filters).is_err());
+	let conflicting = vec![
+		FilterValue::Select {
+			id: "artist".into(),
+			value: "ankoman".into(),
+		},
+		FilterValue::Select {
+			id: "group".into(),
+			value: "circle".into(),
+		},
+	];
+	assert!(search_url_with_filters(None, 1, &conflicting).is_err());
+}
+
+#[aidoku_test]
 fn listing_dispatch_rejects_unknown_and_invalid_pages_without_network() {
 	use aidoku::ListingProvider;
 	let source = GallerySource;
@@ -227,7 +332,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 10);
+	assert_eq!(manifest["info"]["version"], 11);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
