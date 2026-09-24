@@ -5,13 +5,13 @@ SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
 ## Support and limits
 
-- English public search (Originals and Canvas cards), first search result page only.
+- English public search with an All-results preview and selectable WEBTOON Originals or CANVAS catalogs. Originals and CANVAS result pages use their official page links for pagination.
 - Default popular genre browse, metadata, cursor-paginated episodes, public reader image URLs, vertical viewer, image Referer.
 - Official mobile episode API; HTML requests use the official desktop site with its documented-in-URLs platform redirect switch because mobile search is JS-only. This is not an authentication or payment workaround.
 - Full live WASM-host smoke: Space Boy search, details, all API episode batches, public episode 1 image URL parsing, default browse.
 - Discovery home: Drama by Popularity / Likes / Date, plus genre navigation. Search filters expose all 17 English site genres and the official Popularity / Likes / Date sort orders (`MANA`, `LIKEIT`, `UPDATE`); clearing the text query browses the selected genre and sort. Seven named listings retain their existing IDs and site order. Shelf previews show 20 entries, and opening a listing returns the complete server-rendered genre result. These pages are not paginated: page > 1 is empty.
 - Important: the site's bare `/en/genre` redirects to a Drama-selected page, NOT a global popularity chart. New discovery uses explicit `/en/genres/drama` routes and labels. No WEBTOON Popular Today or invented ranking period.
-- English advertised only. Text search exposes its first result page only. Optional-page filtering, season-title normalization, Canvas end-to-end verification remain unavailable or unverified.
+- English advertised only. The combined All-results route is a first-page preview; use the Originals or CANVAS scope for complete paginated search. Optional-page filtering, season-title normalization, and Canvas end-to-end reader verification remain unavailable or unverified.
 - Canonical mobile and desktop WEBTOON series links resolve to manga entries after validating the host, path and numeric `title_no`.
 - No login, app-only chapters, Fast Pass, Daily Pass, purchases, or paywall bypass. Missing reader images returns an explicit error. No image bytes downloaded in tests. Actual iOS installation/image rendering not verified.
 

@@ -104,7 +104,7 @@ fn discovery_listing_routes_are_site_specific() {
 #[aidoku_test]
 fn dynamic_filters_expose_every_official_genre_and_sort() {
 	let filters = Webtoon.get_dynamic_filters().unwrap();
-	assert_eq!(filters.len(), 2);
+	assert_eq!(filters.len(), 3);
 	match &filters[0].kind {
 		FilterKind::Select {
 			is_genre,
@@ -130,6 +130,15 @@ fn dynamic_filters_expose_every_official_genre_and_sort() {
 			assert_eq!(options.len(), 3);
 		}
 		_ => panic!("expected sort selector"),
+	}
+	match &filters[2].kind {
+		FilterKind::Select { options, ids, .. } => {
+			assert_eq!(options.len(), 3);
+			assert_eq!(ids.as_ref().unwrap()[0].as_ref(), "all");
+			assert_eq!(ids.as_ref().unwrap()[1].as_ref(), "originals");
+			assert_eq!(ids.as_ref().unwrap()[2].as_ref(), "canvas");
+		}
+		_ => panic!("expected catalog scope selector"),
 	}
 }
 
@@ -187,6 +196,53 @@ fn dynamic_genre_and_sort_route_to_official_catalogs() {
 #[aidoku_test]
 fn search_rejects_nonpositive_pages() {
 	assert!(Webtoon.get_search_manga_list(None, 0, vec![]).is_err());
+}
+
+#[aidoku_test]
+fn official_search_scopes_build_paginated_routes() {
+	assert_eq!(
+		search_path("space boy", "all", 1).unwrap(),
+		"/en/search?keyword=space%20boy"
+	);
+	assert!(search_path("space boy", "all", 2).is_err());
+	assert_eq!(
+		search_path("space boy", "originals", 1).unwrap(),
+		"/en/search/originals?keyword=space%20boy&page=1"
+	);
+	assert_eq!(
+		search_path("space boy", "canvas", 2).unwrap(),
+		"/en/search/canvas?keyword=space%20boy&page=2"
+	);
+	assert!(search_path("x", "invalid", 1).is_err());
+	assert_eq!(
+		search_scope(&[FilterValue::Select {
+			id: "scope".into(),
+			value: "canvas".into(),
+		}])
+		.unwrap(),
+		"canvas"
+	);
+	assert!(
+		search_scope(&[FilterValue::Select {
+			id: "scope".into(),
+			value: "external".into(),
+		}])
+		.is_err()
+	);
+}
+
+#[aidoku_test]
+fn search_pagination_uses_server_page_links() {
+	let page_one = Html::parse(
+		"<div class='list_pagination'><a class='pagination' href='/en/search/canvas?keyword=x&amp;page=2'>2</a></div>",
+	)
+	.unwrap();
+	assert!(has_next_search_page(&page_one, 1));
+	assert!(!has_next_search_page(&page_one, 2));
+	let final_page =
+		Html::parse("<div class='list_pagination'><a class='pagination' href='#'>1</a></div>")
+			.unwrap();
+	assert!(!has_next_search_page(&final_page, 1));
 }
 use aidoku::imports::html::Html;
 use aidoku_test::aidoku_test;

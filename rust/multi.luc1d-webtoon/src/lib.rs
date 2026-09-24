@@ -37,6 +37,11 @@ const SORTS: &[(&str, &str)] = &[
 	("LIKEIT", "Likes"),
 	("UPDATE", "Date"),
 ];
+const SEARCH_SCOPES: &[(&str, &str)] = &[
+	("all", "All results"),
+	("originals", "WEBTOON Originals"),
+	("canvas", "CANVAS"),
+];
 fn discovery_path(id: &str) -> Option<&'static str> {
 	match id {
 		"popular" => Some("/en/genres/drama?sortOrder=MANA"),
@@ -230,14 +235,30 @@ impl Source for Webtoon {
 		if page < 1 {
 			return Err(error!("Invalid page"));
 		}
+		let scope = search_scope(&filters)?;
+		if let Some(query) = query.filter(|q| !q.trim().is_empty()) {
+			if scope == "all" && page > 1 {
+				return Ok(MangaPageResult::default());
+			}
+			let path = search_path(&query, scope, page)?;
+			let html = request(&path)?.html()?;
+			let mut result = parse_search(&html);
+			if scope != "all" {
+				result.has_next_page = has_next_search_page(&html, page);
+			}
+			return Ok(result);
+		}
 		if page > 1 {
 			return Ok(MangaPageResult::default());
 		}
-		let path = match query.filter(|q| !q.trim().is_empty()) {
-			Some(q) => format!("/en/search?keyword={}", encode_query(&q)),
-			None => filtered_discovery_path(&filters)?,
-		};
-		Ok(parse_search(&request(&path)?.html()?))
+		if scope != "all" {
+			return Err(error!(
+				"Enter a text query to search a specific WEBTOON catalog"
+			));
+		}
+		Ok(parse_search(
+			&request(&filtered_discovery_path(&filters)?)?.html()?,
+		))
 	}
 	fn get_manga_update(
 		&self,
@@ -325,6 +346,14 @@ impl DynamicFilters for Webtoon {
 			.iter()
 			.map(|(_, label)| Cow::Borrowed(*label))
 			.collect();
+		let scopes = SEARCH_SCOPES
+			.iter()
+			.map(|(_, label)| Cow::Borrowed(*label))
+			.collect();
+		let scope_ids = SEARCH_SCOPES
+			.iter()
+			.map(|(id, _)| Cow::Borrowed(*id))
+			.collect();
 		Ok(vec![
 			SelectFilter {
 				id: Cow::Borrowed("genre"),
@@ -344,6 +373,14 @@ impl DynamicFilters for Webtoon {
 					index: 0,
 					ascending: false,
 				}),
+				..Default::default()
+			}
+			.into(),
+			SelectFilter {
+				id: Cow::Borrowed("scope"),
+				title: Some(Cow::Borrowed("Search in")),
+				options: scopes,
+				ids: Some(scope_ids),
 				..Default::default()
 			}
 			.into(),
@@ -435,6 +472,44 @@ fn filtered_discovery_path(filters: &[FilterValue]) -> Result<String> {
 		}
 	}
 	Ok(format!("/en/genres/{genre}?sortOrder={sort}"))
+}
+fn search_scope(filters: &[FilterValue]) -> Result<&'static str> {
+	let Some(value) = filters.iter().find_map(|filter| match filter {
+		FilterValue::Select { id, value } if id == "scope" => Some(value.as_str()),
+		_ => None,
+	}) else {
+		return Ok("all");
+	};
+	SEARCH_SCOPES
+		.iter()
+		.find(|(id, _)| *id == value)
+		.map(|(id, _)| *id)
+		.ok_or_else(|| error!("Unknown WEBTOON search scope"))
+}
+fn search_path(query: &str, scope: &str, page: i32) -> Result<String> {
+	if page < 1 {
+		return Err(error!("Invalid page"));
+	}
+	let query = encode_query(query);
+	match scope {
+		"all" if page == 1 => Ok(format!("/en/search?keyword={query}")),
+		"all" => Err(error!("All-results preview is not paginated")),
+		"originals" | "canvas" => Ok(format!("/en/search/{scope}?keyword={query}&page={page}")),
+		_ => Err(error!("Unknown WEBTOON search scope")),
+	}
+}
+fn has_next_search_page(html: &Document, page: i32) -> bool {
+	html.select(".list_pagination a.pagination[href*='page=']")
+		.map(|links| {
+			links.into_iter().any(|link| {
+				link.attr("href")
+					.and_then(|href| {
+						parameter(&href, "page").and_then(|value| value.parse::<i32>().ok())
+					})
+					.is_some_and(|next| next > page)
+			})
+		})
+		.unwrap_or(false)
 }
 impl DeepLinkHandler for Webtoon {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
