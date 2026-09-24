@@ -9,7 +9,7 @@ SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 - Default popular genre browse, metadata, cursor-paginated episodes, public reader image URLs, vertical viewer, image Referer.
 - Official mobile episode API; HTML requests use the official desktop site with its documented-in-URLs platform redirect switch because mobile search is JS-only. This is not an authentication or payment workaround.
 - Full live WASM-host smoke: Space Boy search, details, all API episode batches, public episode 1 image URL parsing, default browse.
-- Discovery reads genres and sort links from each selected locale¡¯s current genre page, with bundled fallbacks on request or parse failure. Filters and home links stay current as WEBTOON changes its genre catalog. Named listings cover each known genre in all three official sort orders while preserving existing IDs.
+- Discovery reads genres and sort links from each selected localeâ€™s current genre page, with bundled fallbacks on request or parse failure. Filters and home links stay current as WEBTOON changes its genre catalog. Named listings cover each known genre in all three official sort orders while preserving existing IDs.
 - Newly introduced official genres are now accepted by search filters and added as dynamic Aidoku listings in the current locale, without duplicating the existing bundled listing IDs.
 - Home sends its stable section layout first and streams each discovery section as it loads; a failed section does not hide successful sections or the genre browser.
 - Important: the site's bare `/en/genre` redirects to a Drama-selected page, NOT a global popularity chart. New discovery uses explicit `/en/genres/drama` routes and labels. No WEBTOON Popular Today or invented ranking period.
