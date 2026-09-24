@@ -55,6 +55,7 @@ fn fixture_search_parses_and_skips_invalid_cards() {
       <article><section><a href="/series/fixture/Sample">Official Sample</a><img src="/cover.png"></section></article>
       <article><section><a>No URL</a><img src="/cover.png"></section></article>
       <article><section><a href="https://example.invalid/foreign">Foreign</a><img src="/cover.png"></section></article>
+      <button hx-get="/search/data?limit=32&amp;offset=32&amp;display_mode=Full+Display"><span>View More Results...</span></button>
     "#, BASE_URL).unwrap();
 	let result = parse_search(&html).unwrap();
 	assert_eq!(result.entries.len(), 1);
