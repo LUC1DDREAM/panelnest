@@ -20,6 +20,12 @@ pub struct NHentaiTag {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct NHentaiTagsResponse {
+	pub result: Vec<NHentaiTag>,
+	pub num_pages: i32,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct NHentaiCover {
 	pub path: String,
 	pub width: i32,

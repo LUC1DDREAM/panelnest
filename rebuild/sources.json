@@ -85,6 +85,7 @@
   {
     "id": "multi.luc1d-nhentai",
     "path": "rust/multi.luc1d-nhentai",
+    "upstream_version": 10,
     "upstream_id": "multi.nhentai",
     "upstream_version": 17,
     "upstream_commit": "0f537147588d7fec7d70a22a9d7084376cd5c2b7",
@@ -97,7 +98,8 @@
       "home",
       "listings",
       "alternate-covers",
-      "deep-links"
+      "deep-links",
+      "dynamic-filters"
     ],
     "features": [
       "search",
@@ -117,8 +119,8 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The updated filter contains 807 alphabetically sorted tags with at least ten galleries; the refresh completed across all API pages. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
-    "fixture_tests_passed": 10,
+    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The updated tag filter contains 807 alphabetically sorted entries with at least ten galleries. Official /api/v2/tags/language?sort=popular&page=1&per_page=100 returned one complete page with 14 language-classification entries; runtime filter construction includes all unique entries of type language. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
+    "fixture_tests_passed": 11,
     "release_authorized": true
   },
   {

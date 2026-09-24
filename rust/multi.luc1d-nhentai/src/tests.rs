@@ -135,6 +135,56 @@ fn details_include_language_metadata() {
 }
 
 #[aidoku_test]
+fn dynamic_language_filter_uses_only_unique_language_tags() {
+	let filter = super::language_filter(aidoku::alloc::vec![
+		NHentaiTag {
+			id: 1,
+			name: "japanese".into(),
+			count: 340_913,
+			r#type: "language".into(),
+			url: "/language/japanese/".into(),
+			slug: Some("japanese".into()),
+		},
+		NHentaiTag {
+			id: 2,
+			name: "japanese".into(),
+			count: 340_913,
+			r#type: "language".into(),
+			url: "/language/japanese/".into(),
+			slug: Some("japanese".into()),
+		},
+		NHentaiTag {
+			id: 3,
+			name: "action".into(),
+			count: 10,
+			r#type: "tag".into(),
+			url: "/tag/action/".into(),
+			slug: Some("action".into()),
+		},
+		NHentaiTag {
+			id: 4,
+			name: "textless narrative".into(),
+			count: 1,
+			r#type: "language".into(),
+			url: "/language/textless-narrative/".into(),
+			slug: Some("textless-narrative".into()),
+		},
+	])
+	.unwrap();
+	match filter.kind {
+		aidoku::FilterKind::MultiSelect { options, ids, .. } => {
+			assert_eq!(options.len(), 2);
+			assert_eq!(options[0].as_ref(), "japanese");
+			assert_eq!(options[1].as_ref(), "textless narrative");
+			let ids = ids.unwrap();
+			assert_eq!(ids[0].as_ref(), "japanese");
+			assert_eq!(ids[1].as_ref(), "textless narrative");
+		}
+		_ => panic!("expected multi-select language filter"),
+	}
+}
+
+#[aidoku_test]
 fn blocklist_setting_starts_empty_without_excluding_a_placeholder_tag() {
 	let settings: serde_json::Value =
 		serde_json::from_str(include_str!("../res/settings.json")).unwrap();

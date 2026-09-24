@@ -1,8 +1,9 @@
 #![no_std]
 use aidoku::{
-	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, Listing,
-	ListingProvider, Manga, MangaPageResult, Page, PageContent, Result, Source,
-	alloc::{String, Vec, string::ToString, vec},
+	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter,
+	FilterValue, Listing, ListingProvider, Manga, MangaPageResult, MultiSelectFilter, Page,
+	PageContent, Result, Source,
+	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	helpers::uri::encode_uri_component,
 	imports::{error::AidokuError, net::Request},
 	prelude::*,
@@ -297,6 +298,57 @@ impl AlternateCoverProvider for NHentai {
 	}
 }
 
+fn language_filter(tags: Vec<NHentaiTag>) -> Result<Filter> {
+	let mut options: Vec<Cow<'static, str>> = Vec::new();
+	let mut ids: Vec<Cow<'static, str>> = Vec::new();
+	for tag in tags {
+		let name = tag.name.trim();
+		if tag.r#type != "language"
+			|| name.is_empty()
+			|| options.iter().any(|existing| existing.as_ref() == name)
+		{
+			continue;
+		}
+		options.push(Cow::Owned(name.into()));
+		ids.push(Cow::Owned(name.into()));
+	}
+	if options.is_empty() {
+		return Err(error!("nhentai language directory unavailable"));
+	}
+	let mut filter = MultiSelectFilter::default();
+	filter.id = "languages".into();
+	filter.title = Some("Language".into());
+	filter.options = options;
+	filter.ids = Some(ids);
+	Ok(filter.into())
+}
+
+impl DynamicFilters for NHentai {
+	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
+		let first: NHentaiTagsResponse = Request::get(format!(
+			"{API_URL}/tags/language?sort=popular&page=1&per_page=100"
+		))?
+		.header("User-Agent", USER_AGENT)
+		.json_owned()?;
+		if !(1..=20).contains(&first.num_pages) {
+			return Err(error!("Invalid nhentai language directory page count"));
+		}
+		let mut tags = first.result;
+		for page in 2..=first.num_pages {
+			let response: NHentaiTagsResponse = Request::get(format!(
+				"{API_URL}/tags/language?sort=popular&page={page}&per_page=100"
+			))?
+			.header("User-Agent", USER_AGENT)
+			.json_owned()?;
+			if response.num_pages != first.num_pages || response.result.is_empty() {
+				return Err(error!("Incomplete nhentai language directory"));
+			}
+			tags.extend(response.result);
+		}
+		Ok(vec![language_filter(tags)?])
+	}
+}
+
 impl DeepLinkHandler for NHentai {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
 		let Some(rest) = url.strip_prefix("https://") else {
@@ -330,5 +382,6 @@ register_source!(
 	Home,
 	ListingProvider,
 	DeepLinkHandler,
-	AlternateCoverProvider
+	AlternateCoverProvider,
+	DynamicFilters
 );
