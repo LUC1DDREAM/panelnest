@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-webtoon",
   "version": 16,
-  "sha256": null,
-  "bytes": 0,
+  "sha256": "c276146e6f979d934d62f9daf2f11e3123ed27981425877ebf7f17adec7dea70",
+  "bytes": 74003,
   "languages": [
     "en",
     "zh",
@@ -13,7 +13,7 @@
     "de"
   ],
   "contentRating": 1,
-  "package_verified": false,
+  "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
   "fixture_tests_passed": 24,
