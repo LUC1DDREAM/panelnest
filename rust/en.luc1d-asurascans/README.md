@@ -1,6 +1,8 @@
 # Asura Scans
 
-## Discovery (package version 11)
+## Discovery and library updates (package version 12)
+
+Completed series are excluded from periodic library refreshes. Ongoing, hiatus, cancelled and unknown titles continue to refresh.
 
 The official trending API exposes Day, Week, Month and All Time at
 `https://api.asurascans.com/api/trending/{day|week|month|all}?limit=10`.

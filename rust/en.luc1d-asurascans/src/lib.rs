@@ -4,7 +4,7 @@ use aidoku::{
 	Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue, HomeLayout, Link,
 	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent, RangeFilter,
-	PageContext, PageDescriptionProvider, Result, Source, TextFilter, Viewer, WebLoginHandler,
+	PageContext, PageDescriptionProvider, Result, Source, TextFilter, UpdateStrategy, Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	helpers::uri::QueryParameters,
 	imports::{
@@ -46,6 +46,14 @@ fn numbered_reader_page(url: String, number: usize) -> Page {
 }
 
 struct AsuraScans;
+
+fn library_update_strategy(status: MangaStatus) -> UpdateStrategy {
+	if status == MangaStatus::Completed {
+		UpdateStrategy::Never
+	} else {
+		UpdateStrategy::Always
+	}
+}
 
 fn browse_url(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result<String> {
 	if page < 1 {
@@ -246,6 +254,7 @@ impl Source for AsuraScans {
 					.collect(),
 			);
 		}
+		manga.update_strategy = library_update_strategy(manga.status);
 
 		Ok(manga)
 	}
@@ -783,6 +792,19 @@ register_source!(
 		assert!(url.contains("artist=Studio"));
 		assert!(!url.contains("type=all"));
 		assert!(browse_url(None, 0, &[]).is_err());
+	}
+
+	#[aidoku_test]
+	fn completed_manga_skip_library_refresh_but_active_statuses_keep_refreshing() {
+		assert_eq!(library_update_strategy(MangaStatus::Completed), UpdateStrategy::Never);
+		for status in [
+			MangaStatus::Ongoing,
+			MangaStatus::Hiatus,
+			MangaStatus::Cancelled,
+			MangaStatus::Unknown,
+		] {
+			assert_eq!(library_update_strategy(status), UpdateStrategy::Always);
+		}
 	}
 
 	#[aidoku_test]
