@@ -142,7 +142,11 @@ mod tests {
 		assert!(is_asura_url("https://asurascans.com/comics/series-123"));
 		assert!(is_asura_url("https://www.asurascans.com/comics/series-123"));
 		assert!(!is_asura_url("https://evil.example/comics/series-123"));
-		assert!(!is_asura_url("https://asurascans.com.evil.example/comics/series-123"));
-		assert!(!is_asura_url("javascript://asurascans.com/comics/series-123"));
+		assert!(!is_asura_url(
+			"https://asurascans.com.evil.example/comics/series-123"
+		));
+		assert!(!is_asura_url(
+			"javascript://asurascans.com/comics/series-123"
+		));
 	}
 }

@@ -1,9 +1,10 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicListings, FilterValue, HashMap,
-	Home, HomeComponent, HomeComponentValue, HomeLayout, Link, Listing, ListingProvider, Manga,
-	MangaPageResult, MangaStatus, MangaWithChapter, MigrationHandler, NotificationHandler, Page,
-	PageContent, Result, Source, Viewer, WebLoginHandler,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
+	Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue, HomeLayout, Link,
+	Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
+	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent, RangeFilter,
+	Result, Source, TextFilter, Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	helpers::uri::QueryParameters,
 	imports::{
@@ -26,6 +27,58 @@ const API_URL: &str = "https://api.asurascans.com/api";
 
 struct AsuraScans;
 
+fn browse_url(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result<String> {
+	if page < 1 {
+		return Err(error!("Invalid page"));
+	}
+	let mut qs = QueryParameters::new();
+	qs.push("page", Some(&page.to_string()));
+	if query.is_some() {
+		qs.push("q", query);
+	}
+
+	for filter in filters {
+		match filter {
+			FilterValue::Sort {
+				id,
+				index,
+				ascending,
+			} => {
+				qs.push(
+					id,
+					Some(match index {
+						0 => "update",
+						1 => "popular",
+						2 => "rating",
+						3 => "name",
+						4 => "newest",
+						_ => "update",
+					}),
+				);
+				if *ascending {
+					qs.push("order", Some("asc"));
+				}
+			}
+			FilterValue::Select { id, value } => {
+				if !value.is_empty() && !((id == "status" || id == "type") && value == "all") {
+					qs.push(id, Some(value));
+				}
+			}
+			FilterValue::MultiSelect { id, included, .. } => {
+				qs.push(id, Some(&included.join(",")));
+			}
+			FilterValue::Range { id, from, .. } => {
+				if let Some(value) = from.filter(|value| *value >= 0.0) {
+					qs.push(id, Some(&value.to_string()));
+				}
+			}
+			_ => continue,
+		}
+	}
+
+	Ok(format!("{BASE_URL}/browse?{qs}"))
+}
+
 impl Source for AsuraScans {
 	fn new() -> Self {
 		set_rate_limit(2, 2, TimeUnit::Seconds);
@@ -38,45 +91,7 @@ impl Source for AsuraScans {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
-		let mut qs = QueryParameters::new();
-		qs.push("page", Some(&page.to_string()));
-		if query.is_some() {
-			qs.push("q", query.as_deref());
-		}
-
-		for filter in filters {
-			match filter {
-				FilterValue::Sort {
-					id,
-					index,
-					ascending,
-				} => {
-					qs.push(
-						&id,
-						Some(match index {
-							0 => "update",
-							1 => "popular",
-							2 => "rating",
-							3 => "name",
-							4 => "newest",
-							_ => "update",
-						}),
-					);
-					if ascending {
-						qs.push("order", Some("asc"));
-					}
-				}
-				FilterValue::Select { id, value } => {
-					qs.push(&id, Some(&value));
-				}
-				FilterValue::MultiSelect { id, included, .. } => {
-					qs.push(&id, Some(&included.join(",")));
-				}
-				_ => continue,
-			}
-		}
-
-		let url = format!("{BASE_URL}/browse?{qs}");
+		let url = browse_url(query.as_deref(), page, &filters)?;
 		let html = Request::get(url)?.html()?;
 
 		let entries = html
@@ -291,6 +306,68 @@ impl Source for AsuraScans {
 			})
 			.collect())
 	}
+}
+
+fn parse_browse_genres(props: &str) -> Result<Vec<(String, String)>> {
+	let props = serde_json::from_str::<serde_json::Value>(&props)?;
+	let rows = props["availableGenres"][1]
+		.as_array()
+		.ok_or_else(|| error!("Browse genres unavailable"))?;
+	let genres = rows
+		.iter()
+		.filter_map(|row| {
+			let row = &row[1];
+			Some((
+				row["name"][1].as_str()?.into(),
+				row["slug"][1].as_str()?.into(),
+			))
+		})
+		.collect::<Vec<_>>();
+	if genres.is_empty() {
+		return Err(error!("Browse genres unavailable"));
+	}
+	Ok(genres)
+}
+
+fn browse_genres() -> Result<Vec<(String, String)>> {
+	let html = Request::get(format!("{BASE_URL}/browse"))?.html()?;
+	let props = html
+		.select_first("astro-island[component-url*=BrowseFilters]")
+		.and_then(|el| el.attr("props"))
+		.ok_or_else(|| error!("Browse filters unavailable"))?;
+	parse_browse_genres(&props)
+}
+
+fn dynamic_search_filters(genres: Vec<(String, String)>) -> Vec<Filter> {
+	let mut genre = MultiSelectFilter::default();
+	genre.id = "genres".into();
+	genre.title = Some("Genres".into());
+	genre.is_genre = true;
+	genre.uses_tag_style = true;
+	genre.can_exclude = false;
+	genre.options = genres.iter().map(|(name, _)| name.clone().into()).collect();
+	genre.ids = Some(genres.into_iter().map(|(_, slug)| slug.into()).collect());
+
+	let mut author = TextFilter::default();
+	author.id = "author".into();
+	author.title = Some("Author".into());
+	author.placeholder = Some("Search author".into());
+
+	let mut artist = TextFilter::default();
+	artist.id = "artist".into();
+	artist.title = Some("Artist".into());
+	artist.placeholder = Some("Search artist".into());
+
+	let mut chapters = RangeFilter::default();
+	chapters.id = "min_chapters".into();
+	chapters.title = Some("Minimum Chapters".into());
+	chapters.min = Some(0.0);
+
+	let mut filters = vec![author.into(), artist.into(), chapters.into()];
+	if !genre.options.is_empty() {
+		filters.insert(0, genre.into());
+	}
+	filters
 }
 
 impl Home for AsuraScans {
@@ -513,6 +590,12 @@ impl ListingProvider for AsuraScans {
 	}
 }
 
+impl DynamicFilters for AsuraScans {
+	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
+		Ok(dynamic_search_filters(browse_genres().unwrap_or_default()))
+	}
+}
+
 impl DynamicListings for AsuraScans {
 	fn get_dynamic_listings(&self) -> Result<Vec<Listing>> {
 		if !auth::is_logged_in() {
@@ -550,7 +633,81 @@ register_source!(
 	DeepLinkHandler,
 	MigrationHandler,
 	ListingProvider,
+	DynamicFilters,
 	DynamicListings,
 	WebLoginHandler,
 	NotificationHandler
 );
+
+#[cfg(test)]
+mod filter_tests {
+	use super::*;
+	use aidoku::alloc::vec;
+	use aidoku::{FilterKind, FilterValue};
+	use aidoku_test::aidoku_test;
+
+	#[aidoku_test]
+	fn browse_props_decode_current_genre_names_and_slugs() {
+		let props = r#"{"availableGenres":[1,[[0,{"id":[0,1],"name":[0,"Action"],"slug":[0,"action"]}],[0,{"id":[0,4],"name":[0,"Adventure"],"slug":[0,"adventure"]}]]]}"#;
+		assert_eq!(
+			parse_browse_genres(props).unwrap(),
+			vec![
+				("Action".into(), "action".into()),
+				("Adventure".into(), "adventure".into())
+			]
+		);
+		assert!(parse_browse_genres("{}").is_err());
+	}
+
+	#[aidoku_test]
+	fn browse_filters_cover_site_facets_and_map_values_to_query_parameters() {
+		let filters = dynamic_search_filters(vec![("Action".into(), "action".into())]);
+		assert_eq!(filters.len(), 4);
+		assert_eq!(filters[0].id.as_ref(), "genres");
+		assert_eq!(filters[1].id.as_ref(), "author");
+		assert_eq!(filters[2].id.as_ref(), "artist");
+		assert_eq!(filters[3].id.as_ref(), "min_chapters");
+		match &filters[0].kind {
+			FilterKind::MultiSelect { options, ids, .. } => {
+				assert_eq!(options[0].as_ref(), "Action");
+				assert_eq!(ids.as_ref().unwrap()[0].as_ref(), "action");
+			}
+			_ => panic!("Genres should be a multi-select filter"),
+		}
+		assert_eq!(dynamic_search_filters(vec![]).len(), 3);
+
+		let values = vec![
+			FilterValue::Sort {
+				id: "sort".into(),
+				index: 2,
+				ascending: true,
+			},
+			FilterValue::Select {
+				id: "status".into(),
+				value: "ongoing".into(),
+			},
+			FilterValue::Select {
+				id: "type".into(),
+				value: "all".into(),
+			},
+			FilterValue::MultiSelect {
+				id: "genres".into(),
+				included: vec!["action".into(), "fantasy".into()],
+				excluded: vec![],
+			},
+			FilterValue::Range {
+				id: "min_chapters".into(),
+				from: Some(10.0),
+				to: None,
+			},
+		];
+		let url = browse_url(Some("dragon"), 2, &values).unwrap();
+		assert!(url.starts_with("https://asurascans.com/browse?page=2&q=dragon"));
+		assert!(url.contains("sort=rating&order=asc"));
+		assert!(url.contains("status=ongoing"));
+		assert!(url.contains("genres=action%2Cfantasy"));
+		assert!(url.contains("min_chapters=10"));
+		assert!(!url.contains("type=all"));
+		assert!(browse_url(None, 0, &[]).is_err());
+	}
+}

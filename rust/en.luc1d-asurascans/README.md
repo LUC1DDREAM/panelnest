@@ -1,6 +1,6 @@
 # Asura Scans
 
-## Discovery (package version 3)
+## Discovery (package version 7)
 
 The comic website PopularSidebar offers Weekly, Monthly and All Time, using
 `https://api.asurascans.com/api/trending/{week|month|all}?limit=10`.
@@ -8,7 +8,13 @@ These are now Home scrollers and named listings. Each is the website's top ten,
 in server order, with no pagination or all-time fallback for a failed period.
 No Popular Today listing is exposed: no daily option was evidenced in that UI.
 Existing Trending Comics, Latest Updates, Ranking and authenticated Bookmarks
-remain. Browse filters, deeplinks and chapter/authentication guards are unchanged.
+remain. Package version 7 now exposes the live browse facets in Aidoku: sort,
+status (including Axed), series type, the site's current genre list, author,
+artist and minimum chapter count. Genre names and slugs are read from the public
+BrowseFilters payload, so new and renamed genres do not rely on a stale copy.
+Search emits the same query parameter names and values as the site's browse
+page. If that payload is unavailable, the other browse filters remain usable.
+Deep links and chapter/authentication guards are unchanged.
 
 Bookmark pagination now stops using the API's total item count and the current
 offset plus returned page length. This prevents nearly every page from being
@@ -86,44 +92,12 @@ Package verification is structural, not device proof. No iOS/device rendering,
 live paid-account access, reader images, or download flow was exercised.
 
 
-## Updating Genres
+## Search filters
 
-On https://asurascans.com/browse, run:
-
-```js
-(() => {
-  const island = document.querySelector('astro-island[component-url*="BrowseFilters"]');
-  if (!island) {
-    console.error('BrowseFilters astro-island not found');
-    return;
-  }
-
-  const rawProps = island.getAttribute('props');
-  if (!rawProps) {
-    console.error('No props attribute found on astro-island');
-    return;
-  }
-
-  // decode html entities
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = rawProps;
-  const decodedProps = textarea.value;
-  const props = JSON.parse(decodedProps);
-
-  const genreEntries = props.availableGenres?.[1] || [];
-  const genres = genreEntries.map((entry) => {
-    const g = entry?.[1] || {};
-    return {
-      id: g.id?.[1],
-      name: g.name?.[1],
-      slug: g.slug?.[1],
-    };
-  }).filter(g => g.id != null && g.name && g.slug);
-
-  const options = genres.map(g => g.name);
-  const ids = genres.map(g => g.slug);
-
-  console.log('options:', JSON.stringify(options));
-  console.log('ids:', JSON.stringify(ids));
-})();
-```
+Sort, status and type stay in `res/filters.json`. The source reads current genre
+names and URL slugs from the public `BrowseFilters` payload each time Aidoku
+loads dynamic filters; author, artist and minimum chapter count are exposed as
+additional dynamic fields. That keeps the visible genre list aligned with the
+site without manual tag-file updates. If the browse payload is unavailable,
+Aidoku still receives the creator and chapter-count filters plus the static
+sort/status/type filters.

@@ -13,7 +13,8 @@
       "pages",
       "home",
       "listings",
-      "dynamic-listings"
+      "dynamic-listings",
+      "dynamic-filters"
     ],
     "features": ["search", "details", "chapters", "pages"],
     "listings": ["Ranking", "Popular This Week", "Popular This Month", "Popular All Time"],
@@ -24,8 +25,8 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Worker live WASM metadata smoke passed for Home and week/month/all listings; no device test.",
-    "fixture_tests_passed": 13,
+    "live_evidence": "Live /browse HTML exposed the BrowseFilters Astro payload with stable genre names/slugs; the frontend confirms status, type, sort, author, artist and min_chapters query values. Dynamic Aidoku filters use those values. No device test.",
+    "fixture_tests_passed": 15,
     "release_authorized": true
   },
   {
