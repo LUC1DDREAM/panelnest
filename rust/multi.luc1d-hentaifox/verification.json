@@ -1,13 +1,13 @@
 {
   "id": "multi.luc1d-hentaifox",
   "version": 22,
-  "sha256": null,
-  "bytes": 0,
+  "sha256": "b7da2cb5b5239f990e151419b1d0a5d619079f11a7477a563ae40f87fd60e4a4",
+  "bytes": 73824,
   "languages": [
     "multi"
   ],
   "contentRating": 2,
-  "package_verified": false,
+  "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
   "fixture_tests_passed": 26,
