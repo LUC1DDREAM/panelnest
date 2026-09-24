@@ -3,7 +3,7 @@ use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
 	Filter, FilterValue, HomePartialResult, ImageRequestProvider, Listing, Manga, MangaPageResult,
 	MangaStatus, Page, PageContent, PageDescriptionProvider, Result, SelectFilter, SortFilter,
-	Source, TextFilter, UpdateStrategy, Viewer,
+	PageContext, Source, TextFilter, UpdateStrategy, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -369,7 +369,14 @@ fn input(doc: &Document, id: &str) -> Result<String> {
 		.filter(|s| !s.is_empty())
 		.ok_or(error!("Missing reader metadata"))
 }
-fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
+fn parse_pages(doc: &Document, gallery_id: &str) -> Result<Vec<Page>> {
+	ensure!(
+		!gallery_id.is_empty() && gallery_id.bytes().all(|byte| byte.is_ascii_digit()),
+		"Invalid gallery key"
+	);
+	let referer = format!("{BASE_URL}/gallery/{gallery_id}/");
+	let mut page_context = PageContext::new();
+	page_context.insert("url".into(), referer);
 	let id = input(doc, "load_id")?;
 	let dir = input(doc, "load_dir")?;
 	ensure!(
@@ -435,7 +442,10 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 			_ => bail!("Unknown page format"),
 		};
 		pages.push(Page {
-			content: PageContent::url(format!("https://{host}/{dir}/{id}/{n}.{ext}")),
+			content: PageContent::url_context(
+				format!("https://{host}/{dir}/{id}/{n}.{ext}"),
+				page_context.clone(),
+			),
 			has_description: true,
 			..Default::default()
 		});
@@ -965,16 +975,48 @@ impl Source for GallerySource {
 				&& chapter.key.bytes().all(|b| b.is_ascii_digit()),
 			"Invalid gallery key"
 		);
-		parse_pages(&Request::get(format!("{BASE_URL}/gallery/{}/", chapter.key))?.html()?)
+		parse_pages(
+			&Request::get(format!("{BASE_URL}/gallery/{}/", chapter.key))?.html()?,
+			&chapter.key,
+		)
 	}
 }
 impl ImageRequestProvider for GallerySource {
 	fn get_image_request(
 		&self,
 		url: String,
-		_context: Option<aidoku::PageContext>,
+		context: Option<PageContext>,
 	) -> Result<Request> {
-		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
+		let domain = BASE_URL.trim_start_matches("https://");
+		let image_host = url
+			.strip_prefix("https://")
+			.and_then(|value| value.split_once('/').map(|(host, _)| host))
+			.ok_or(error!("Invalid image URL"))?;
+		ensure!(
+			image_host == domain || image_host.ends_with(&format!(".{domain}")),
+			"Unexpected image host"
+		);
+		let referer = match context {
+			Some(context) => context
+				.get("url")
+			.cloned()
+			.ok_or(error!("Image page context is missing its gallery URL"))?,
+			None => format!("{BASE_URL}/"),
+		};
+		let path = referer
+			.strip_prefix(BASE_URL)
+			.ok_or(error!("Unexpected image referer"))?;
+		if path != "/" {
+			let gallery_id = path
+				.strip_prefix("/gallery/")
+				.and_then(|path| path.strip_suffix('/'))
+				.ok_or(error!("Invalid image referer"))?;
+			ensure!(
+				!gallery_id.is_empty() && gallery_id.bytes().all(|byte| byte.is_ascii_digit()),
+				"Invalid image referer"
+			);
+		}
+		Ok(Request::get(url)?.header("Referer", &referer))
 	}
 }
 aidoku::register_source!(

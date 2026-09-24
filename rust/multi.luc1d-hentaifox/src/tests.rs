@@ -60,7 +60,7 @@ fn search_urls_escape_query_and_validate_page() {
 #[aidoku_test]
 fn synthetic_pages_order_formats_and_validation() {
 	let doc=Html::parse_with_url(r#"<input id="load_id" value="81"><input id="load_dir" value="001"><input id="load_server" value="2"><input id="load_pages" value="2"><script>var images=$.parseJSON('{"2":"w,10,20","1":"p,30,40"}');</script>"#,BASE_URL).unwrap();
-	let pages = parse_pages(&doc).unwrap();
+	let pages = parse_pages(&doc, "81").unwrap();
 	assert_eq!(pages.len(), 2);
 	if let PageContent::Url(url, _) = &pages[0].content {
 		assert!(url.ends_with("/001/81/1.png"));
@@ -73,7 +73,13 @@ fn synthetic_pages_order_formats_and_validation() {
 		panic!("not a URL")
 	}
 	assert!(pages.iter().all(|page| page.has_description));
-	assert!(parse_pages(&Html::parse("<html></html>").unwrap()).is_err());
+	if let PageContent::Url(_, Some(context)) = &pages[0].content {
+		assert_eq!(context.get("url").map(|url| url.as_str()), Some("https://hentaifox.com/gallery/81/"));
+	} else {
+		panic!("page must retain its gallery Referer context");
+	}
+	assert!(parse_pages(&Html::parse("<html></html>").unwrap(), "81").is_err());
+	assert!(parse_pages(&doc, "bad").is_err());
 }
 
 #[aidoku_test]
@@ -101,6 +107,28 @@ fn page_descriptions_read_validated_reader_filenames() {
 			"{url}"
 		);
 	}
+}
+
+#[aidoku_test]
+fn image_requests_validate_cdn_hosts_and_use_the_gallery_context() {
+	use aidoku::ImageRequestProvider;
+	let source = GallerySource;
+	let mut context = aidoku::PageContext::new();
+	context.insert("url".into(), "https://hentaifox.com/gallery/81/".into());
+	assert!(source
+		.get_image_request("https://m2.hentaifox.com/001/81/1.webp".into(), Some(context))
+		.is_ok());
+	assert!(source
+		.get_image_request("https://evil.example/001/81/1.webp".into(), None)
+		.is_err());
+	let mut invalid_context = aidoku::PageContext::new();
+	invalid_context.insert("url".into(), "https://hentaifox.com/gallery/nope/".into());
+	assert!(source
+		.get_image_request(
+			"https://m2.hentaifox.com/001/81/1.webp".into(),
+			Some(invalid_context),
+		)
+		.is_err());
 }
 
 #[aidoku_test]
