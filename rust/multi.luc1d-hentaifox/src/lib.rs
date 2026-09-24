@@ -274,6 +274,9 @@ fn taxonomy_filter(id: &'static str, title: &'static str, values: Vec<(String, S
 	filter.into()
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
+	let chapter_thumbnail = doc
+		.select_first(if IS_IM { ".left_cover img" } else { ".cover img" })
+		.and_then(|e| image(&e));
 	manga.update_strategy = UpdateStrategy::Never;
 	ensure!(
 		!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()),
@@ -358,6 +361,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 			title: Some("Gallery".into()),
 			chapter_number: Some(1.0),
 			language: gallery_language(doc),
+			thumbnail: chapter_thumbnail,
 			url: Some(format!("{BASE_URL}/gallery/{}/", manga.key)),
 			..Default::default()
 		}]);
