@@ -608,7 +608,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 19);
+	assert_eq!(manifest["info"]["version"], 20);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
