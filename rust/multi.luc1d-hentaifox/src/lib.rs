@@ -376,10 +376,12 @@ fn listing_url(id: &str, page: i32) -> Result<String> {
 	}
 }
 fn deep_link_key(url: &str) -> Option<String> {
-	if !url.starts_with(BASE_URL) {
+	let rest = url.strip_prefix("https://")?;
+	let (host, path) = rest.split_once('/')?;
+	if host != BASE_URL.trim_start_matches("https://") || !path.starts_with("gallery/") {
 		return None;
 	}
-	key_from_url(url)
+	key_from_url(&format!("{BASE_URL}/{path}"))
 }
 fn sidebar_type(id: &str) -> Option<&'static str> {
 	SIDEBAR_LISTINGS
