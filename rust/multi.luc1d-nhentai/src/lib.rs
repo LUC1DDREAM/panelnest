@@ -350,7 +350,9 @@ impl ImageRequestProvider for NHentai {
 		url: String,
 		_context: Option<aidoku::PageContext>,
 	) -> Result<aidoku::imports::net::Request> {
-		ensure!(is_trusted_image_url(&url), "Unsupported nhentai image host");
+		if !is_trusted_image_url(&url) {
+			return Err(error!("Unsupported nhentai image host"));
+		}
 		let referer = format!("{BASE_URL}/");
 		Ok(Request::get(url)?
 			.header("Referer", referer.as_str())
