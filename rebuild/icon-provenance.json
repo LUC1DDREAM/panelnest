@@ -57,8 +57,8 @@
     "historical_provenance": "rebuild/icon-provenance-historical.json"
   },
   {
-    "id": "multi.luc1d-webtoon",
-    "version": 11,
+"id": "multi.luc1d-webtoon",
+"version": 12,
     "previous_version": 2,
     "asset_changed": true,
     "provenance": "original vector interpretation by assistant",
