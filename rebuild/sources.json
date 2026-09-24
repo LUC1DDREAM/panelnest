@@ -156,7 +156,7 @@
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
     "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries; the freeform Tag filter routes other names through the official tag search operator. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). The official search endpoint accepted artist:\"ankoman\" with 25 entries on its first page, and the first gallery's detail API confirmed the matching artist tag. Runtime filters select unique entries of each taxonomy type; freeform artist, group, parody, character and tag fields now map to their official search operators. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified. Version 18 registers Aidoku ImageRequestProvider for chapter and cover images, adding the official site Referer and established source User-Agent for only the two configured CDN hosts; offline tests reject other hosts.",
-    "fixture_tests_passed": 18,
+    "fixture_tests_passed": 15,
     "release_authorized": true
   },
   {
@@ -201,7 +201,7 @@
     "device_tested": false,
     "limitations": "The combined, Originals and CANVAS search routes have separate pagination behavior; All-results has no HTML next link, so pagination ends when the response contains no series. Canvas rendering is not verified in Aidoku.",
     "live_evidence": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Official `/en/search?keyword=love&page=2` returned a different set of series from page 1; page 999 returned no series. The official episode API's viewerLink contains the series title_no and episode_no, now mapped to direct Aidoku chapter deep links using the same keys as the episode list. All-results pagination now follows page numbers and stops on empty results. This was direct official API/site validation, not a live Aidoku/device run. Runtime menu parsing now reads genres and supported sorts from official locale-specific genre navigation, with bundled fallback on request or parse failure. Version 17 registers PageDescriptionProvider and carries one-based page numbers in each ordered reader PageContext; fixtures verify descriptions use image order without extra requests.",
-    "fixture_tests_passed": 25,
+    "fixture_tests_passed": 24,
     "release_authorized": true
   },
   {
@@ -246,7 +246,7 @@
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "Fixtures verify that gallery chapter records preserve the stable gallery ID key and validated canonical IMHentai /view/<gallery>/<page>/ URL, and get_page_list requests that exact reader URL. Malformed and cross-gallery reader URLs are rejected. Direct live site access from this worker currently returns HTTP 403; device rendering remains unverified.",
-    "fixture_tests_passed": 17,
+    "fixture_tests_passed": 15,
     "release_authorized": true
   },
   {
@@ -296,7 +296,7 @@
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
     "live_evidence": "The official homepage currently renders the Daily Top Rated Today and Yesterday gallery links and thumbnails server-side; its JavaScript only toggles their visibility locally. The Home parser exposes both picks as one-entry scrollers without extra requests. Live official /languages/ and /languages/popular/ directories each expose 26 language classifications. Sample /language/english/ Latest and Popular page-1/page-2 routes returned HTTP 200. Live site routes also confirm /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. The three official sidebar POST routes top_faved, top_fapped and top_downloaded each return HTTP 200 and current div.item gallery markup through the same XHR/CSRF request shape used by the source. Regression tests cover the daily picks, language directory parsing, route sorting and pagination, quick-select and freeform taxonomy routing, browsable Home scrollers, and independent handling of failed sidebar markup.",
-    "fixture_tests_passed": 26,
+    "fixture_tests_passed": 25,
     "release_authorized": true
   }
 ]

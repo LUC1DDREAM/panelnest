@@ -26,6 +26,34 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(rows[1]['upstream_version'], 8)
         self.assertEqual(rows[2]['upstream_version'], 17)
 
+    def test_fixture_test_summary_requires_all_tests_and_returns_pass_count(self):
+        self.assertEqual(
+            pipeline.parse_fixture_test_summary(
+                'test result: ok. 21 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out'
+            ),
+            21,
+        )
+        for output in [
+            'test result: FAILED. 20 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out',
+            'test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n'
+            'test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out',
+            'no test result',
+        ]:
+            with self.subTest(output=output), self.assertRaises(ValueError):
+                pipeline.parse_fixture_test_summary(output)
+
+    def test_fixture_evidence_must_match_both_source_records(self):
+        row = {'id': 'en.luc1d-demo', 'fixture_tests_passed': 21, 'implemented': ['search', 'pages']}
+        verification = {'fixture_tests_passed': 21, 'implemented': ['pages', 'search']}
+        pipeline.validate_fixture_evidence(row, verification, 21)
+        for changed_row, changed_verification, actual in [
+            (dict(row, fixture_tests_passed=20), verification, 21),
+            (row, dict(verification, fixture_tests_passed=22), 21),
+            (row, dict(verification, implemented=['search']), 21),
+        ]:
+            with self.subTest(actual=actual, verification=changed_verification), self.assertRaises(ValueError):
+                pipeline.validate_fixture_evidence(changed_row, changed_verification, actual)
+
     def rows(self):
         return [dict(id=f'en.luc1d-{s}', path=f'rust/en.luc1d-{s}', implemented=['search','details','chapters','pages'], package_verified=True, runtime_tested=True, publish=True) for s in ['asurascans','weebcentral','nhentai','webtoon','imhentai','hentaifox']]
 

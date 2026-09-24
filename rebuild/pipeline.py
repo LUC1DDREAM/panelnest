@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
+import sys
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -141,6 +142,45 @@ def retain_published_assets(out, baseline=ROOT/'rebuild/published-packages'):
 def run(*args, cwd=ROOT):
     subprocess.run(args, cwd=cwd, check=True)
 
+def parse_fixture_test_summary(output):
+    summaries = re.findall(
+        r'test result: (ok|FAILED)\.\s+(\d+) passed;\s+(\d+) failed;\s+(\d+) ignored',
+        output,
+    )
+    if len(summaries) != 1:
+        raise ValueError('Expected exactly one Aidoku fixture test summary')
+    status, passed, failed, _ignored = summaries[0]
+    if status != 'ok' or int(failed) != 0:
+        raise ValueError('Aidoku fixture tests did not all pass')
+    return int(passed)
+
+def validate_fixture_evidence(row, verification, passed):
+    expected = row.get('fixture_tests_passed')
+    if expected != passed:
+        raise ValueError(
+            f"{row['id']} fixture count mismatch: manifest says {expected}, runner passed {passed}"
+        )
+    if verification.get('fixture_tests_passed') != passed:
+        raise ValueError(
+            f"{row['id']} verification count mismatch: record says "
+            f"{verification.get('fixture_tests_passed')}, runner passed {passed}"
+        )
+    if set(verification.get('implemented', [])) != set(row.get('implemented', [])):
+        raise ValueError(f"{row['id']} verification features do not match the source manifest")
+
+def run_source_tests(row, directory):
+    result = subprocess.run(
+        ('cargo', 'test', '--locked'), cwd=directory, text=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    sys.stdout.write(result.stdout)
+    sys.stderr.write(result.stderr)
+    if result.returncode:
+        raise subprocess.CalledProcessError(result.returncode, result.args)
+    passed = parse_fixture_test_summary(result.stdout + '\n' + result.stderr)
+    verification = json.loads((directory/'verification.json').read_text())
+    validate_fixture_evidence(row, verification, passed)
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--release',action='store_true',help='Require all six verified sources; default is non-deployable staging')
@@ -163,7 +203,7 @@ def main():
         for old in release_dir.glob('*.wasm'): old.unlink()
         package=directory/'package.aix'
         package.unlink(missing_ok=True)
-        run('cargo','test','--locked',cwd=directory)
+        run_source_tests(row, directory)
         run('cargo','build','--release','--locked','--target','wasm32-unknown-unknown',cwd=directory)
         run('aidoku','package',str(directory))
         run('aidoku','verify',str(package))

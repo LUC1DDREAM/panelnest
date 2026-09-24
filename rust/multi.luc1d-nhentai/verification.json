@@ -13,7 +13,7 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 18,
+  "fixture_tests_passed": 15,
   "official_site_checks": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries; the freeform Tag field routes other names through the official tag search operator. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). The official search endpoint accepted artist:\"ankoman\" with 25 entries on its first page; the first result's detail API confirmed the matching artist tag. Freeform artist, group, parody, character and tag fields map to their typed search operators. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified. Version 18 adds an ImageRequestProvider for the official i.nhentai.net and t.nhentai.net CDNs, attaching the site Referer and existing source User-Agent. Offline tests cover exact HTTPS-host allowlisting and reject deceptive/unsupported hosts; image bytes and device rendering are not claimed.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
@@ -26,7 +26,8 @@
     "alternate-covers",
     "deep-links",
     "dynamic-filters",
-    "page-descriptions"
+    "page-descriptions",
+    "image-request"
   ],
   "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
 }

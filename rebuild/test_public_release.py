@@ -25,6 +25,8 @@ class PublicReleaseTests(unittest.TestCase):
             self.assertTrue(verification_path.is_file(),f"{info['id']} verification record")
             verification=json.loads(verification_path.read_text())
             self.assertEqual(verification['version'],info['version'],f"{info['id']} verification version")
+            self.assertEqual(verification['fixture_tests_passed'],row['fixture_tests_passed'],f"{info['id']} fixture count")
+            self.assertEqual(set(verification['implemented']),set(row['implemented']),f"{info['id']} implemented features")
             package_name=f"{info['id']}-v{info['version']}.aix"
             package=pipeline.ROOT/'rebuild/published-packages'/package_name
             if info['version']==previous['version']:

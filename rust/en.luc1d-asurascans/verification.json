@@ -26,6 +26,7 @@
     "web-login",
     "migration",
     "notifications",
+    "image-request",
     "page-descriptions"
   ],
   "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
