@@ -69,7 +69,9 @@ fn reader_pages_keep_order_and_expose_page_descriptions() {
 	assert_eq!(WeebCentral.get_page_description(pages.remove(0)).unwrap(), "Page 2");
 	let source = include_str!("lib.rs");
 	let normalized = source.split_whitespace().collect::<Vec<_>>().join(" ");
-	assert!(normalized.contains("PageDescriptionProvider"));
+	assert!(normalized.contains(
+		"register_source!( WeebCentral, ListingProvider, DynamicListings, DynamicFilters, Home, ImageRequestProvider, PageDescriptionProvider, DeepLinkHandler );"
+	));
 }
 
 #[aidoku_test]
