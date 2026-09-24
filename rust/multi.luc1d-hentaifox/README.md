@@ -1,8 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 8)
-Latest home scroller and paginated Latest listing use `/` then `/page/N/`. Top Rated reads the server-rendered default `#middle_sidebar div.item` only when `#top_rated_btn.sidebar_btn_active` is present. Most Faved, Most Fapped and Most Downloaded are dynamic listings loaded from the documented `includes/sidebar.php` endpoint with the site's CSRF token and XHR header. Those rankings are finite sidebar responses, not paginated archives: page 2 returns empty without a request. Missing/changed data fails clearly. Homepage HTTP 200 and technical selectors were checked; no live Aidoku/device playback is claimed.
+## Discovery (source version 10)
+Latest home scroller and paginated Latest listing use `/` then `/page/N/`. Top Rated reads the server-rendered default `#middle_sidebar div.item` only when `#top_rated_btn.sidebar_btn_active` is present. Most Faved, Most Fapped and Most Downloaded are dynamic listings loaded from the documented `includes/sidebar.php` endpoint with the site's CSRF token and XHR header. Those rankings are finite sidebar responses, not paginated archives: page 2 returns empty without a request. Dynamic listings also include the 25 most popular tags from `/tags/popular/`; each opens the official `/tag/<slug>/` gallery list, with next-page links under `/pag/N/`. Missing/changed tag-directory data falls back to the established sidebar lists. Homepage, popular-tag index and representative tag-page routes were checked against the public site; no live Aidoku/device playback is claimed.
 
 Home links and manifest listings use the registered `Home` / `ListingProvider` implementations. Unknown listing IDs and nonpositive pages fail rather than silently opening Latest. Challenge/empty home documents fail instead of producing a misleading empty success.
 

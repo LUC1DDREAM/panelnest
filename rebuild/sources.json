@@ -165,8 +165,8 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Live HTTP check: homepage CSRF token and all three sidebar POST rankings returned HTTP 200 with 10 items each; text search recognizes the sort=popular parameter; no live WASM or device test.",
-    "fixture_tests_passed": 11,
+    "live_evidence": "Live HTTP checks confirmed all three sidebar rankings and the public /tags/popular/ index; tag pages expose server-side pagination. No live WASM or device test.",
+    "fixture_tests_passed": 13,
     "release_authorized": true
   }
 ]

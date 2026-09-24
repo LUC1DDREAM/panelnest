@@ -134,18 +134,59 @@ fn dynamic_sidebar_rankings_are_registered_and_parse_scoped_entries() {
 }
 
 #[aidoku_test]
+fn popular_tag_directory_builds_safe_paginated_gallery_routes() {
+	assert_eq!(POPULAR_TAGS_PATH, "/tags/popular/");
+	assert_eq!(
+		popular_tag_url("popular-tag-big-breasts", 1).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/")
+	);
+	assert_eq!(
+		popular_tag_url("popular-tag-big-breasts", 2).unwrap(),
+		format!("{BASE_URL}/tag/big-breasts/pag/2/")
+	);
+	assert!(popular_tag_url("popular-tag-../evil", 1).is_err());
+	assert!(popular_tag_url("popular-tag-big-breasts", 0).is_err());
+	assert!(popular_tag_url("latest", 1).is_err());
+}
+
+#[aidoku_test]
+fn popular_tag_directory_exposes_valid_deduplicated_tags() {
+	let doc = Html::parse_with_url(
+		r#"<div class="tags_overview">
+		<div class="tag_item"><a class="tag_btn" href="/tag/big-breasts/"><h3 class="list_tag">Big Breasts</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="/tag/sole-female/"><h3 class="list_tag">Sole Female</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="https://evil.example/tag/attack/"><h3 class="list_tag">Foreign</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="/tag/big-breasts/"><h3 class="list_tag">Duplicate</h3></a></div>
+	</div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let listings = parse_popular_tag_listings(&doc).unwrap();
+	assert_eq!(listings.len(), 2);
+	assert_eq!(listings[0].id, "popular-tag-big-breasts");
+	assert_eq!(listings[0].name, "Tag: Big Breasts");
+	assert_eq!(listings[1].id, "popular-tag-sole-female");
+	assert!(parse_popular_tag_listings(&Html::parse("<html></html>").unwrap()).is_err());
+}
+
+#[aidoku_test]
 fn listing_dispatch_rejects_unknown_and_invalid_pages_without_network() {
 	use aidoku::ListingProvider;
 	let source = GallerySource;
 	assert_eq!(sidebar_type("most-faved"), Some("top_faved"));
-	assert!(source
-		.get_manga_list(
-			aidoku::Listing { id: "most-faved".into(), ..Default::default() },
-			2
-		)
-		.unwrap()
-		.entries
-		.is_empty());
+	assert!(
+		source
+			.get_manga_list(
+				aidoku::Listing {
+					id: "most-faved".into(),
+					..Default::default()
+				},
+				2
+			)
+			.unwrap()
+			.entries
+			.is_empty()
+	);
 	assert!(
 		source
 			.get_manga_list(
@@ -186,8 +227,13 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 9);
-	assert!(manifest["info"]["name"].as_str().unwrap().ends_with(" [PN]"));
+	assert_eq!(manifest["info"]["version"], 10);
+	assert!(
+		manifest["info"]["name"]
+			.as_str()
+			.unwrap()
+			.ends_with(" [PN]")
+	);
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
@@ -214,13 +260,21 @@ fn synthetic_search() {
 fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 	use aidoku::DeepLinkHandler;
 	let source = GallerySource;
-	assert_eq!(deep_link_key("https://hentaifox.com/gallery/123/"), Some("123".into()));
-	assert_eq!(deep_link_key("https://hentaifox.com/gallery/123?from=share#reader"), Some("123".into()));
+	assert_eq!(
+		deep_link_key("https://hentaifox.com/gallery/123/"),
+		Some("123".into())
+	);
+	assert_eq!(
+		deep_link_key("https://hentaifox.com/gallery/123?from=share#reader"),
+		Some("123".into())
+	);
 	assert!(deep_link_key("https://hentaifox.com.evil/gallery/123/").is_none());
 	assert!(deep_link_key("https://example.org/gallery/123/").is_none());
 	assert!(deep_link_key("https://hentaifox.com/gallery/nope/").is_none());
 	assert_eq!(
-		source.handle_deep_link("https://hentaifox.com/gallery/123/".into()).unwrap(),
+		source
+			.handle_deep_link("https://hentaifox.com/gallery/123/".into())
+			.unwrap(),
 		Some(DeepLinkResult::Manga { key: "123".into() })
 	);
 }
@@ -248,5 +302,8 @@ fn search_sort_filter_preserves_latest_and_maps_popular_to_site_parameter() {
 		search_url_with_filters(None, 1, &popular).unwrap(),
 		format!("{BASE_URL}/search/?q=&page=1&sort=popular")
 	);
-	assert_eq!(search_url_with_filters(None, 1, &latest).unwrap(), search_url(None, 1).unwrap());
+	assert_eq!(
+		search_url_with_filters(None, 1, &latest).unwrap(),
+		search_url(None, 1).unwrap()
+	);
 }

@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter,
-	FilterValue, ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
+	Filter, FilterValue, ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page,
 	PageContent, Result, SortFilter, Source, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
@@ -25,6 +25,7 @@ const SIDEBAR_LISTINGS: [(&str, &str, &str); 3] = [
 	("most-fapped", "Most Fapped", "top_fapped"),
 	("most-downloaded", "Most Downloaded", "top_downloaded"),
 ];
+const POPULAR_TAGS_PATH: &str = "/tags/popular/";
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
 	let path = path.split(['?', '#']).next()?;
@@ -73,12 +74,16 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 	search_url_with_filters(query, page, &[])
 }
-fn search_url_with_filters(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result<String> {
+fn search_url_with_filters(
+	query: Option<&str>,
+	page: i32,
+	filters: &[FilterValue],
+) -> Result<String> {
 	ensure!(page > 0, "Invalid page");
 	let query = query.unwrap_or("").trim();
-	let popular = filters.iter().any(|filter| {
-		matches!(filter, FilterValue::Sort { id, index: 1, .. } if id.as_str() == "sort")
-	});
+	let popular = filters.iter().any(
+		|filter| matches!(filter, FilterValue::Sort { id, index: 1, .. } if id.as_str() == "sort"),
+	);
 	if query.is_empty() && !popular {
 		return Ok(if IS_IM {
 			format!("{BASE_URL}/?page={page}")
@@ -116,7 +121,10 @@ fn search_filters() -> Vec<Filter> {
 	sort.title = Some("Sort".into());
 	sort.can_ascend = false;
 	sort.options = vec!["Latest".into(), "Popular".into()];
-	sort.default = Some(aidoku::SortFilterDefault { index: 0, ascending: false });
+	sort.default = Some(aidoku::SortFilterDefault {
+		index: 0,
+		ascending: false,
+	});
 	vec![sort.into()]
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
@@ -305,6 +313,69 @@ fn sidebar_type(id: &str) -> Option<&'static str> {
 		.find(|(listing_id, _, _)| *listing_id == id)
 		.map(|(_, _, category)| *category)
 }
+fn popular_tag_slug(id: &str) -> Option<&str> {
+	let slug = id.strip_prefix("popular-tag-")?;
+	if !slug.is_empty()
+		&& slug
+			.bytes()
+			.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+	{
+		Some(slug)
+	} else {
+		None
+	}
+}
+fn popular_tag_url(id: &str, page: i32) -> Result<String> {
+	ensure!(page > 0, "Invalid page");
+	let slug = popular_tag_slug(id).ok_or(error!("Unsupported listing"))?;
+	Ok(if page == 1 {
+		format!("{BASE_URL}/tag/{slug}/")
+	} else {
+		format!("{BASE_URL}/tag/{slug}/pag/{page}/")
+	})
+}
+fn parse_popular_tag_listings(doc: &Document) -> Result<Vec<Listing>> {
+	let mut listings = Vec::new();
+	if let Some(tags) = doc.select(".tags_overview .tag_item a.tag_btn") {
+		for tag in tags.into_iter().take(25) {
+			let Some(href) = tag.attr("href") else {
+				continue;
+			};
+			let Some(slug) = href
+				.strip_prefix("/tag/")
+				.and_then(|value| value.strip_suffix('/'))
+			else {
+				continue;
+			};
+			if slug.is_empty()
+				|| !slug
+					.bytes()
+					.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+				|| listings.iter().any(|listing: &Listing| {
+					popular_tag_slug(&listing.id).is_some_and(|existing| existing == slug)
+				}) {
+				continue;
+			}
+			let Some(name) = tag
+				.select_first("h3.list_tag")
+				.and_then(|el| el.text())
+				.filter(|name| !name.trim().is_empty())
+			else {
+				continue;
+			};
+			listings.push(Listing {
+				id: format!("popular-tag-{slug}"),
+				name: format!("Tag: {name}"),
+				..Default::default()
+			});
+		}
+	}
+	ensure!(
+		!listings.is_empty(),
+		"Popular tags unavailable or site layout changed"
+	);
+	Ok(listings)
+}
 fn parse_sidebar_items(doc: &Document) -> Result<MangaPageResult> {
 	let entries = doc
 		.select("div.item")
@@ -326,12 +397,20 @@ fn parse_sidebar_items(doc: &Document) -> Result<MangaPageResult> {
 			.collect::<Vec<_>>()
 		})
 		.unwrap_or_default();
-	ensure!(!entries.is_empty(), "Sidebar ranking unavailable or layout changed");
-	Ok(MangaPageResult { entries, has_next_page: false })
+	ensure!(
+		!entries.is_empty(),
+		"Sidebar ranking unavailable or layout changed"
+	);
+	Ok(MangaPageResult {
+		entries,
+		has_next_page: false,
+	})
 }
 fn fetch_sidebar_listing(category: &str) -> Result<MangaPageResult> {
 	ensure!(
-		SIDEBAR_LISTINGS.iter().any(|(_, _, value)| *value == category),
+		SIDEBAR_LISTINGS
+			.iter()
+			.any(|(_, _, value)| *value == category),
 		"Unsupported sidebar ranking"
 	);
 	let page = Request::get(format!("{BASE_URL}/"))?.html()?;
@@ -395,6 +474,15 @@ impl aidoku::Home for GallerySource {
 }
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
+		if popular_tag_slug(&listing.id).is_some() {
+			let doc = Request::get(popular_tag_url(&listing.id, page)?)?.html()?;
+			let result = parse_search(&doc);
+			ensure!(
+				!result.entries.is_empty(),
+				"Tag listing unavailable or empty"
+			);
+			return Ok(result);
+		}
 		if let Some(category) = sidebar_type(&listing.id) {
 			ensure!(page > 0, "Invalid page");
 			return if page == 1 {
@@ -421,14 +509,22 @@ impl aidoku::ListingProvider for GallerySource {
 }
 impl DynamicListings for GallerySource {
 	fn get_dynamic_listings(&self) -> Result<Vec<Listing>> {
-		Ok(SIDEBAR_LISTINGS
+		let mut listings = SIDEBAR_LISTINGS
 			.iter()
 			.map(|(id, name, _)| Listing {
 				id: (*id).into(),
 				name: (*name).into(),
 				..Default::default()
 			})
-			.collect())
+			.collect::<Vec<_>>();
+		if let Ok(response) = Request::get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
+			.and_then(|request| request.html())
+		{
+			if let Ok(popular_tags) = parse_popular_tag_listings(&response) {
+				listings.extend(popular_tags);
+			}
+		}
+		Ok(listings)
 	}
 }
 impl DeepLinkHandler for GallerySource {
@@ -492,7 +588,8 @@ impl Source for GallerySource {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
-		let doc = Request::get(search_url_with_filters(query.as_deref(), page, &filters)?)?.html()?;
+		let doc =
+			Request::get(search_url_with_filters(query.as_deref(), page, &filters)?)?.html()?;
 		ensure!(
 			doc.select_first("div.thumb, .pagination, .content, .container")
 				.is_some(),
@@ -535,7 +632,15 @@ impl ImageRequestProvider for GallerySource {
 		Ok(Request::get(url)?.header("Referer", &format!("{BASE_URL}/")))
 	}
 }
-aidoku::register_source!(GallerySource, ImageRequestProvider, Home, ListingProvider, DynamicListings, DeepLinkHandler, DynamicFilters);
+aidoku::register_source!(
+	GallerySource,
+	ImageRequestProvider,
+	Home,
+	ListingProvider,
+	DynamicListings,
+	DeepLinkHandler,
+	DynamicFilters
+);
 
 #[cfg(test)]
 mod tests;
