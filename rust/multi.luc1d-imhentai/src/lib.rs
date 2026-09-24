@@ -9,7 +9,7 @@ use aidoku::{
 		html::{Document, Element},
 		net::{Request, TimeUnit, set_rate_limit},
 	},
-	std::send_partial_result,
+	imports::std::send_partial_result,
 	prelude::*,
 };
 macro_rules! ensure {
@@ -589,7 +589,7 @@ impl aidoku::Home for GallerySource {
 		let mut home = home_layout();
 		send_partial_result(&HomePartialResult::Layout(home.clone()));
 		let latest = listing_url("latest", 1)
-			.and_then(|url| Request::get(url)?.html())
+			.and_then(|url| Ok(Request::get(url)?.html()?))
 			.and_then(|doc| {
 				let result = parse_search(&doc);
 				ensure!(
@@ -605,7 +605,7 @@ impl aidoku::Home for GallerySource {
 
 		for (id, title) in [("popular", "Popular"), ("top-rated", "Top Rated"), ("downloaded", "Downloaded")] {
 			let result = listing_url(id, 1)
-				.and_then(|url| Request::get(url)?.html())
+				.and_then(|url| Ok(Request::get(url)?.html()?))
 				.and_then(|doc| Ok(parse_search(&doc)));
 			if let Ok(result) = result {
 				if !result.entries.is_empty() {
