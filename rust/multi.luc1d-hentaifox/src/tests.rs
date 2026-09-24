@@ -203,6 +203,34 @@ fn popular_taxonomy_filters_parse_safe_live_categories() {
 }
 
 #[aidoku_test]
+fn language_directory_values_and_routes_are_supported() {
+	let doc = Html::parse_with_url(
+		r#"<div class="tags_overview">
+		<div class="tag_item"><a class="tag_btn" href="/language/english/"><h3 class="list_tag">english</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="/language/text-cleaned/"><h3 class="list_tag">text cleaned</h3></a></div>
+		<div class="tag_item"><a class="tag_btn" href="/language/bad_slug/"><h3 class="list_tag">Invalid</h3></a></div>
+	</div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert_eq!(
+		parse_popular_taxonomy(&doc, "language").unwrap(),
+		vec![
+			("english".into(), "english".into()),
+			("text cleaned".into(), "text-cleaned".into())
+		]
+	);
+	assert_eq!(
+		taxonomy_url("language", "english", 1, false).unwrap(),
+		format!("{BASE_URL}/language/english/")
+	);
+	assert_eq!(
+		taxonomy_url("language", "english", 2, true).unwrap(),
+		format!("{BASE_URL}/language/english/popular/pag/2/")
+	);
+}
+
+#[aidoku_test]
 fn freeform_taxonomy_filters_reach_categories_outside_the_popular_top_fifty() {
 	assert_eq!(taxonomy_text_slug("Naruto Uzumaki").unwrap(), "naruto-uzumaki");
 	assert_eq!(taxonomy_text_slug(".EXE").unwrap(), ".exe");
@@ -447,7 +475,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 15);
+	assert_eq!(manifest["info"]["version"], 16);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()

@@ -238,7 +238,7 @@
       "Most Fapped",
       "Most Downloaded"
     ],
-    "limitations": "Sidebar rankings are finite; no temporal popularity listings or language selector. Quick-select menus show 25 popular tags and up to 50 popular entries per other category; freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site's ASCII slug.",
+    "limitations": "Sidebar rankings are finite; no temporal popularity listings. Quick-select menus show 25 popular tags and up to 50 popular entries per other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site's ASCII slug.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -246,8 +246,8 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Live site routes confirmed latest and Popular pages for tag categories at /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. Regression tests cover name-to-slug routing, quick-select and freeform taxonomy selection, sort and pagination. Taxonomy routes follow official page links.",
-    "fixture_tests_passed": 19,
+    "live_evidence": "Live official /languages/ and /languages/popular/ directories each expose 26 language classifications. Sample /language/english/ Latest and Popular page-1/page-2 routes returned HTTP 200. Live site routes also confirm /tag/<slug>/ and /tag/<slug>/popular/, including paginated Popular /popular/pag/2/. Regression tests cover language directory parsing, route sorting and pagination plus quick-select and freeform taxonomy routing.",
+    "fixture_tests_passed": 20,
     "release_authorized": true
   }
 ]

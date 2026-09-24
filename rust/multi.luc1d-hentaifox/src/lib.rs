@@ -26,11 +26,12 @@ const SIDEBAR_LISTINGS: [(&str, &str, &str); 3] = [
 	("most-downloaded", "Most Downloaded", "top_downloaded"),
 ];
 const POPULAR_TAGS_PATH: &str = "/tags/popular/";
-const POPULAR_TAXONOMIES: [(&str, &str, &str); 4] = [
+const POPULAR_TAXONOMIES: [(&str, &str, &str); 5] = [
 	("artists", "artist", "Artist"),
 	("characters", "character", "Character"),
 	("parodies", "parody", "Parody"),
 	("groups", "group", "Group"),
+	("languages", "language", "Language"),
 ];
 const TEXT_TAXONOMIES: [(&str, &str, &str); 5] = [
 	("tag-name", "tag", "Tag"),
