@@ -196,6 +196,69 @@ fn official_anime_and_adult_checks_use_matching_site_fields() {
 }
 
 #[aidoku_test]
+fn advanced_search_filters_are_exposed_to_aidoku() {
+	use aidoku::DynamicFilters;
+	let filters = WeebCentral.get_dynamic_filters().unwrap();
+	let ids = filters.iter().map(|filter| filter.id.as_ref()).collect::<Vec<_>>();
+	for expected in [
+		"sort", "author", "genre", "status", "type", "official", "anime", "adult",
+	] {
+		assert!(ids.contains(&expected), "missing {expected} from {ids:?}");
+	}
+	let genre = filters.iter().find(|filter| filter.id == "genre").unwrap();
+	assert!(matches!(
+		&genre.kind,
+		aidoku::FilterKind::MultiSelect {
+			can_exclude: true,
+			..
+		}
+	));
+	assert_eq!(
+		filters
+			.iter()
+			.find(|filter| filter.id == "status")
+			.unwrap()
+			.title
+			.as_deref(),
+			Some("Series Status")
+	);
+	assert_eq!(SEARCH_GENRES.len(), 38);
+}
+
+#[aidoku_test]
+fn advanced_search_can_include_and_exclude_multiple_genres() {
+	let query = filter::get_filters(
+		None,
+		vec![FilterValue::MultiSelect {
+			id: "genre".into(),
+			included: vec!["Action".into(), "Fantasy".into()],
+			excluded: vec!["Adult".into()],
+		}],
+	);
+	assert!(query.contains("included_tag=Action"), "{query}");
+	assert!(query.contains("included_tag=Fantasy"), "{query}");
+	assert!(query.contains("excluded_tag=Adult"), "{query}");
+}
+
+#[aidoku_test]
+fn advanced_search_includes_status_and_type_values() {
+	for (id, value, expected) in [
+		("status", "Complete", "included_status=Complete"),
+		("type", "Manhwa", "included_type=Manhwa"),
+	] {
+		let query = filter::get_filters(
+			None,
+			vec![FilterValue::MultiSelect {
+				id: id.into(),
+				included: vec![value.into()],
+				excluded: vec![],
+			}],
+		);
+		assert!(query.contains(expected), "{query}");
+	}
+}
+
+#[aidoku_test]
 fn fixture_search_pagination_uses_real_htmx_more_button() {
 	let terminal = Html::parse_with_url(
 		r#"

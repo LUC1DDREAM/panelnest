@@ -1,8 +1,13 @@
 # Weeb Central (LUC1D)
 
-## Discovery (package version 13)
+## Discovery (package version 14)
 
-Adds tri-state filters for Official Translation, Anime Adaptation, and Adult
+Version 14 exposes Aidoku search filters for the site's six sorts, author name,
+tri-state Official Translation / Anime Adaptation / Adult Content, and the
+official include/exclude tag list. These controls map to the site's advanced
+search fields.
+
+Version 13 adds tri-state filters for Official Translation, Anime Adaptation, and Adult
 Content, mapped to the site's corresponding advanced-search parameters. Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
 the existing Advanced Search endpoint, all six website sort values and explicit
 Descending order. Best Match and Alphabetical are also available directly as

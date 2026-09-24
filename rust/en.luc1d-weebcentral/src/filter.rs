@@ -54,12 +54,18 @@ pub fn get_filters(query: Option<String>, filters: Vec<FilterValue>) -> String {
 				ref included,
 				ref excluded,
 			} => {
-				if id == "genre" {
+				let field = match id.as_str() {
+					"genre" => Some("tag"),
+					"status" => Some("status"),
+					"type" => Some("type"),
+					_ => None,
+				};
+				if let Some(field) = field {
 					for tag in included {
-						qs.push("included_tag", Some(tag));
+						qs.push(&format!("included_{field}"), Some(tag));
 					}
 					for tag in excluded {
-						qs.push("excluded_tag", Some(tag));
+						qs.push(&format!("excluded_{field}"), Some(tag));
 					}
 				} else {
 					for val in included {

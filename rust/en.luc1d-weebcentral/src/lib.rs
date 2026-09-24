@@ -1,9 +1,11 @@
 #![no_std]
 use aidoku::{
-	AidokuError, Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, FilterValue, Home,
-	HomeComponent, HomeLayout, ImageRequestProvider, Listing, ListingProvider, Manga,
-	MangaPageResult, MangaStatus, MangaWithChapter, Page, PageContent, Result, Source, Viewer,
-	alloc::{String, Vec, borrow::ToOwned, vec},
+	AidokuError, Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult,
+	DynamicFilters, Filter, FilterValue, Home, HomeComponent, HomeLayout, ImageRequestProvider,
+	Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
+	MultiSelectFilter, Page, PageContent, Result, SortFilter, SortFilterDefault, Source, TextFilter,
+	Viewer,
+	alloc::{String, Vec, borrow::{Cow, ToOwned}, vec},
 	imports::{
 		html::Element,
 		net::{Request, TimeUnit, set_rate_limit},
@@ -23,6 +25,83 @@ const REFERER: &str = "https://weebcentral.com/";
 const FETCH_LIMIT: i32 = 32;
 
 struct WeebCentral;
+
+const SEARCH_GENRES: [&str; 38] = [
+	"Action", "Adult", "Adventure", "Comedy", "Doujinshi", "Drama", "Ecchi", "Fantasy",
+	"Gender Bender", "Harem", "Hentai", "Historical", "Horror", "Isekai", "Josei", "Lolicon",
+	"Martial Arts", "Mature", "Mecha", "Mystery", "Psychological", "Romance", "School Life",
+	"Sci-fi", "Seinen", "Shotacon", "Shoujo", "Shoujo Ai", "Shounen", "Shounen Ai",
+	"Slice of Life", "Smut", "Sports", "Supernatural", "Tragedy", "Yaoi", "Yuri", "Other",
+];
+
+fn search_filters() -> Vec<Filter> {
+	let sort_options = [
+		"Best Match",
+		"Alphabet",
+		"Popularity",
+		"Subscribers",
+		"Recently Added",
+		"Latest Updates",
+	];
+	let mut sort = SortFilter::default();
+	sort.id = Cow::Borrowed("sort");
+	sort.title = Some(Cow::Borrowed("Sort"));
+	sort.can_ascend = true;
+	sort.options = sort_options.iter().map(|value| Cow::Borrowed(*value)).collect();
+	sort.default = Some(SortFilterDefault {
+		index: 0,
+		ascending: false,
+	});
+
+	let mut genres = MultiSelectFilter::default();
+	genres.id = Cow::Borrowed("genre");
+	genres.title = Some(Cow::Borrowed("Tags"));
+	genres.is_genre = true;
+	genres.can_exclude = true;
+	genres.uses_tag_style = true;
+	genres.options = SEARCH_GENRES.iter().map(|value| Cow::Borrowed(*value)).collect();
+
+	let mut status = MultiSelectFilter::default();
+	status.id = Cow::Borrowed("status");
+	status.title = Some(Cow::Borrowed("Series Status"));
+	status.options = ["Ongoing", "Complete", "Hiatus", "Canceled"]
+		.iter()
+		.map(|value| Cow::Borrowed(*value))
+		.collect();
+
+	let mut series_type = MultiSelectFilter::default();
+	series_type.id = Cow::Borrowed("type");
+	series_type.title = Some(Cow::Borrowed("Series Type"));
+	series_type.options = ["Manga", "Manhwa", "Manhua", "OEL"]
+		.iter()
+		.map(|value| Cow::Borrowed(*value))
+		.collect();
+
+	let mut author = TextFilter::default();
+	author.id = Cow::Borrowed("author");
+	author.title = Some(Cow::Borrowed("Author"));
+	author.placeholder = Some(Cow::Borrowed("Search by author"));
+
+	let mut filters = vec![
+		sort.into(),
+		author.into(),
+		genres.into(),
+		status.into(),
+		series_type.into(),
+	];
+	for (id, title) in [
+		("official", "Official Translation"),
+		("anime", "Anime Adaptation"),
+		("adult", "Adult Content"),
+	] {
+		let mut filter = CheckFilter::default();
+		filter.id = Cow::Borrowed(id);
+		filter.title = Some(Cow::Borrowed(title));
+		filter.can_exclude = true;
+		filters.push(filter.into());
+	}
+	filters
+}
 
 fn reject_cloudflare(html: &aidoku::imports::html::Document) -> Result<()> {
 	let title = html
@@ -441,6 +520,12 @@ impl ListingProvider for WeebCentral {
 	}
 }
 
+impl DynamicFilters for WeebCentral {
+	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
+		Ok(search_filters())
+	}
+}
+
 impl Home for WeebCentral {
 	fn get_home(&self) -> Result<HomeLayout> {
 		let html = Request::get(BASE_URL)?.html()?;
@@ -624,6 +709,7 @@ impl DeepLinkHandler for WeebCentral {
 register_source!(
 	WeebCentral,
 	ListingProvider,
+	DynamicFilters,
 	Home,
 	ImageRequestProvider,
 	DeepLinkHandler
