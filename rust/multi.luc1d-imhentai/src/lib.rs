@@ -589,14 +589,17 @@ impl aidoku::Home for GallerySource {
 		let mut home = home_layout();
 		send_partial_result(&HomePartialResult::Layout(home.clone()));
 		let requests = ["latest", "popular", "top-rated", "downloaded"]
-			.map(|id| listing_url(id, 1).and_then(Request::get))
+			.map(|id| {
+				let url = listing_url(id, 1)?;
+				Request::get(url).map_err(Into::into)
+			})
 			.into_iter()
 			.collect::<Result<Vec<_>>>()?;
 		let responses: [core::result::Result<Response, RequestError>; 4] = Request::send_all(requests)
 			.try_into()
 			.expect("request count matches home feeds");
 		let results = responses.map(|response| {
-			response.and_then(|response| response.html().map(|doc| parse_search(&doc)))
+			response.and_then(|response| response.get_html().map(|doc| parse_search(&doc)))
 		});
 		let [latest, popular, top_rated, downloaded] = results;
 		let latest = latest.map_err(|_| error!("Latest unavailable or site layout changed"))?;
