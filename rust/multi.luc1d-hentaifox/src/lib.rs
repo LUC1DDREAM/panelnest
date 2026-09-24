@@ -569,7 +569,7 @@ fn popular_tag_url(id: &str, page: i32, popular: bool) -> Result<String> {
 fn parse_popular_tag_listings(doc: &Document) -> Result<Vec<Listing>> {
 	let mut listings = Vec::new();
 	if let Some(tags) = doc.select(".tags_overview .tag_item a.tag_btn") {
-		for tag in tags.into_iter().take(25) {
+		for tag in tags.into_iter().take(50) {
 			let Some(href) = tag.attr("href") else {
 				continue;
 			};

@@ -358,6 +358,23 @@ fn popular_tag_directory_exposes_valid_deduplicated_tags() {
 }
 
 #[aidoku_test]
+fn popular_tag_directory_exposes_all_fifty_official_tags() {
+	let mut html = String::from("<div class=\"tags_overview\">");
+	for number in 1..=51 {
+		html.push_str(&format!(
+			"<div class=\"tag_item\"><a class=\"tag_btn\" href=\"/tag/tag-{number}/\"><h3 class=\"list_tag\">Tag {number}</h3></a></div>"
+		));
+	}
+	html.push_str("</div>");
+	let doc = Html::parse_with_url(&html, BASE_URL).unwrap();
+	let listings = parse_popular_tag_listings(&doc).unwrap();
+	assert_eq!(listings.len(), 100);
+	assert!(listings.iter().any(|listing| listing.id == "popular-tag-tag-50"));
+	assert!(listings.iter().any(|listing| listing.id == "tag-popular-tag-50"));
+	assert!(!listings.iter().any(|listing| listing.id == "popular-tag-tag-51"));
+}
+
+#[aidoku_test]
 fn popular_taxonomy_filters_parse_safe_live_categories() {
 	let doc = Html::parse_with_url(
 		r#"<div class="tags_overview">
@@ -658,7 +675,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 25);
+	assert_eq!(manifest["info"]["version"], 26);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
