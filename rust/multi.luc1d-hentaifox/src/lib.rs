@@ -1,12 +1,13 @@
 #![no_std]
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
-	Filter, FilterValue, ImageRequestProvider, Listing, Manga, MangaPageResult, MangaStatus, Page,
-	PageContent, Result, SelectFilter, SortFilter, Source, TextFilter, Viewer,
+	Filter, FilterValue, HomePartialResult, ImageRequestProvider, Listing, Manga, MangaPageResult,
+	MangaStatus, Page, PageContent, Result, SelectFilter, SortFilter, Source, TextFilter, Viewer,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
 		net::{Request, TimeUnit, set_rate_limit},
+		std::send_partial_result,
 	},
 	prelude::*,
 };
@@ -688,11 +689,13 @@ impl aidoku::Home for GallerySource {
 	fn get_home(&self) -> Result<aidoku::HomeLayout> {
 		let homepage = Request::get(listing_url("latest", 1)?)?.html()?;
 		let mut home = parse_home(&homepage)?;
+		send_partial_result(&HomePartialResult::Layout(home.clone()));
 		if let Some(token) = sidebar_csrf_token(&homepage) {
 			for (id, title, category) in SIDEBAR_LISTINGS {
 				if let Ok(result) = post_sidebar_listing(category, &token) {
-					home.components
-						.push(sidebar_home_component(id, title, result));
+					let component = sidebar_home_component(id, title, result);
+					send_partial_result(&HomePartialResult::Component(component.clone()));
+					home.components.push(component);
 				}
 			}
 		}

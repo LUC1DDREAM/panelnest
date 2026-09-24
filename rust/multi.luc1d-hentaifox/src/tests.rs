@@ -98,6 +98,19 @@ fn discovery_home_has_working_latest_listing() {
 }
 
 #[aidoku_test]
+fn initial_home_layout_contains_all_server_rendered_sections() {
+	let doc = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"></a></div><div class="caption">Latest</div></div><button id="top_rated_btn" class="sidebar_btn_active">Top Rated</button><div id="middle_sidebar"><div class="item"><a href="/gallery/77/"><img alt="Rated" src="/rated.jpg"></a></div></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let home = parse_home(&doc).unwrap();
+	assert_eq!(home.components.len(), 2);
+	assert_eq!(home.components[0].title.as_deref(), Some("Latest"));
+	assert_eq!(home.components[1].title.as_deref(), Some("Top Rated"));
+}
+
+#[aidoku_test]
 fn top_rated_is_scoped_finite_and_not_today() {
 	let doc = Html::parse_with_url(r#"<button id="top_rated_btn" class="sidebar_btn_active">Top Rated</button><div id="middle_sidebar"><div class="item"><a href="/gallery/77/"><img alt="Sample Rated" src="/cover.png"></a></div><div class="item"><a href="https://invalid.example/gallery/78/"><img alt="Foreign"></a></div></div><div class="item"><a href="/gallery/99/"><img alt="Unrelated"></a></div>"#, BASE_URL).unwrap();
 	let result = parse_top_rated(&doc).unwrap();
@@ -533,7 +546,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 17);
+	assert_eq!(manifest["info"]["version"], 18);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
