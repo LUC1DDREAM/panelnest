@@ -8,6 +8,47 @@ fn captured_discovery_retains_site_order_and_full_list() {
 	assert!(result.entries[0].key.contains("title_no=8135"));
 	assert!(!result.has_next_page);
 }
+
+#[aidoku_test]
+fn discovery_options_follow_current_official_genre_and_sort_links() {
+	let html = Html::parse_with_url(
+		include_str!("../tests/fixtures/discovery.html"),
+		"https://www.webtoons.com/en/genres/drama?sortOrder=MANA",
+	)
+	.unwrap();
+	let (genres, sorts) = parse_discovery_options("en", &html).unwrap();
+	assert_eq!(genres.len(), 17);
+	assert_eq!(genres[0], ("drama".into(), "DRAMA".into()));
+	assert!(genres.contains(&("tiptoon".into(), "INFORMATIVE".into())));
+	assert_eq!(sorts.len(), 3);
+	assert_eq!(sorts[0].0, "MANA");
+	assert_eq!(sorts[1].0, "LIKEIT");
+	assert_eq!(sorts[2].0, "UPDATE");
+	assert_eq!(parse_discovery_options("zh-hant", &html), None);
+}
+
+#[aidoku_test]
+fn dynamic_genre_routes_accept_new_official_genres_but_reject_bad_sorts() {
+	assert_eq!(
+		discovery_path_for_language("genre-new_site_genre", "en").as_deref(),
+		Some("/en/genres/new_site_genre?sortOrder=MANA")
+	);
+	assert_eq!(
+		discovery_path_for_language("genre-sort-new_site_genreLIKEIT", "en").as_deref(),
+		Some("/en/genres/new_site_genre?sortOrder=LIKEIT")
+	);
+	assert_eq!(
+		discovery_path_for_language("genre-sort-new_site_genreBAD", "en"),
+		None
+	);
+	assert_eq!(discovery_path_for_language("genre-../evil", "en"), None);
+	assert_eq!(
+		discovery_path_for_language("genre-sort-../evilLIKEIT", "en"),
+		None
+	);
+	assert_eq!(discovery_path_for_language("genre-drama", "../evil"), None);
+}
+
 #[aidoku_test]
 fn discovery_components_keep_listings_and_site_order() {
 	let component = discovery_component(

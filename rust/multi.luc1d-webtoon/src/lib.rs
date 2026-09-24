@@ -63,19 +63,108 @@ fn discovery_path(id: &str) -> Option<String> {
 	discovery_path_for_language(id, selected_language())
 }
 fn discovery_path_for_language(id: &str, language: &str) -> Option<String> {
+	if !language
+		.bytes()
+		.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+	{
+		return None;
+	}
 	let (genre, sort) = match id {
 		"popular" => ("drama", "MANA"),
 		"likes" => ("drama", "LIKEIT"),
 		"date" => ("drama", "UPDATE"),
+		_ if id.starts_with("genre-sort-") => {
+			let value = id.strip_prefix("genre-sort-")?;
+			let (slug, sort) = SORTS
+				.iter()
+				.find_map(|(sort, _)| value.strip_suffix(sort).map(|slug| (slug, *sort)))?;
+			if !valid_genre_slug(slug) {
+				return None;
+			}
+			(slug, sort)
+		}
 		_ => {
 			let slug = id.strip_prefix("genre-")?;
-			if !GENRES.iter().any(|(known, _)| *known == slug) {
+			if !valid_genre_slug(slug) {
 				return None;
 			}
 			(slug, "MANA")
 		}
 	};
 	Some(format!("/{language}/genres/{genre}?sortOrder={sort}"))
+}
+
+fn valid_genre_slug(slug: &str) -> bool {
+	!slug.is_empty()
+		&& slug.bytes().all(|byte| {
+			byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_' || byte == b'-'
+		})
+}
+
+fn parse_discovery_options(
+	language: &str,
+	html: &Document,
+) -> Option<(Vec<(String, String)>, Vec<(String, String)>)> {
+	let genres = html
+		.select("#genre_wrap ul[aria-label=genres] a[href*='/genres/']")?
+		.filter_map(|el| {
+			let href = el.attr("href")?;
+			let path = href
+				.strip_prefix("https://www.webtoons.com")
+				.or_else(|| href.strip_prefix(BASE))?;
+			let slug = path
+				.strip_prefix(&format!("/{language}/genres/"))?
+				.split(['?', '/'])
+				.next()?;
+			let label = el.text()?;
+			if slug.is_empty() || label.trim().is_empty() {
+				return None;
+			}
+			Some((slug.into(), label.trim().into()))
+		})
+		.collect::<Vec<_>>();
+	if genres.is_empty() {
+		return None;
+	}
+	let sorts = html
+		.select(".sort_area a._sort_by_a[href*='sortOrder=']")?
+		.filter_map(|el| {
+			let href = el.attr("href")?;
+			let path = href
+				.strip_prefix("https://www.webtoons.com")
+				.or_else(|| href.strip_prefix(BASE))?;
+			let sort = parameter(path, "sortOrder")?;
+			let label = el.text()?;
+			let label = label.trim();
+			if !SORTS.iter().any(|(known, _)| *known == sort) || label.is_empty() {
+				return None;
+			}
+			Some((sort.into(), label.into()))
+		})
+		.collect::<Vec<_>>();
+	if sorts.is_empty() {
+		return None;
+	}
+	Some((genres, sorts))
+}
+
+fn discovery_options(language: &str) -> (Vec<(String, String)>, Vec<(String, String)>) {
+	let parsed = request(&format!("/{language}/genres/drama?sortOrder=MANA"))
+		.and_then(|request| Ok(request.html()?))
+		.ok()
+		.and_then(|html| parse_discovery_options(language, &html));
+	parsed.unwrap_or_else(|| {
+		(
+			GENRES
+				.iter()
+				.map(|(slug, label)| ((*slug).into(), (*label).into()))
+				.collect(),
+			SORTS
+				.iter()
+				.map(|(sort, label)| ((*sort).into(), (*label).into()))
+				.collect(),
+		)
+	})
 }
 fn parameter<'a>(path: &'a str, name: &str) -> Option<&'a str> {
 	path.split_once('?')?
@@ -352,17 +441,18 @@ fn discovery_component(id: &str, title: &str, entries: Vec<Manga>) -> aidoku::Ho
 }
 impl DynamicFilters for Webtoon {
 	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
-		let genres = GENRES
+		let (discovered_genres, discovered_sorts) = discovery_options(selected_language());
+		let genres = discovered_genres
 			.iter()
-			.map(|(_, name)| Cow::Borrowed(*name))
+			.map(|(_, name)| Cow::Owned(name.clone()))
 			.collect();
-		let genre_ids = GENRES
+		let genre_ids = discovered_genres
 			.iter()
-			.map(|(slug, _)| Cow::Borrowed(*slug))
+			.map(|(slug, _)| Cow::Owned(slug.clone()))
 			.collect();
-		let sorts = SORTS
+		let sorts = discovered_sorts
 			.iter()
-			.map(|(_, label)| Cow::Borrowed(*label))
+			.map(|(_, label)| Cow::Owned(label.clone()))
 			.collect();
 		let scopes = SEARCH_SCOPES
 			.iter()
@@ -424,6 +514,8 @@ impl aidoku::ListingProvider for Webtoon {
 impl aidoku::Home for Webtoon {
 	fn get_home(&self) -> Result<aidoku::HomeLayout> {
 		use aidoku::ListingProvider;
+		let language = selected_language();
+		let (genres, _sorts) = discovery_options(language);
 		let mut components = Vec::new();
 		for (id, title) in [
 			("popular", "Drama: By Popularity"),
@@ -441,25 +533,18 @@ impl aidoku::Home for Webtoon {
 		}
 		components.push(aidoku::HomeComponent {
 			title: Some("Browse Genres".into()),
-			subtitle: Some("By Popularity within each genre".into()),
+			subtitle: Some("Genres from WEBTOON Discovery".into()),
 			value: aidoku::HomeComponentValue::Links(
-				GENRES
+				genres
 					.iter()
-					.map(|(slug, name)| {
-						let id = if *slug == "drama" {
-							"popular".into()
-						} else {
-							format!("genre-{slug}")
-						};
-						aidoku::Link {
-							title: (*name).into(),
-							value: Some(aidoku::LinkValue::Listing(aidoku::Listing {
-								id,
-								name: (*name).into(),
-								..Default::default()
-							})),
+					.map(|(slug, name)| aidoku::Link {
+						title: name.clone(),
+						value: Some(aidoku::LinkValue::Listing(aidoku::Listing {
+							id: format!("genre-{slug}"),
+							name: name.clone(),
 							..Default::default()
-						}
+						})),
+						..Default::default()
 					})
 					.collect(),
 			),

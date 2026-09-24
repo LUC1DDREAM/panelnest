@@ -42,9 +42,9 @@ not iOS rendering or paid-account access proof.
 
 ## Timed locks and page access
 
-The pinned Aidoku SDK exposes `Chapter.locked` and a title, not an unlock date or
-live countdown field. A chapter with the site's explicit `early_access_until`
-shows a refresh-based title, for example:
+The Aidoku SDK exposes a lock flag and title, but no dedicated unlock date or
+live countdown field. Asura supplies an explicit early-access deadline, shown
+as a countdown in the chapter title when chapters are refreshed:
 
 `Unlocks in 6h 1m (at refresh); release 2026-09-07 20:48:07 UTC`
 

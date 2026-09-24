@@ -9,7 +9,7 @@ Six local Rust adapters, built against the pinned Aidoku SDK. Existing upstream 
 Manual URL: `https://luc1ddream.github.io/panelnest/index.min.json`. Requires Aidoku >=0.7.1.
 
 All six sources are published in the root catalog. **Already installed? Refresh your existing list; do not reinstall.** The canonical and old `my-aidoku-sources` `/experimental/index.json` and `/experimental/index.min.json` subscriptions remain maintained aliases. IDs and installed version asset URLs are unchanged. The legacy directory name is a compatibility path, not a publication classification. The compatibility mirror runs every six hours and supports immediate manual dispatch.
-
+- Discovery menu reads the genre and sort links from the selected locale current page, falling back to bundled defaults if fetching or parsing fails. Filters and home links then track WEBTOON catalog changes. Named listings cover each known genre in all three official sort orders and keep existing IDs.
 | Display name | Stable ID | Version |
 |---|---|---:|
 | Asura Scans [PN] | `en.luc1d-asurascans` | 4 |

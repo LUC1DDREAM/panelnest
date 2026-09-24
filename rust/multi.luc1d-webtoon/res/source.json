@@ -22,6 +22,18 @@
       "name": "Drama: By Popularity"
     },
     {
+      "id": "genre-sort-dramaMANA",
+      "name": "Drama: By Popularity"
+    },
+    {
+      "id": "genre-sort-dramaLIKEIT",
+      "name": "Drama: By Likes"
+    },
+    {
+      "id": "genre-sort-dramaUPDATE",
+      "name": "Drama: By Date"
+    },
+    {
       "id": "likes",
       "name": "Drama: By Likes"
     },
@@ -92,6 +104,210 @@
     {
       "id": "genre-tiptoon",
       "name": "Informative: By Popularity"
+    },
+    {
+      "id": "genre-sort-dramaMANA",
+      "name": "Drama: By Popularity"
+    },
+    {
+      "id": "genre-sort-dramaLIKEIT",
+      "name": "Drama: By Likes"
+    },
+    {
+      "id": "genre-sort-dramaUPDATE",
+      "name": "Drama: By Date"
+    },
+    {
+      "id": "genre-sort-fantasyMANA",
+      "name": "Fantasy: By Popularity"
+    },
+    {
+      "id": "genre-sort-fantasyLIKEIT",
+      "name": "Fantasy: By Likes"
+    },
+    {
+      "id": "genre-sort-fantasyUPDATE",
+      "name": "Fantasy: By Date"
+    },
+    {
+      "id": "genre-sort-comedyMANA",
+      "name": "Comedy: By Popularity"
+    },
+    {
+      "id": "genre-sort-comedyLIKEIT",
+      "name": "Comedy: By Likes"
+    },
+    {
+      "id": "genre-sort-comedyUPDATE",
+      "name": "Comedy: By Date"
+    },
+    {
+      "id": "genre-sort-actionMANA",
+      "name": "Action: By Popularity"
+    },
+    {
+      "id": "genre-sort-actionLIKEIT",
+      "name": "Action: By Likes"
+    },
+    {
+      "id": "genre-sort-actionUPDATE",
+      "name": "Action: By Date"
+    },
+    {
+      "id": "genre-sort-slice_of_lifeMANA",
+      "name": "Slice of Life: By Popularity"
+    },
+    {
+      "id": "genre-sort-slice_of_lifeLIKEIT",
+      "name": "Slice of Life: By Likes"
+    },
+    {
+      "id": "genre-sort-slice_of_lifeUPDATE",
+      "name": "Slice of Life: By Date"
+    },
+    {
+      "id": "genre-sort-romanceMANA",
+      "name": "Romance: By Popularity"
+    },
+    {
+      "id": "genre-sort-romanceLIKEIT",
+      "name": "Romance: By Likes"
+    },
+    {
+      "id": "genre-sort-romanceUPDATE",
+      "name": "Romance: By Date"
+    },
+    {
+      "id": "genre-sort-super_heroMANA",
+      "name": "Superhero: By Popularity"
+    },
+    {
+      "id": "genre-sort-super_heroLIKEIT",
+      "name": "Superhero: By Likes"
+    },
+    {
+      "id": "genre-sort-super_heroUPDATE",
+      "name": "Superhero: By Date"
+    },
+    {
+      "id": "genre-sort-sfMANA",
+      "name": "Sci-Fi: By Popularity"
+    },
+    {
+      "id": "genre-sort-sfLIKEIT",
+      "name": "Sci-Fi: By Likes"
+    },
+    {
+      "id": "genre-sort-sfUPDATE",
+      "name": "Sci-Fi: By Date"
+    },
+    {
+      "id": "genre-sort-thrillerMANA",
+      "name": "Thriller: By Popularity"
+    },
+    {
+      "id": "genre-sort-thrillerLIKEIT",
+      "name": "Thriller: By Likes"
+    },
+    {
+      "id": "genre-sort-thrillerUPDATE",
+      "name": "Thriller: By Date"
+    },
+    {
+      "id": "genre-sort-supernaturalMANA",
+      "name": "Supernatural: By Popularity"
+    },
+    {
+      "id": "genre-sort-supernaturalLIKEIT",
+      "name": "Supernatural: By Likes"
+    },
+    {
+      "id": "genre-sort-supernaturalUPDATE",
+      "name": "Supernatural: By Date"
+    },
+    {
+      "id": "genre-sort-mysteryMANA",
+      "name": "Mystery: By Popularity"
+    },
+    {
+      "id": "genre-sort-mysteryLIKEIT",
+      "name": "Mystery: By Likes"
+    },
+    {
+      "id": "genre-sort-mysteryUPDATE",
+      "name": "Mystery: By Date"
+    },
+    {
+      "id": "genre-sort-sportsMANA",
+      "name": "Sports: By Popularity"
+    },
+    {
+      "id": "genre-sort-sportsLIKEIT",
+      "name": "Sports: By Likes"
+    },
+    {
+      "id": "genre-sort-sportsUPDATE",
+      "name": "Sports: By Date"
+    },
+    {
+      "id": "genre-sort-historicalMANA",
+      "name": "Historical: By Popularity"
+    },
+    {
+      "id": "genre-sort-historicalLIKEIT",
+      "name": "Historical: By Likes"
+    },
+    {
+      "id": "genre-sort-historicalUPDATE",
+      "name": "Historical: By Date"
+    },
+    {
+      "id": "genre-sort-heartwarmingMANA",
+      "name": "Heartwarming: By Popularity"
+    },
+    {
+      "id": "genre-sort-heartwarmingLIKEIT",
+      "name": "Heartwarming: By Likes"
+    },
+    {
+      "id": "genre-sort-heartwarmingUPDATE",
+      "name": "Heartwarming: By Date"
+    },
+    {
+      "id": "genre-sort-horrorMANA",
+      "name": "Horror: By Popularity"
+    },
+    {
+      "id": "genre-sort-horrorLIKEIT",
+      "name": "Horror: By Likes"
+    },
+    {
+      "id": "genre-sort-horrorUPDATE",
+      "name": "Horror: By Date"
+    },
+    {
+      "id": "genre-sort-graphic_novelMANA",
+      "name": "Graphic Novel: By Popularity"
+    },
+    {
+      "id": "genre-sort-graphic_novelLIKEIT",
+      "name": "Graphic Novel: By Likes"
+    },
+    {
+      "id": "genre-sort-graphic_novelUPDATE",
+      "name": "Graphic Novel: By Date"
+    },
+    {
+      "id": "genre-sort-tiptoonMANA",
+      "name": "Informative: By Popularity"
+    },
+    {
+      "id": "genre-sort-tiptoonLIKEIT",
+      "name": "Informative: By Likes"
+    },
+    {
+      "id": "genre-sort-tiptoonUPDATE",
+      "name": "Informative: By Date"
     }
   ],
   "config": {
