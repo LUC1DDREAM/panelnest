@@ -24,7 +24,7 @@ const FETCH_LIMIT: i32 = 32;
 
 struct WeebCentral;
 
-fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResult> {
+fn reject_cloudflare(html: &aidoku::imports::html::Document) -> Result<()> {
 	let title = html
 		.select_first("title")
 		.and_then(|el| el.text())
@@ -35,6 +35,11 @@ fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResul
 	{
 		bail!("Website access blocked; open the source website and try again");
 	}
+	Ok(())
+}
+
+fn parse_search(html: &aidoku::imports::html::Document) -> Result<MangaPageResult> {
+	reject_cloudflare(html)?;
 	let entries = html
 		.select("article:has(section)")
 		.map(|elements| {
@@ -92,16 +97,7 @@ fn hot_series_key_from_cover(url: &str) -> Option<String> {
 }
 
 fn parse_hot_updates(html: &aidoku::imports::html::Document) -> Result<MangaPageResult> {
-	let title = html
-		.select_first("title")
-		.and_then(|el| el.text())
-		.unwrap_or_default();
-	if title.contains("Cloudflare")
-		|| title.contains("Just a moment")
-		|| title.contains("Attention Required")
-	{
-		bail!("Website access blocked; open the source website and try again");
-	}
+	reject_cloudflare(html)?;
 	let mut entries: Vec<Manga> = Vec::new();
 	if let Some(cards) = html.select("article[data-tip]") {
 		for card in cards {
@@ -186,6 +182,7 @@ impl Source for WeebCentral {
 
 		if needs_details {
 			let html = Request::get(&manga_url)?.html()?;
+			reject_cloudflare(&html)?;
 
 			let (info_element, title_element) = html
 				.select("section[x-data] > section")
@@ -260,6 +257,7 @@ impl Source for WeebCentral {
 				.unwrap_or_else(|| manga_url);
 
 			let html = Request::get(&url)?.html()?;
+			reject_cloudflare(&html)?;
 
 			manga.chapters = html.select("div[x-data]").map(|elements| {
 				elements
@@ -317,6 +315,7 @@ impl Source for WeebCentral {
 			chapter.key
 		);
 		let html = Request::get(url)?.html()?;
+		reject_cloudflare(&html)?;
 
 		let pages = html
 			.select("section[x-data*=scroll] > img")
@@ -370,6 +369,7 @@ impl ListingProvider for WeebCentral {
 impl Home for WeebCentral {
 	fn get_home(&self) -> Result<HomeLayout> {
 		let html = Request::get(BASE_URL)?.html()?;
+		reject_cloudflare(&html)?;
 
 		fn parse_manga_with_chapter(el: &Element) -> Option<MangaWithChapter> {
 			let mut links = el.select("a")?;

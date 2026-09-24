@@ -92,9 +92,9 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Official public /search HTML exposes tri-state Official Translation, Anime Adaptation, and Adult Content controls. Regression tests verify each filter routes its Any/True/False state to the matching form field; search requests can be blocked by Cloudflare HTTP 403.",
-    "limitations": "Cloudflare returned HTTP 403 in CI live checks; access may depend on network and site policy.",
-    "fixture_tests_passed": 12,
+    "live_evidence": "Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Official public /search HTML exposes tri-state Official Translation, Anime Adaptation, and Adult Content controls. Regression tests verify each filter routes its Any/True/False state to the matching form field; Cloudflare challenge pages are rejected across search, details, chapter-list, reader and Home requests rather than accepted as empty results.",
+    "limitations": "Cloudflare returned HTTP 403 in CI live checks; access may depend on network and site policy. Native live requests against these endpoints are therefore unverified.",
+    "fixture_tests_passed": 13,
     "release_authorized": true
   },
   {

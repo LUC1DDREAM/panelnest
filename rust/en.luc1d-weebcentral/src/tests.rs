@@ -93,6 +93,9 @@ fn hot_updates_cards_resolve_to_deduplicated_series_keys_from_cover_ids() {
 fn challenge_is_not_an_empty_catalogue() {
 	let html = Html::parse("<html><title>Attention Required! | Cloudflare</title><body>Sorry, you have been blocked</body></html>").unwrap();
 	assert!(parse_search(&html).is_err());
+	assert!(reject_cloudflare(&html).is_err());
+	assert!(reject_cloudflare(&Html::parse("<title>Just a moment...</title>").unwrap()).is_err());
+	assert!(reject_cloudflare(&Html::parse("<title>Sample Chapter</title>").unwrap()).is_ok());
 }
 
 #[aidoku_test]

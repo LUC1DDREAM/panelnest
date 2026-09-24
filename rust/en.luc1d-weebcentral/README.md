@@ -1,13 +1,15 @@
 # Weeb Central (LUC1D)
 
-## Discovery (package version 10)
+## Discovery (package version 11)
 
 Adds tri-state filters for Official Translation, Anime Adaptation, and Adult
 Content, mapped to the site's corresponding advanced-search parameters. Adds Popular, Most Subscribed, Recently Added and Latest Updates listings using
 the existing Advanced Search endpoint, its website sort values and explicit
 Descending order. Search pages use the live endpoint's 32-entry HTMX offsets;
 the View More Results button accurately indicates whether another page exists.
-Home Latest Updates now links to its full listing. Hot Updates cards resolve
+Home Latest Updates now links to its full listing. Home, details, chapter-list
+and reader requests now report Cloudflare challenge pages as access errors
+instead of returning successful empty data. Hot Updates cards resolve
 their series from the trusted cover-host ULID rather than treating chapter
 links as series; responsive duplicate cards are collapsed. The standalone Hot
 Updates listing is finite and does not repeat on page two. Recommendations are
