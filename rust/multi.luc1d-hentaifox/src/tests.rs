@@ -275,16 +275,28 @@ fn popular_tag_directory_builds_safe_paginated_gallery_routes() {
 		format!("{BASE_URL}/tag/big-breasts/pag/2/")
 	);
 	assert_eq!(
-		popular_tag_url("popular-tag-big-breasts", 1, true).unwrap(),
+		popular_tag_url("tag-popular-big-breasts", 1, true).unwrap(),
 		format!("{BASE_URL}/tag/big-breasts/popular/")
 	);
 	assert_eq!(
-		popular_tag_url("popular-tag-big-breasts", 2, true).unwrap(),
+		popular_tag_url("tag-popular-big-breasts", 2, true).unwrap(),
 		format!("{BASE_URL}/tag/big-breasts/popular/pag/2/")
 	);
 	assert!(popular_tag_url("popular-tag-../evil", 1, false).is_err());
+	assert!(popular_tag_url("tag-popular-../evil", 1, true).is_err());
+	assert!(popular_tag_url("popular-tag-big-breasts", 1, true).is_err());
+	assert!(popular_tag_url("tag-popular-big-breasts", 1, false).is_err());
 	assert!(popular_tag_url("popular-tag-big-breasts", 0, false).is_err());
 	assert!(popular_tag_url("latest", 1, false).is_err());
+}
+
+#[aidoku_test]
+fn popular_tag_listing_ids_select_distinct_latest_and_popular_routes() {
+	assert_eq!(popular_tag_slug("popular-tag-big-breasts"), Some("big-breasts"));
+	assert_eq!(popular_sorted_tag_slug("tag-popular-big-breasts"), Some("big-breasts"));
+	assert!(popular_tag_slug("tag-popular-big-breasts").is_none());
+	assert!(popular_sorted_tag_slug("popular-tag-big-breasts").is_none());
+	assert!(popular_sorted_tag_slug("tag-popular-Big-Breasts").is_none());
 }
 
 #[aidoku_test]
@@ -300,10 +312,13 @@ fn popular_tag_directory_exposes_valid_deduplicated_tags() {
 	)
 	.unwrap();
 	let listings = parse_popular_tag_listings(&doc).unwrap();
-	assert_eq!(listings.len(), 2);
+	assert_eq!(listings.len(), 4);
 	assert_eq!(listings[0].id, "popular-tag-big-breasts");
 	assert_eq!(listings[0].name, "Tag: Big Breasts");
-	assert_eq!(listings[1].id, "popular-tag-sole-female");
+	assert_eq!(listings[1].id, "tag-popular-big-breasts");
+	assert_eq!(listings[1].name, "Popular: Big Breasts");
+	assert_eq!(listings[2].id, "popular-tag-sole-female");
+	assert_eq!(listings[3].id, "tag-popular-sole-female");
 	assert!(parse_popular_tag_listings(&Html::parse("<html></html>").unwrap()).is_err());
 }
 
@@ -608,7 +623,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 20);
+	assert_eq!(manifest["info"]["version"], 21);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()

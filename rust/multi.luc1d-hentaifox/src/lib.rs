@@ -491,9 +491,26 @@ fn popular_tag_slug(id: &str) -> Option<&str> {
 		None
 	}
 }
+fn popular_sorted_tag_slug(id: &str) -> Option<&str> {
+	let slug = id.strip_prefix("tag-popular-")?;
+	if !slug.is_empty()
+		&& slug
+			.bytes()
+			.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+	{
+		Some(slug)
+	} else {
+		None
+	}
+}
 fn popular_tag_url(id: &str, page: i32, popular: bool) -> Result<String> {
 	ensure!(page > 0, "Invalid page");
-	let slug = popular_tag_slug(id).ok_or(error!("Unsupported listing"))?;
+	let slug = if popular {
+		popular_sorted_tag_slug(id)
+	} else {
+		popular_tag_slug(id)
+	}
+	.ok_or(error!("Unsupported listing"))?;
 	let popular_path = if popular { "popular/" } else { "" };
 	Ok(if page == 1 {
 		format!("{BASE_URL}/tag/{slug}/{popular_path}")
@@ -533,6 +550,11 @@ fn parse_popular_tag_listings(doc: &Document) -> Result<Vec<Listing>> {
 			listings.push(Listing {
 				id: format!("popular-tag-{slug}"),
 				name: format!("Tag: {name}"),
+				..Default::default()
+			});
+			listings.push(Listing {
+				id: format!("tag-popular-{slug}"),
+				name: format!("Popular: {name}"),
 				..Default::default()
 			});
 		}
@@ -762,8 +784,9 @@ impl aidoku::Home for GallerySource {
 }
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
-		if popular_tag_slug(&listing.id).is_some() {
-			let doc = Request::get(popular_tag_url(&listing.id, page, false)?)?.html()?;
+		let popular_tag = popular_sorted_tag_slug(&listing.id).is_some();
+		if popular_tag || popular_tag_slug(&listing.id).is_some() {
+			let doc = Request::get(popular_tag_url(&listing.id, page, popular_tag)?)?.html()?;
 			let result = parse_search(&doc);
 			ensure!(
 				!result.entries.is_empty(),

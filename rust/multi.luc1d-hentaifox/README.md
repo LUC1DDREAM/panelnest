@@ -1,7 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 20)
+## Discovery (source version 21)
+Version 21 adds a separate Popular-sorted dynamic listing for each of the 25 popular tags. The existing Tag: listings keep their IDs and Latest ordering; Popular: listings use the official paginated `/tag/<slug>/popular/` route.
 Version 20 adds the official Daily Top Rated Today and Yesterday picks to Home as direct gallery spotlights. Both are already present in the homepage HTML and toggle locally; no extra request is needed.
 Version 19 exposes Aidoku page descriptions using the already validated reader image filenames, so each page shows its page number without another network request.
 Version 18 streams the initial Latest/Top Rated home layout immediately, then sends each available sidebar ranking as soon as it returns. Users can browse the core sections while the remaining rankings load.
