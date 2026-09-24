@@ -36,7 +36,33 @@ pub fn get_chapter_key(url: &str) -> Option<String> {
 		.find(|c: char| !c.is_numeric() && c != '.')
 		.unwrap_or(chapter_segment.len());
 
-	Some(chapter_segment[..end_pos].into())
+	let chapter_key = &chapter_segment[..end_pos];
+	if chapter_key.is_empty() || !chapter_key.chars().any(|c| c.is_numeric()) {
+		return None;
+	}
+	Some(chapter_key.into())
+}
+
+/// Returns whether a URL belongs to the Asura Scans website.
+pub fn is_asura_url(url: &str) -> bool {
+	let Some((scheme, remainder)) = url.split_once("://") else {
+		return false;
+	};
+	if scheme != "https" && scheme != "http" {
+		return false;
+	}
+	let host = remainder
+		.split(['/', '?', '#'])
+		.next()
+		.unwrap_or("")
+		.split('@')
+		.next_back()
+		.unwrap_or("")
+		.split(':')
+		.next()
+		.unwrap_or("")
+		.to_ascii_lowercase();
+	matches!(host.as_str(), "asurascans.com" | "www.asurascans.com")
 }
 
 /// Returns full URL of a manga from a manga ID.
@@ -101,5 +127,22 @@ mod tests {
 				.as_deref(),
 			Some("1")
 		);
+		assert_eq!(
+			get_chapter_key("https://asurascans.com/comics/series/chapter/abc"),
+			None
+		);
+		assert_eq!(
+			get_chapter_key("https://asurascans.com/comics/series/chapter/."),
+			None
+		);
+	}
+
+	#[aidoku_test]
+	fn test_asura_url_hosts() {
+		assert!(is_asura_url("https://asurascans.com/comics/series-123"));
+		assert!(is_asura_url("https://www.asurascans.com/comics/series-123"));
+		assert!(!is_asura_url("https://evil.example/comics/series-123"));
+		assert!(!is_asura_url("https://asurascans.com.evil.example/comics/series-123"));
+		assert!(!is_asura_url("javascript://asurascans.com/comics/series-123"));
 	}
 }

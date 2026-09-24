@@ -419,6 +419,9 @@ impl Home for AsuraScans {
 
 impl DeepLinkHandler for AsuraScans {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
+		if !helpers::is_asura_url(&url) {
+			return Ok(None);
+		}
 		let Some(manga_key) = helpers::get_manga_key(&url) else {
 			return Ok(None);
 		};
