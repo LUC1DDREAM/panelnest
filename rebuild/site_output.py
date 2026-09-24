@@ -10,6 +10,9 @@ from urllib.parse import quote, urlparse
 HERE = Path(__file__).resolve().parent
 LOCALES = json.loads((HERE/'site-locales.json').read_text(encoding='utf-8'))
 DEFAULT_URL = 'https://luc1ddream.github.io/panelnest/'
+FEATURE_LABELS = ('search', 'details', 'chapters', 'pages', 'home', 'listings',
+                  'dynamic-listings', 'dynamic-filters', 'deep-links', 'image-request',
+                  'alternate-covers', 'web-login', 'migration', 'notifications')
 
 
 def render(root, base, repository):
@@ -38,8 +41,7 @@ def render(root, base, repository):
             labels = ' · '.join(t['english'] if code=='en' else t['multi'] if code=='multi' else esc(code) for code in item.get('languages',[]))
             adult = f'<span class="adult">{t["adult"]}</span>' if item.get('contentRating')==2 else ''
             implemented = set(item.get('features', ()))
-            feature_labels = [t['feature_' + key] for key in ('search', 'details', 'chapters', 'pages')
-                              if key in implemented]
+            feature_labels = [t['feature_' + key] for key in FEATURE_LABELS if key in implemented]
             feature_text = ' · '.join(feature_labels)
             listings = item.get('listings', [])
             listing_text = ', '.join(esc(str(value)) for value in listings)

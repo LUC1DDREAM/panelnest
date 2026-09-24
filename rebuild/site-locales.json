@@ -55,7 +55,17 @@
     "q3": "Do I need to replace my existing source list?",
     "a3": "No. Existing my-aidoku-sources list URLs still receive updates. Source IDs remain unchanged; [PN] is the new display-name suffix. Keep your existing list instead of adding a duplicate, and check for source updates in Aidoku.",
     "q4": "Why are sources missing or unavailable?",
-    "a4": "Enable English and Multilingual in Aidoku’s source-language filter. Website language and source language are separate. Websites can also be unavailable or change their interfaces. Report the source version, Aidoku version and error without passwords, cookies or tokens."
+    "a4": "Enable English and Multilingual in Aidoku’s source-language filter. Website language and source language are separate. Websites can also be unavailable or change their interfaces. Report the source version, Aidoku version and error without passwords, cookies or tokens.",
+    "feature_home": "Home",
+    "feature_listings": "Listings",
+    "feature_dynamic-listings": "Dynamic listings",
+    "feature_dynamic-filters": "Dynamic filters",
+    "feature_deep-links": "Deep links",
+    "feature_image-request": "Image requests",
+    "feature_alternate-covers": "Alternate covers",
+    "feature_web-login": "Web login",
+    "feature_migration": "Migration",
+    "feature_notifications": "Notifications"
   },
   "de": {
     "native": "Deutsch",
@@ -113,7 +123,17 @@
     "q3": "Muss ich meine bestehende Quellenliste ersetzen?",
     "a3": "Nein. Bestehende my-aidoku-sources-Listen-URLs erhalten weiterhin Updates. Die Quellen-IDs bleiben gleich; [PN] ist der neue Zusatz im Anzeigenamen. Behalte deine Liste, vermeide Duplikate und prüfe in Aidoku auf Quellenupdates.",
     "q4": "Warum fehlen Quellen oder sind nicht erreichbar?",
-    "a4": "Aktiviere Englisch und Mehrsprachig im Quellen-Sprachfilter von Aidoku. Website-Sprache und Quellensprache sind unabhängig. Websites können außerdem ausfallen oder ihre Schnittstellen ändern. Melde Quellenversion, Aidoku-Version und Fehler ohne Passwörter, Cookies oder Tokens."
+    "a4": "Aktiviere Englisch und Mehrsprachig im Quellen-Sprachfilter von Aidoku. Website-Sprache und Quellensprache sind unabhängig. Websites können außerdem ausfallen oder ihre Schnittstellen ändern. Melde Quellenversion, Aidoku-Version und Fehler ohne Passwörter, Cookies oder Tokens.",
+    "feature_home": "Startseite",
+    "feature_listings": "Listen",
+    "feature_dynamic-listings": "Dynamische Listen",
+    "feature_dynamic-filters": "Dynamische Filter",
+    "feature_deep-links": "Deep Links",
+    "feature_image-request": "Bildanfragen",
+    "feature_alternate-covers": "Alternative Cover",
+    "feature_web-login": "Web-Login",
+    "feature_migration": "Migration",
+    "feature_notifications": "Benachrichtigungen"
   },
   "es": {
     "native": "Español",
@@ -171,7 +191,17 @@
     "q3": "¿Debo sustituir mi lista existente?",
     "a3": "No. Las URL existentes de my-aidoku-sources siguen recibiendo actualizaciones. Los identificadores no cambian; [PN] es el nuevo sufijo del nombre. Conserva tu lista, evita duplicados y busca actualizaciones de fuentes en Aidoku.",
     "q4": "¿Por qué faltan fuentes o no están disponibles?",
-    "a4": "Activa Inglés y Multilingüe en el filtro de idiomas de fuentes de Aidoku. El idioma del sitio no cambia el de las fuentes. Los sitios también pueden fallar o cambiar sus interfaces. Informa de las versiones y del error sin contraseñas, cookies ni tokens."
+    "a4": "Activa Inglés y Multilingüe en el filtro de idiomas de fuentes de Aidoku. El idioma del sitio no cambia el de las fuentes. Los sitios también pueden fallar o cambiar sus interfaces. Informa de las versiones y del error sin contraseñas, cookies ni tokens.",
+    "feature_home": "Inicio",
+    "feature_listings": "Listas",
+    "feature_dynamic-listings": "Listas dinámicas",
+    "feature_dynamic-filters": "Filtros dinámicos",
+    "feature_deep-links": "Enlaces directos",
+    "feature_image-request": "Solicitudes de imagen",
+    "feature_alternate-covers": "Portadas alternativas",
+    "feature_web-login": "Inicio de sesión web",
+    "feature_migration": "Migración",
+    "feature_notifications": "Notificaciones"
   },
   "fr": {
     "native": "Français",
@@ -229,7 +259,17 @@
     "q3": "Dois-je remplacer ma liste existante ?",
     "a3": "Non. Les URL my-aidoku-sources existantes reçoivent toujours les mises à jour. Les identifiants restent inchangés ; [PN] est le nouveau suffixe du nom. Conservez votre liste, évitez les doublons et cherchez les mises à jour dans Aidoku.",
     "q4": "Pourquoi des sources manquent-elles ou sont-elles indisponibles ?",
-    "a4": "Activez Anglais et Multilingue dans le filtre des langues des sources d’Aidoku. La langue du site est indépendante de celle des sources. Les sites peuvent aussi être indisponibles ou changer leurs interfaces. Signalez les versions et l’erreur sans mots de passe, cookies ni jetons."
+    "a4": "Activez Anglais et Multilingue dans le filtre des langues des sources d’Aidoku. La langue du site est indépendante de celle des sources. Les sites peuvent aussi être indisponibles ou changer leurs interfaces. Signalez les versions et l’erreur sans mots de passe, cookies ni jetons.",
+    "feature_home": "Accueil",
+    "feature_listings": "Listes",
+    "feature_dynamic-listings": "Listes dynamiques",
+    "feature_dynamic-filters": "Filtres dynamiques",
+    "feature_deep-links": "Liens directs",
+    "feature_image-request": "Requêtes d’image",
+    "feature_alternate-covers": "Couvertures alternatives",
+    "feature_web-login": "Connexion web",
+    "feature_migration": "Migration",
+    "feature_notifications": "Notifications"
   },
   "pt": {
     "native": "Português",
@@ -287,6 +327,16 @@
     "q3": "Preciso de substituir a minha lista existente?",
     "a3": "Não. Os URL existentes de my-aidoku-sources continuam a receber atualizações. Os identificadores não mudam; [PN] é o novo sufixo do nome. Mantenha a lista, evite duplicados e procure atualizações de fontes no Aidoku.",
     "q4": "Porque faltam fontes ou estão indisponíveis?",
-    "a4": "Ative Inglês e Multilingue no filtro de idiomas das fontes do Aidoku. O idioma do site não altera o das fontes. Os sites também podem falhar ou mudar as interfaces. Indique as versões e o erro sem palavras-passe, cookies ou tokens."
+    "a4": "Ative Inglês e Multilingue no filtro de idiomas das fontes do Aidoku. O idioma do site não altera o das fontes. Os sites também podem falhar ou mudar as interfaces. Indique as versões e o erro sem palavras-passe, cookies ou tokens.",
+    "feature_home": "Início",
+    "feature_listings": "Listas",
+    "feature_dynamic-listings": "Listas dinâmicas",
+    "feature_dynamic-filters": "Filtros dinâmicos",
+    "feature_deep-links": "Links diretos",
+    "feature_image-request": "Pedidos de imagem",
+    "feature_alternate-covers": "Capas alternativas",
+    "feature_web-login": "Login web",
+    "feature_migration": "Migração",
+    "feature_notifications": "Notificações"
   }
 }

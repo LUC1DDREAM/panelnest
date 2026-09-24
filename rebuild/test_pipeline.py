@@ -70,7 +70,7 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(len(enriched['sources']), 6)
         for item in enriched['sources']:
             row = next(row for row in rows if row['id'] == item['id'])
-            self.assertEqual(set(item['features']), {'search','details','chapters','pages'})
+            self.assertEqual(set(item['features']), set(row['features']))
             manifest = json.loads((pipeline.ROOT/row['path']/'res/source.json').read_text())
             expected_listings = [x.get('name', x.get('id','')) for x in manifest.get('listings', [])]
             expected_listings.extend(name for name in row.get('dynamic_listings', []) if name not in expected_listings)

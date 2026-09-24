@@ -12,6 +12,10 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 FEATURES = {'search', 'details', 'chapters', 'pages'}
+CATALOG_FEATURES = {
+    'home', 'listings', 'dynamic-listings', 'dynamic-filters', 'deep-links',
+    'image-request', 'alternate-covers', 'web-login', 'migration', 'notifications',
+}
 SLUGS = {'asurascans', 'weebcentral', 'nhentai', 'webtoon', 'imhentai', 'hentaifox'}
 
 def validate_manifest(rows, release=False):
@@ -73,7 +77,7 @@ def enrich_catalog(catalog, rows):
         for name in row.get('dynamic_listings', []):
             if name not in listings:
                 listings.append(name)
-        item['features'] = sorted(declared & FEATURES)
+        item['features'] = sorted(declared & (FEATURES | CATALOG_FEATURES))
         item['listings'] = listings
         if row.get('limitations'):
             item['limitations'] = row['limitations']

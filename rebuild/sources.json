@@ -14,13 +14,25 @@
       "home",
       "listings",
       "dynamic-listings",
-      "dynamic-filters"
+      "dynamic-filters",
+      "deep-links",
+      "web-login",
+      "migration",
+      "notifications"
     ],
     "features": [
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings",
+      "dynamic-listings",
+      "dynamic-filters",
+      "deep-links",
+      "web-login",
+      "migration",
+      "notifications"
     ],
     "listings": [
       "Ranking",
@@ -62,7 +74,11 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings",
+      "deep-links",
+      "image-request"
     ],
     "listings": [
       "Hot Updates",
@@ -103,7 +119,12 @@
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings",
+      "alternate-covers",
+      "deep-links",
+      "dynamic-filters"
     ],
     "listings": [
       "Popular Today",
@@ -133,13 +154,19 @@
       "home",
       "listings",
       "dynamic-filters",
-      "deep-links"
+      "deep-links",
+      "image-request"
     ],
     "features": [
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings",
+      "dynamic-filters",
+      "deep-links",
+      "image-request"
     ],
     "listings": [
       "Drama: By Popularity",
@@ -185,13 +212,19 @@
       "home",
       "listings",
       "dynamic-filters",
-      "deep-links"
+      "deep-links",
+      "image-request"
     ],
     "features": [
       "search",
       "details",
       "chapters",
-      "pages"
+      "pages",
+      "home",
+      "listings",
+      "dynamic-filters",
+      "deep-links",
+      "image-request"
     ],
     "listings": [
       "Latest",
@@ -223,14 +256,20 @@
       "listings",
       "dynamic-listings",
       "deep-links",
-      "dynamic-filters"
+      "dynamic-filters",
+      "image-request"
     ],
     "features": [
       "search",
       "details",
       "chapters",
       "pages",
-      "home"
+      "home",
+      "listings",
+      "dynamic-listings",
+      "deep-links",
+      "dynamic-filters",
+      "image-request"
     ],
     "listings": [
       "Latest",
