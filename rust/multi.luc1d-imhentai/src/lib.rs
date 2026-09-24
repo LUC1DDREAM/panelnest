@@ -417,7 +417,7 @@ fn reader_url_for_gallery(doc: &Document, gallery_id: &str) -> Result<String> {
 	let Some(link) = doc.select_first("a[href*='/view/']") else { return Ok(fallback); };
 	let Some(href) = link.attr("href") else { return Ok(fallback); };
 	if !href.contains("/view/") { return Ok(fallback); }
-	let url = if href.starts_with("https://") { href } else if href.starts_with('/') { format!("{BASE_URL}{href}") } else { return Ok(fallback); };
+	let url = if href.starts_with("https://") { href } else if href.starts_with("http://") { bail!("Reader URL must use HTTPS") } else if href.starts_with('/') { format!("{BASE_URL}{href}") } else { return Ok(fallback); };
 	let rest = url.strip_prefix("https://").ok_or(error!("Invalid reader URL"))?;
 	let (host, path) = rest.split_once('/').ok_or(error!("Invalid reader URL"))?;
 	ensure!(host == BASE_URL.trim_start_matches("https://"), "Unexpected reader host");
@@ -432,7 +432,9 @@ fn reader_url_for_gallery(doc: &Document, gallery_id: &str) -> Result<String> {
 fn reader_url_for_chapter(gallery_id: &str, chapter: &Chapter) -> Result<String> {
 	ensure!(chapter.key == gallery_id, "Invalid gallery chapter key");
 	let prefix = format!("{BASE_URL}/view/{gallery_id}/");
-	let Some(page) = chapter.url.as_deref().and_then(|url| url.strip_prefix(&prefix)) else {
+	let Some(url) = chapter.url.as_deref() else { return Ok(format!("{prefix}1/")); };
+	let Some(page) = url.strip_prefix(&prefix) else {
+		ensure!(!url.contains("/view/"), "Invalid gallery reader URL");
 		return Ok(format!("{prefix}1/"));
 	};
 	let page = page.strip_suffix('/').ok_or(error!("Invalid gallery reader URL"))?;
