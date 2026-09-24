@@ -42,17 +42,20 @@ const SEARCH_SCOPES: &[(&str, &str)] = &[
 	("originals", "WEBTOON Originals"),
 	("canvas", "CANVAS"),
 ];
-fn discovery_path(id: &str) -> Option<&'static str> {
-	match id {
-		"popular" => Some("/en/genres/drama?sortOrder=MANA"),
-		"likes" => Some("/en/genres/drama?sortOrder=LIKEIT"),
-		"date" => Some("/en/genres/drama?sortOrder=UPDATE"),
-		"genre-fantasy" => Some("/en/genres/fantasy?sortOrder=MANA"),
-		"genre-romance" => Some("/en/genres/romance?sortOrder=MANA"),
-		"genre-action" => Some("/en/genres/action?sortOrder=MANA"),
-		"genre-comedy" => Some("/en/genres/comedy?sortOrder=MANA"),
-		_ => None,
-	}
+fn discovery_path(id: &str) -> Option<String> {
+	let (genre, sort) = match id {
+		"popular" => ("drama", "MANA"),
+		"likes" => ("drama", "LIKEIT"),
+		"date" => ("drama", "UPDATE"),
+		_ => {
+			let slug = id.strip_prefix("genre-")?;
+			if !GENRES.iter().any(|(known, _)| *known == slug) {
+				return None;
+			}
+			(slug, "MANA")
+		}
+	};
+	Some(format!("/en/genres/{genre}?sortOrder={sort}"))
 }
 fn parameter<'a>(path: &'a str, name: &str) -> Option<&'a str> {
 	path.split_once('?')?
@@ -396,7 +399,7 @@ impl aidoku::ListingProvider for Webtoon {
 		if page > 1 {
 			return Ok(MangaPageResult::default());
 		}
-		let result = parse_search(&request(path)?.html()?);
+		let result = parse_search(&request(&path)?.html()?);
 		if result.entries.is_empty() {
 			return Err(error!("WEBTOON discovery unavailable"));
 		}
@@ -425,24 +428,25 @@ impl aidoku::Home for Webtoon {
 			title: Some("Browse Genres".into()),
 			subtitle: Some("By Popularity within each genre".into()),
 			value: aidoku::HomeComponentValue::Links(
-				[
-					("popular", "Drama"),
-					("genre-fantasy", "Fantasy"),
-					("genre-romance", "Romance"),
-					("genre-action", "Action"),
-					("genre-comedy", "Comedy"),
-				]
-				.into_iter()
-				.map(|(id, name)| aidoku::Link {
-					title: name.into(),
-					value: Some(aidoku::LinkValue::Listing(aidoku::Listing {
-						id: id.into(),
-						name: name.into(),
-						..Default::default()
-					})),
-					..Default::default()
-				})
-				.collect(),
+				GENRES
+					.iter()
+					.map(|(slug, name)| {
+						let id = if *slug == "drama" {
+							"popular".into()
+						} else {
+							format!("genre-{slug}")
+						};
+						aidoku::Link {
+							title: (*name).into(),
+							value: Some(aidoku::LinkValue::Listing(aidoku::Listing {
+							id,
+							name: (*name).into(),
+								..Default::default()
+							})),
+							..Default::default()
+						}
+					})
+					.collect(),
 			),
 		});
 		Ok(aidoku::HomeLayout { components })

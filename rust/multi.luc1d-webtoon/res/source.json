@@ -2,7 +2,7 @@
   "info": {
     "id": "multi.luc1d-webtoon",
     "name": "WEBTOON [PN]",
-    "version": 7,
+    "version": 8,
     "url": "https://m.webtoons.com",
     "contentRating": 1,
     "languages": [
@@ -38,6 +38,54 @@
     {
       "id": "genre-comedy",
       "name": "Comedy: By Popularity"
+    },
+    {
+      "id": "genre-slice_of_life",
+      "name": "Slice of Life: By Popularity"
+    },
+    {
+      "id": "genre-super_hero",
+      "name": "Superhero: By Popularity"
+    },
+    {
+      "id": "genre-sf",
+      "name": "Sci-Fi: By Popularity"
+    },
+    {
+      "id": "genre-thriller",
+      "name": "Thriller: By Popularity"
+    },
+    {
+      "id": "genre-supernatural",
+      "name": "Supernatural: By Popularity"
+    },
+    {
+      "id": "genre-mystery",
+      "name": "Mystery: By Popularity"
+    },
+    {
+      "id": "genre-sports",
+      "name": "Sports: By Popularity"
+    },
+    {
+      "id": "genre-historical",
+      "name": "Historical: By Popularity"
+    },
+    {
+      "id": "genre-heartwarming",
+      "name": "Heartwarming: By Popularity"
+    },
+    {
+      "id": "genre-horror",
+      "name": "Horror: By Popularity"
+    },
+    {
+      "id": "genre-graphic_novel",
+      "name": "Graphic Novel: By Popularity"
+    },
+    {
+      "id": "genre-tiptoon",
+      "name": "Informative: By Popularity"
     }
   ],
   "config": {}

@@ -82,21 +82,27 @@ fn live_discovery_home_and_listings() {
 #[aidoku_test]
 fn discovery_listing_routes_are_site_specific() {
 	assert_eq!(
-		discovery_path("popular"),
+		discovery_path("popular").as_deref(),
 		Some("/en/genres/drama?sortOrder=MANA")
 	);
 	assert_eq!(
-		discovery_path("likes"),
+		discovery_path("likes").as_deref(),
 		Some("/en/genres/drama?sortOrder=LIKEIT")
 	);
 	assert_eq!(
-		discovery_path("date"),
+		discovery_path("date").as_deref(),
 		Some("/en/genres/drama?sortOrder=UPDATE")
 	);
 	assert_eq!(
-		discovery_path("genre-fantasy"),
+		discovery_path("genre-fantasy").as_deref(),
 		Some("/en/genres/fantasy?sortOrder=MANA")
 	);
+	for (slug, _) in GENRES {
+		assert_eq!(
+			discovery_path(&format!("genre-{slug}")),
+			Some(format!("/en/genres/{slug}?sortOrder=MANA"))
+		);
+	}
 	assert_eq!(discovery_path("popular-today"), None);
 	assert_eq!(discovery_path("https://example.invalid"), None);
 }
