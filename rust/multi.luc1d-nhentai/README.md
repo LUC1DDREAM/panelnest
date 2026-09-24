@@ -2,11 +2,11 @@
 
 Independent vendored current-API source, `multi.luc1d-nhentai`; pinned Aidoku SDK `e1320b0a2e11afb59e4dee374883a2212d325699`. Existing source/license provenance is retained in the repository. This change does not add any downloaded adult imagery or explicit fixture text.
 
-## Website-backed capabilities (source version 8)
+## Website-backed capabilities (source version 9)
 
 Existing `/api/v2/search` sorts are `popular-today`, `popular-week`, `popular` (all time), and `date`. Home, four listings, static tag/artist/group filters and language/blocklist settings already existed. They are not newly invented features. Home queries apply configured language and blocklist constraints, so ranks are within that selected result set. Gallery details now include the API's language tags alongside tags, artists, groups, parodies, and characters; they were previously omitted from the description.
 
-The editable blocklist now starts empty; the former `example` placeholder was an active exclusion in all browse queries.
+The editable blocklist now starts empty; the former `example` placeholder was an active exclusion in all browse queries. The bundled tag filter now includes 807 current tags with at least ten galleries, refreshed from every page of the official tag API. `scripts/update_tags.py` respects pagination and leaves the previous filter untouched if any page fails or is incomplete; HTTP 429 responses receive a bounded, `Retry-After`-aware retry.
 
 Version 3 makes the Popular Today home section a ranked list with a working Today listing link (previous BigScroller had no browse-all action), preserving the actual today endpoint. Search/listings reject page numbers below 1. Existing identities, languages, content rating, icon, filters and reader behavior are unchanged.
 

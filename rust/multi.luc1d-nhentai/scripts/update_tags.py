@@ -1,5 +1,7 @@
 import json
 import os
+import time
+from urllib.error import HTTPError
 from urllib.request import urlopen, Request
 
 # nhentai requires User-Agent
@@ -10,19 +12,31 @@ def fetch_tags_from_api() -> list[tuple[str, int]]:
 	"""Fetch popular tags from nhentai API v2."""
 	tags: list[tuple[str, int]] = []
 	page = 1
+	num_pages: int | None = None
 	while True:
 		url = f"https://nhentai.net/api/v2/tags/tag?sort=popular&page={page}&per_page=100"
 		req = Request(url, headers={"User-Agent": user_agent})
-		try:
-			with urlopen(req) as response:
-				data = json.load(response)
-		except Exception as exc:
-			print(f"Failed to fetch tags from API: {exc}")
-			break
+		for attempt in range(3):
+			try:
+				with urlopen(req, timeout=20) as response:
+					data = json.load(response)
+				break
+			except HTTPError as exc:
+				if exc.code != 429 or attempt == 2:
+					raise RuntimeError(f"Failed to fetch tag page {page}: {exc}") from exc
+				delay = exc.headers.get("Retry-After")
+				time.sleep(min(30, max(1, int(delay) if delay and delay.isdigit() else 2**attempt)))
+			except Exception as exc:
+				raise RuntimeError(f"Failed to fetch tag page {page}: {exc}") from exc
+
+		if page == 1:
+			num_pages = data.get("num_pages")
+			if not isinstance(num_pages, int) or num_pages < 1:
+				raise RuntimeError("Tag API returned an invalid page count")
 
 		result = data.get("result", [])
 		if not result:
-			break
+			raise RuntimeError(f"Tag API returned an empty page before page {num_pages}")
 
 		for item in result:
 			name = item.get("name", "").strip()
@@ -32,17 +46,19 @@ def fetch_tags_from_api() -> list[tuple[str, int]]:
 			if count >= 10:
 				tags.append((name, count))
 
+		if page >= num_pages:
+			break
 		page += 1
-		if page > data.get("num_pages", 0):
-			break
-		if page > 100:
-			break
+		time.sleep(0.5)
 
 	return tags
 
 
 if __name__ == "__main__":
-	tags = fetch_tags_from_api()
+	try:
+		tags = fetch_tags_from_api()
+	except RuntimeError as exc:
+		raise SystemExit(str(exc)) from exc
 
 	tags.sort(key=lambda x: x[0].lower())
 	popular_tags = [name for name, _ in tags]

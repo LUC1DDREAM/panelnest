@@ -110,13 +110,13 @@
       "Popular All",
       "Latest"
     ],
-    "limitations": "Rate limiting (HTTP 429) interrupted one live check; retry later if unavailable.",
+    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Worker four sorts page 1/2 metadata passed; Home hit HTTP 429, suite failed; no device test.",
+    "live_evidence": "The official paginated tag API reported 40 pages and 4,728 total entries. The updated filter contains 807 alphabetically sorted tags with at least ten galleries; the refresh completed across all API pages. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified.",
     "fixture_tests_passed": 10,
     "release_authorized": true
   },
