@@ -130,7 +130,7 @@ fn details_include_language_metadata() {
 
 #[aidoku_test]
 fn deep_links_accept_only_numeric_gallery_paths_on_canonical_host() {
-	use aidoku::{DeepLinkHandler, DeepLinkResult};
+	use aidoku::{DeepLinkHandler, DeepLinkResult, Source};
 	let source = super::NHentai::new();
 	let valid = source.handle_deep_link("https://nhentai.net/g/12345/title/".into()).unwrap();
 	assert!(matches!(valid, Some(DeepLinkResult::Manga { key }) if key == "12345"));
