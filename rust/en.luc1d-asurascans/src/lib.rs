@@ -2,7 +2,7 @@
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
 	Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue, HomeLayout, Link,
-	Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
+	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
 	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent, RangeFilter,
 	Result, Source, TextFilter, Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
@@ -24,6 +24,16 @@ use models::*;
 
 const BASE_URL: &str = "https://asurascans.com";
 const API_URL: &str = "https://api.asurascans.com/api";
+
+fn is_trusted_image_url(url: &str) -> bool {
+	let Some(authority) = url.strip_prefix("https://") else {
+		return false;
+	};
+	authority
+		.split(['/', '?', '#'])
+		.next()
+		.is_some_and(|host| host == "cdn.asurascans.com")
+}
 
 struct AsuraScans;
 
@@ -633,6 +643,20 @@ impl NotificationHandler for AsuraScans {
 	}
 }
 
+impl ImageRequestProvider for AsuraScans {
+	fn get_image_request(
+		&self,
+		url: String,
+		_context: Option<aidoku::PageContext>,
+	) -> Result<Request> {
+		if !is_trusted_image_url(&url) {
+			return Err(error!("Unsupported Asura Scans image host"));
+		}
+		let referer = format!("{BASE_URL}/");
+		Ok(Request::get(url)?.header("Referer", referer.as_str()))
+	}
+}
+
 register_source!(
 	AsuraScans,
 	Home,
@@ -642,7 +666,8 @@ register_source!(
 	DynamicFilters,
 	DynamicListings,
 	WebLoginHandler,
-	NotificationHandler
+	NotificationHandler,
+	ImageRequestProvider
 );
 
 #[cfg(test)]
@@ -725,5 +750,20 @@ mod filter_tests {
 		assert!(url.contains("artist=Studio"));
 		assert!(!url.contains("type=all"));
 		assert!(browse_url(None, 0, &[]).is_err());
+	}
+
+	#[aidoku_test]
+	fn image_requests_allow_only_the_official_https_cdn_host() {
+		assert!(is_trusted_image_url(
+			"https://cdn.asurascans.com/asura-images/covers/series.webp"
+		));
+		for url in [
+			"http://cdn.asurascans.com/asura-images/covers/series.webp",
+			"https://cdn.asurascans.com.evil.example/asura-images/covers/series.webp",
+			"https://evil.example/asura-images/covers/series.webp",
+			"https://api.asurascans.com/asura-images/covers/series.webp",
+		] {
+			assert!(!is_trusted_image_url(url), "{url}");
+		}
 	}
 }

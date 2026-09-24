@@ -18,7 +18,8 @@
       "deep-links",
       "web-login",
       "migration",
-      "notifications"
+      "notifications",
+      "image-request"
     ],
     "features": [
       "search",
@@ -32,7 +33,8 @@
       "deep-links",
       "web-login",
       "migration",
-      "notifications"
+      "notifications",
+      "image-request"
     ],
     "listings": [
       "Ranking",
@@ -50,8 +52,8 @@
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "Official trending API /api/trending/day?limit=10 returned HTTP 200 with ten ranked entries on 2026-09-24; /api/trending/{week|month|all}?limit=10 are exposed as well. Regression fixtures preserve the server order for the daily feed. Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Dynamic genre names/slugs continue to come from the BrowseFilters payload.",
-    "fixture_tests_passed": 16,
+    "live_evidence": "Official trending API /api/trending/day?limit=10 returned HTTP 200 with ten ranked entries on 2026-09-24; /api/trending/{week|month|all}?limit=10 are exposed as well. Regression fixtures preserve the server order for the daily feed. Live /browse pages label the author facet Creator and demonstrate author= and artist= routes. Dynamic genre names/slugs continue to come from the BrowseFilters payload. Version 10 adds ImageRequestProvider with the Asura Scans Referer for the official cdn.asurascans.com host; offline allowlist tests reject other hosts.",
+    "fixture_tests_passed": 17,
     "release_authorized": true
   },
   {
