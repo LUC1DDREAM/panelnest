@@ -14,7 +14,7 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 |---|---|---:|
 | Asura Scans [PN] | `en.luc1d-asurascans` | 9 |
 | Weeb Central [PN] | `en.luc1d-weebcentral` | 11 |
-| nhentai [PN] | `multi.luc1d-nhentai` | 16 |
+| nhentai [PN] | `multi.luc1d-nhentai` | 17 |
 | WEBTOON [PN] | `multi.luc1d-webtoon` | 15 |
 | IMHentai [PN] | `multi.luc1d-imhentai` | 13 |
 | HentaiFox [PN] | `multi.luc1d-hentaifox` | 20 |

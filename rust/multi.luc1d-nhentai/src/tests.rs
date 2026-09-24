@@ -267,6 +267,7 @@ fn dynamic_taxonomy_filter_ids_match_search_syntax() {
 #[aidoku_test]
 fn freeform_parody_and_character_filters_reach_the_matching_query_taxonomy() {
 	for (id, value, expected) in [
+		("author", "Ankoman", "artist:\"Ankoman\""),
 		("tag", "textless narrative", "tag:\"textless narrative\""),
 		("parody", "Star Series", "parody:Star Series"),
 		("character", "Hero One", "character:Hero One"),

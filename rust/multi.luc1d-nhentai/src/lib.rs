@@ -46,7 +46,10 @@ fn taxonomy_type(filter_id: &str) -> Option<&'static str> {
 
 fn text_filter_query(id: &str, value: String) -> Option<String> {
 	match id {
-		"author" => Some(value),
+		// The bundled freeform Artist filter has retained the `author` ID since
+		// it was first published. Keep that ID for saved-filter compatibility,
+		// but route it through nhentai's typed artist search operator.
+		"author" => Some(format!("artist:\"{value}\"")),
 		"tag" => Some(format!("tag:\"{value}\"")),
 		"artist" => Some(format!("artist:{value}")),
 		"groups" => Some(format!("group:{value}")),
