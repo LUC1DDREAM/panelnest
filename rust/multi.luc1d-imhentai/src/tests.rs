@@ -16,6 +16,7 @@ fn synthetic_details_and_chapter_flags() {
 	let chapters = m.chapters.unwrap();
 	assert_eq!(chapters[0].key, "42");
 	assert_eq!(chapters[0].language.as_deref(), Some("fr"));
+	assert_eq!(chapters[0].thumbnail.as_deref(), Some("https://imhentai.xxx/cover.png"));
 	assert_eq!(m.update_strategy, UpdateStrategy::Never);
 	let with_reader = Html::parse_with_url(
 		r#"<div class="gallery_top"><h1>Reader sample</h1><a href="/view/42/3/">Read</a></div>"#,
@@ -593,7 +594,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 22);
+	assert_eq!(manifest["info"]["version"], 23);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -603,7 +604,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 22);
+	assert_eq!(manifest["info"]["version"], 23);
 }
 
 use super::*;

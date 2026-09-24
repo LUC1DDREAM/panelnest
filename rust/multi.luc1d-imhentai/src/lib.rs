@@ -358,6 +358,9 @@ fn discovery_listings() -> Vec<aidoku::Listing> {
 	listings
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
+	let chapter_thumbnail = doc
+		.select_first(if IS_IM { ".left_cover img" } else { ".cover img" })
+		.and_then(|e| image(&e));
 	manga.update_strategy = UpdateStrategy::Never;
 	ensure!(
 		!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()),
@@ -443,6 +446,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 			title: Some("Gallery".into()),
 			chapter_number: Some(1.0),
 			language: gallery_language(doc),
+			thumbnail: chapter_thumbnail,
 			url: Some(reader_url),
 			..Default::default()
 		}]);

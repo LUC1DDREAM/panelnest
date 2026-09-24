@@ -38,3 +38,5 @@ No Popular Today/Week/Month listings, account/favorites or exact upload dates. O
 
 ## Provenance
 Public technical route/schema reference: Keiyoushi extensions-source `GalleryAdults.kt`, `IMHentai.kt`, `HentaiFox.kt` (Apache-2.0; LICENSE retained). HentaiFox Top Rated additionally grounded in its public homepage technical markup. Existing icon retained unchanged. No source package copied. Full discovery feature matrix and check results: `C:/Users/LUC1D/aidoku-research/DISCOVERY-IM-HF.md`.
+
+Version 23 adds the validated gallery cover URL to the single chapter thumbnail. 

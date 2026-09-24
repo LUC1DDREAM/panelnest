@@ -252,7 +252,7 @@
     "path": "rust/multi.luc1d-imhentai",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "Fixtures verify gallery chapter keys and the canonical IMHentai /view/<gallery>/<page>/ URL, reader manifest parsing, image hosts and Aidoku page context. The live gallery inspected on 2026-09-25 exposes language tags under Languages:; version 22 maps exactly one recognized language tag to a BCP 47 chapter language code and avoids guessing for mixed or unknown tags. Device rendering remains unverified. Dynamic listings map the six supported category flags and seven language flags to the fixture-verified intermediate-search route. Version 19 marks completed single-gallery titles static for Aidoku library refreshes. Version 20 applies mobile Safari headers and the actual gallery-page Referer to reader and CDN requests. Version 21 applies browser headers to Home, search, listings and detail requests.",
+    "live_evidence": "Fixtures verify gallery chapter keys and the canonical IMHentai /view/<gallery>/<page>/ URL, reader manifest parsing, image hosts and Aidoku page context. The live gallery inspected on 2026-09-25 exposes language tags under Languages:; version 22 maps exactly one recognized language tag to a BCP 47 chapter language code and avoids guessing for mixed or unknown tags. Device rendering remains unverified. Dynamic listings map the six supported category flags and seven language flags to the fixture-verified intermediate-search route. Version 19 marks completed single-gallery titles static for Aidoku library refreshes. Version 20 applies mobile Safari headers and the actual gallery-page Referer to reader and CDN requests. Version 21 applies browser headers to Home, search, listings and detail requests. Version 23 populates Chapter.thumbnail from the validated gallery cover URL; fixture asserts its value.",
     "fixture_tests_passed": 20,
     "release_authorized": true,
     "dynamic_listings": [
@@ -309,7 +309,7 @@
       "Most Fapped",
       "Most Downloaded"
     ],
-    "limitations": "The three sidebar ranking feeds are finite and may fail independently. Popular-sorted dynamic listings are available for the 25 quick-select tags, with pagination. Home displays the site’s current and previous Daily Top Rated spotlights. Quick-select menus show up to 50 popular entries for each other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site’s ASCII slug.",
+    "limitations": "The three sidebar ranking feeds are finite and may fail independently. Popular-sorted dynamic listings are available for the 25 quick-select tags, with pagination. Home displays the site\u2019s current and previous Daily Top Rated spotlights. Quick-select menus show up to 50 popular entries for each other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site\u2019s ASCII slug.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
