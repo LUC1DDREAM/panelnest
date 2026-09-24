@@ -1,0 +1,29 @@
+{
+  "id": "multi.luc1d-imhentai",
+  "version": 13,
+  "sha256": "b7f2e0a08189335997f331506e6327f17c62bbe7c00f83ee75fc6fd6cae237e2",
+  "bytes": 73918,
+  "languages": [
+    "multi"
+  ],
+  "contentRating": 2,
+  "package_verified": true,
+  "runtime_tested": false,
+  "device_tested": false,
+  "fixture_tests_passed": 11,
+  "official_site_checks": "The current public GalleryAdults provider confirms IMHentai supports /advsearch/ with tag, artist, group, parody and character terms in key, alongside the same sort/category/language flags. WASM regression tests verify generated parameters and exclusions. Site requests remain HTTP 403 in worker checks; no live runtime is claimed.",
+  "live_aidoku_suite": "not run for this release",
+  "implemented": [
+    "search",
+    "details",
+    "chapters",
+    "pages",
+    "home",
+    "listings",
+    "dynamic-filters",
+    "deep-links",
+    "image-request",
+    "page-descriptions"
+  ],
+  "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
+}

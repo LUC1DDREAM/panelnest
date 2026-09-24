@@ -1,0 +1,27 @@
+{
+  "id": "en.luc1d-weebcentral",
+  "version": 11,
+  "sha256": "518f0a0e8e35e909f0942d2f58a19c167afaba731dab70a9b4497c1a0eba0865",
+  "bytes": 70013,
+  "languages": [
+    "en"
+  ],
+  "contentRating": 1,
+  "package_verified": true,
+  "runtime_tested": false,
+  "device_tested": false,
+  "fixture_tests_passed": 12,
+  "official_site_checks": "Live /hot-updates cards expose chapter links and cover-host series ULIDs; /series/<ULID> resolves without a slug. Official public /search HTML exposes tri-state Official Translation, Anime Adaptation, and Adult Content controls. Regression tests verify each filter routes its Any/True/False state to the matching form field; Cloudflare challenge pages are rejected across search, details, chapter-list, reader and Home requests rather than accepted as empty results.",
+  "live_aidoku_suite": "not run for this release",
+  "implemented": [
+    "search",
+    "details",
+    "chapters",
+    "pages",
+    "home",
+    "listings",
+    "deep-links",
+    "image-request"
+  ],
+  "package_hash_scope": "Exact SHA-256 of the package served by the live PanelNest catalog."
+}
