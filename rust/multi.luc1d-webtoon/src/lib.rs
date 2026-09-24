@@ -5,7 +5,7 @@ use aidoku::{
 	Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
 	PageDescriptionProvider,
 	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
-	alloc::{String, Vec, borrow::Cow, vec},
+	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	imports::{
 		defaults::defaults_get,
 		html::Document,
