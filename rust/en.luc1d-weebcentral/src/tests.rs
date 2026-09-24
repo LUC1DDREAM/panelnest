@@ -122,7 +122,8 @@ fn image_requests_include_the_site_referer_and_provider_is_registered() {
 		.unwrap();
 	let _ = request;
 	let source = include_str!("lib.rs");
-	assert!(source.contains(
-		"register_source!(WeebCentral, ListingProvider, Home, ImageRequestProvider, DeepLinkHandler)"
+	let normalized = source.split_whitespace().collect::<Vec<_>>().join(" ");
+	assert!(normalized.contains(
+		"register_source!( WeebCentral, ListingProvider, Home, ImageRequestProvider, DeepLinkHandler );"
 	));
 }
