@@ -78,6 +78,41 @@ fn image(el: &Element) -> Option<String> {
 		.iter()
 		.find_map(|a| el.attr(a).filter(|v| v.starts_with("https://")))
 }
+fn gallery_artists(doc: &Document) -> Vec<String> {
+	if IS_IM {
+		doc.select("li")
+			.map(|els| {
+				els.filter(|element| {
+					element
+						.select_first(".tags_text")
+						.and_then(|value| value.text())
+						.is_some_and(|value| value.trim() == "Artists:")
+				})
+				.flat_map(|element| {
+					element
+						.select("a.tag")
+						.map(|artists| {
+							artists
+								.filter_map(|artist| artist.own_text())
+								.filter(|artist| !artist.trim().is_empty())
+								.collect::<Vec<_>>()
+						})
+						.unwrap_or_default()
+				})
+				.collect()
+			})
+			.unwrap_or_default()
+	} else {
+		doc.select("ul.artists a")
+			.map(|artists| {
+				artists
+					.filter_map(|artist| artist.own_text())
+					.filter(|artist| !artist.trim().is_empty())
+					.collect()
+			})
+			.unwrap_or_default()
+	}
+}
 fn parse_search(doc: &Document) -> MangaPageResult {
 	let entries = doc
 		.select("div.thumb")
@@ -430,25 +465,8 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 				})
 				.unwrap_or_default()
 		};
-		manga.authors = Some(if IS_IM {
-			doc.select("li")
-				.map(|els| {
-					els.filter(|e| {
-						e.select_first(".tags_text")
-							.and_then(|v| v.text())
-							.is_some_and(|v| v.trim() == "Artists:")
-					})
-					.flat_map(|e| {
-						e.select("a.tag")
-							.map(|els| els.filter_map(|a| a.own_text()).collect::<Vec<_>>())
-							.unwrap_or_default()
-					})
-					.collect()
-				})
-				.unwrap_or_default()
-		} else {
-			names("ul.artists a")
-		});
+		manga.artists = Some(gallery_artists(doc));
+		manga.authors = Some(Vec::new());
 		manga.tags = Some(if IS_IM {
 			doc.select("li")
 				.map(|els| {

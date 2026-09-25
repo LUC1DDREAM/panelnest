@@ -13,7 +13,8 @@ fn synthetic_details_and_chapter_flags() {
 	)
 	.unwrap();
 	assert_eq!(m.title, "Sample 2");
-	assert_eq!(m.authors.unwrap()[0], "Artist 7");
+	assert_eq!(m.artists.as_deref(), Some(&[String::from("Artist 7")][..]));
+	assert_eq!(m.authors.as_deref(), Some(&[][..]));
 	let chapters = m.chapters.unwrap();
 	assert_eq!(chapters[0].key, "42");
 	assert_eq!(chapters[0].language.as_deref(), Some("fr"));
@@ -89,6 +90,16 @@ fn chapter_language_uses_only_one_recognized_gallery_language() {
 	)
 	.unwrap();
 	assert_eq!(gallery_language(&unknown), None);
+}
+
+#[aidoku_test]
+fn live_gallery_artist_metadata_maps_to_aidoku_artists() {
+	let doc = Html::parse_with_url(
+		include_str!("../fixtures/live-gallery-artists.html"),
+		"https://imhentai.xxx/gallery/1743990/",
+	)
+	.unwrap();
+	assert_eq!(gallery_artists(&doc), vec!["anabuki bouhatei"]);
 }
 
 #[aidoku_test]
