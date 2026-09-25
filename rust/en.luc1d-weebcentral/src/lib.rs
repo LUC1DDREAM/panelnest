@@ -82,6 +82,41 @@ fn parse_reader_pages(html: &Document) -> Vec<Page> {
 	pages
 }
 
+fn number_after_label(title: &str, labels: &[&str]) -> Option<f32> {
+	let lower = title.to_ascii_lowercase();
+	labels.iter().find_map(|label| {
+		let start = lower.find(label)? + label.len();
+		let value = title.get(start..)?.trim_start();
+		let end = value
+			.char_indices()
+			.take_while(|(_, character)| character.is_ascii_digit() || *character == '.')
+			.map(|(index, character)| index + character.len_utf8())
+			.last()?;
+		value.get(..end)?.parse::<f32>().ok()
+	})
+}
+
+fn chapter_metadata(title: Option<String>) -> (Option<String>, Option<f32>, Option<f32>) {
+	let Some(label) = title else {
+		return (None, None, None);
+	};
+	let lower = label.to_ascii_lowercase();
+	let has_volume = lower.contains("volume") || lower.contains("vol.") || lower.contains("vol ");
+	let has_chapter = lower.contains("chapter") || lower.contains("ch.") || lower.contains("ch ");
+	let volume_number = number_after_label(&label, &["volume ", "vol. ", "vol "]);
+	let chapter_number = number_after_label(&label, &["chapter ", "ch. ", "ch "]);
+	let trailing_number = label
+		.rsplit(' ')
+		.next()
+		.and_then(|number| number.parse::<f32>().ok());
+
+	match (has_volume, has_chapter) {
+		(_, true) => (None, chapter_number.or(trailing_number), volume_number),
+		(true, false) => (None, None, volume_number.or(trailing_number)),
+		(false, false) => (Some(label), trailing_number, None),
+	}
+}
+
 const SEARCH_GENRES: [&str; 38] = [
 	"Action",
 	"Adult",
@@ -557,19 +592,7 @@ impl Source for WeebCentral {
 							.select_first("span.flex > span")
 							.and_then(|el| el.text());
 
-						let mut chapter_number = title
-							.as_ref()
-							.and_then(|t| t.rsplit(' ').next())
-							.and_then(|num| num.parse::<f32>().ok());
-
-						let is_volume = title.as_ref().is_some_and(|t| t.contains("Volume"));
-						let is_chapter = title.as_ref().is_some_and(|t| t.contains("Chapter"));
-
-						let (final_title, volume_number) = match (is_volume, is_chapter) {
-							(true, _) => (None, chapter_number.take()),
-							(_, true) => (None, None),
-							_ => (title, None),
-						};
+						let (final_title, chapter_number, volume_number) = chapter_metadata(title);
 
 						let date_uploaded = element
 							.select_first("time[datetime]")

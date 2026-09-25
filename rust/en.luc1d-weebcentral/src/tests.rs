@@ -3,6 +3,26 @@ use aidoku::imports::html::Html;
 use aidoku_test::aidoku_test;
 
 #[aidoku_test]
+fn volume_and_chapter_numbers_are_parsed_independently() {
+	assert_eq!(
+		chapter_metadata(Some("Volume 3 Chapter 24.5".into())),
+		(None, Some(24.5), Some(3.0))
+	);
+	assert_eq!(
+		chapter_metadata(Some("Chapter 12".into())),
+		(None, Some(12.0), None)
+	);
+	assert_eq!(
+		chapter_metadata(Some("Volume 2".into())),
+		(None, None, Some(2.0))
+	);
+	assert_eq!(
+		chapter_metadata(Some("Volume 1 Chapter 2: The Return".into())),
+		(None, Some(2.0), Some(1.0))
+	);
+}
+
+#[aidoku_test]
 fn discovery_listings_use_real_search_sorts() {
 	for (id, sort) in [
 		("best-match", "Best Match"),
