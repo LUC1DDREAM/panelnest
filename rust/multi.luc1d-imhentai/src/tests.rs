@@ -466,6 +466,24 @@ fn current_live_imhentai_reader_fixture_builds_all_pages() {
 }
 
 #[aidoku_test]
+fn current_live_reader_layout_passes_the_page_list_guard() {
+	let doc = Html::parse_with_url(
+		include_str!("../fixtures/live-reader-page-one.html"),
+		"https://imhentai.xxx/view/1743990/1/",
+	)
+	.unwrap();
+	assert!(doc.select_first("#gimg").is_some());
+	assert!(doc.select_first("input#load_id").is_none());
+	assert!(is_reader_document(&doc));
+	assert_eq!(
+		parse_pages_with_referer(&doc, "https://imhentai.xxx/view/1743990/1/")
+			.unwrap()
+			.len(),
+		50
+	);
+}
+
+#[aidoku_test]
 fn image_requests_use_reader_context_and_validate_image_hosts() {
 	use aidoku::ImageRequestProvider;
 	let source = GallerySource;

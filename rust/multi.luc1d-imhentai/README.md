@@ -52,3 +52,5 @@ Version 27 reads the reader manifest from the full document if Aidoku's script-e
 Version 28 maps the official `Artists:` gallery field to Aidoku's `Manga.artists` field and clears the unrelated `Manga.authors` field. A fixture verifies the model mapping.
 
 Version 29 requests identity encoding for IMHentai HTML. This follows the current GalleryAdults client workaround, which removes `Accept-Encoding` to avoid compressed HTML responses that some source runtimes fail to parse. It applies to reader and gallery HTML through the shared request builder; CDN image requests remain unchanged. Live checks return HTTP 200 and the reader manifest builds all 50 page URLs. Aidoku device playback still needs confirmation.
+
+Version 30 accepts the current reader layout, which exposes `#gimg` and `g_th` but no longer includes the legacy `input#load_id`. The page-list guard previously rejected this valid live response before the existing current-layout parser could run. A regression fixture exercises the same guard and verifies all 50 page URLs from the current reader response.

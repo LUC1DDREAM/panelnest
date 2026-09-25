@@ -578,6 +578,9 @@ fn gallery_referer(gallery_id: &str) -> Result<String> {
 fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 	parse_pages_with_referer(doc, &format!("{BASE_URL}/view/1/1/"))
 }
+fn is_reader_document(doc: &Document) -> bool {
+	doc.select_first("#gimg").is_some() || doc.select_first("input#load_id").is_some()
+}
 fn reader_manifest(doc: &Document) -> Result<serde_json::Value> {
 	let script_html = doc.select("script").and_then(|scripts| {
 		scripts
@@ -1096,7 +1099,7 @@ impl Source for GallerySource {
 		let referer = gallery_referer(&manga.key)?;
 		let reader_doc = site_request(reader_url.clone(), referer.as_str())?.html()?;
 		ensure!(
-			reader_doc.select_first("#gimg, input#load_id").is_some(),
+			is_reader_document(&reader_doc),
 			"Reader unavailable or site layout changed"
 		);
 		parse_pages_with_referer(&reader_doc, &reader_url)
