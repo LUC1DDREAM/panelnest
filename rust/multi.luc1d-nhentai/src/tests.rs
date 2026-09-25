@@ -4,7 +4,7 @@ fn source_metadata_matches_aidoku_multilingual_filter() {
 	let manifest: serde_json::Value =
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	let languages = manifest["info"]["languages"].as_array().unwrap();
-	assert_eq!(manifest["info"]["version"], 23);
+	assert_eq!(manifest["info"]["version"], 24);
 	assert!(languages.iter().any(|language| language == "multi"));
 	for language in ["en", "ja", "zh"] {
 		assert!(languages.iter().any(|value| value == language));
@@ -458,4 +458,50 @@ fn deep_links_accept_only_numeric_gallery_paths_on_canonical_host() {
 			"{url}"
 		);
 	}
+}
+
+#[aidoku_test]
+fn tag_deep_links_use_the_validated_official_slug_lookup() {
+	let slug = "big-breasts";
+	for url in [
+		"https://nhentai.net/tag/big-breasts/",
+		"https://nhentai.net/tag/big-breasts",
+		"https://nhentai.net/tag/big-breasts/?from=share#top",
+	] {
+		assert_eq!(super::tag_slug_from_deep_link(url), Some(slug));
+	}
+	for url in [
+		"https://nhentai.net.evil/tag/big-breasts/",
+		"http://nhentai.net/tag/big-breasts/",
+		"https://nhentai.net/artist/big-breasts/",
+		"https://nhentai.net/tag/Big-Breasts/",
+		"https://nhentai.net/tag/big-breasts/extra/",
+		"https://nhentai.net/tag/%2e%2e/",
+	] {
+		assert!(super::tag_slug_from_deep_link(url).is_none(), "{url}");
+	}
+
+	let tag = NHentaiTag {
+		id: 2937,
+		name: "big breasts".into(),
+		count: 235_423,
+		r#type: "tag".into(),
+		url: "/tag/big-breasts/".into(),
+		slug: Some(slug.into()),
+	};
+	let listing = super::listing_from_tag_slug(slug, &tag).unwrap();
+	assert_eq!(listing.id, "popular-tag-6269672062726561737473");
+	assert_eq!(listing.name, "Popular tag: big breasts");
+	let filters = super::popular_tag_filters(&listing.id).unwrap().unwrap();
+	assert!(matches!(&filters[0], aidoku::FilterValue::Text { id, value } if id == "tag" && value == "big breasts"));
+
+	let mut invalid = tag.clone();
+	invalid.slug = Some("other-tag".into());
+	assert!(super::listing_from_tag_slug(slug, &invalid).is_none());
+	let mut invalid = tag.clone();
+	invalid.r#type = "artist".into();
+	assert!(super::listing_from_tag_slug(slug, &invalid).is_none());
+	let mut invalid = tag;
+	invalid.url = "/tag/other-tag/".into();
+	assert!(super::listing_from_tag_slug(slug, &invalid).is_none());
 }

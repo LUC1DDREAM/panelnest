@@ -2,7 +2,9 @@
 
 Independent vendored current-API source, `multi.luc1d-nhentai`; pinned Aidoku SDK `e1320b0a2e11afb59e4dee374883a2212d325699`. Existing source/license provenance is retained in the repository. This change does not add any downloaded adult imagery or explicit fixture text.
 
-## Website-backed capabilities (source version 23)
+## Website-backed capabilities (source version 24)
+
+Version 24 opens official `/tag/<slug>/` links as the matching Aidoku Popular tag listing. It resolves the canonical name with nhentai's per-slug tag API and validates the returned type, slug and route before creating the existing name-based listing ID.
 
 Version 23 adds Aidoku's `multi` language-filter sentinel while retaining the existing English, Japanese, and Chinese language codes. Aidoku 0.9 build 3 filters source-language metadata by exact codes and does not treat `All` as `multi`; the extra code makes nhentai discoverable when users choose multilingual sources.
 

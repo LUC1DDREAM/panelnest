@@ -25,6 +25,7 @@ The feature list and per-source exceptions are recorded in `rebuild/sources.json
 | Migration | Asura Scans | A historical source-key change is declared in the source config and maps legacy manga and chapter keys. The other source IDs and stored keys have not changed. |
 | Notifications | Asura Scans, HentaiFox | Login setting changes need to refresh account listings and clear saved session data on logout. Other sources have no setting notification work. |
 | Chapter deep links | Asura Scans, WeebCentral, WEBTOON | These sites expose distinct chapter or episode identifiers. Single-gallery sources identify a title and its reader pages through the same gallery key. |
+| Listing deep links | nhentai, HentaiFox | Official tag routes map to the existing Popular tag Listing IDs. nhentai resolves the official slug through `/api/v2/tags/tag/<slug>` and validates its canonical route; HentaiFox supports its verified latest and popular tag routes. |
 
 ## Reviewed, with no useful current site behavior
 

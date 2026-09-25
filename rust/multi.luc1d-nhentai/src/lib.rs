@@ -151,6 +151,46 @@ fn popular_tag_listings(tags: &[NHentaiTag]) -> Vec<Listing> {
 	listings
 }
 
+fn tag_slug_from_deep_link(url: &str) -> Option<&str> {
+	let rest = url.strip_prefix("https://")?;
+	let (host, path) = rest.split_once('/')?;
+	if host != BASE_URL.trim_start_matches("https://") {
+		return None;
+	}
+	let path = path.split(['?', '#']).next()?;
+	let tag_path = path.strip_prefix("tag/")?;
+	let slug = tag_path.strip_suffix('/').unwrap_or(tag_path);
+	if slug.is_empty()
+		|| slug.len() > 128
+		|| !slug
+			.bytes()
+			.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+	{
+		return None;
+	}
+	Some(slug)
+}
+
+fn listing_from_tag_slug(slug: &str, tag: &NHentaiTag) -> Option<Listing> {
+	let name = tag.name.trim();
+	if tag.r#type != "tag"
+		|| tag.slug.as_deref() != Some(slug)
+		|| tag.url != format!("/tag/{slug}/")
+		|| tag.count <= 0
+		|| name.is_empty()
+		|| name.chars().any(|character| {
+			character.is_control() || matches!(character, '"' | '\\')
+		})
+	{
+		return None;
+	}
+	Some(Listing {
+		id: format!("{POPULAR_TAG_LISTING_PREFIX}{}", encode_listing_tag(name)),
+		name: format!("Popular tag: {name}"),
+		..Default::default()
+	})
+}
+
 fn popular_tag_filters(id: &str) -> Result<Option<Vec<FilterValue>>> {
 	let Some(tag) = decode_listing_tag(id)? else {
 		return Ok(None);
@@ -599,19 +639,25 @@ impl DeepLinkHandler for NHentai {
 			return Ok(None);
 		}
 
-		const GALLERY_PATH: &str = "/g/";
-		let Some(id_part) = path.strip_prefix(GALLERY_PATH.trim_start_matches('/')) else {
-			return Ok(None);
-		};
-		let end = id_part.find('/').unwrap_or(id_part.len());
-		let manga_id = &id_part[..end];
-		if manga_id.is_empty() || !manga_id.bytes().all(|byte| byte.is_ascii_digit()) {
-			return Ok(None);
+		let path = path.split(['?', '#']).next().unwrap_or_default();
+		const GALLERY_PATH: &str = "g/";
+		if let Some(id_part) = path.strip_prefix(GALLERY_PATH) {
+			let end = id_part.find('/').unwrap_or(id_part.len());
+			let manga_id = &id_part[..end];
+			if !manga_id.is_empty() && manga_id.bytes().all(|byte| byte.is_ascii_digit()) {
+				return Ok(Some(DeepLinkResult::Manga {
+					key: manga_id.into(),
+				}));
+			}
 		}
 
-		Ok(Some(DeepLinkResult::Manga {
-			key: manga_id.into(),
-		}))
+		let Some(slug) = tag_slug_from_deep_link(&url) else {
+			return Ok(None);
+		};
+		let tag: NHentaiTag = Request::get(format!("{API_URL}/tags/tag/{slug}"))?
+			.header("User-Agent", USER_AGENT)
+			.json_owned()?;
+		Ok(listing_from_tag_slug(slug, &tag).map(DeepLinkResult::Listing))
 	}
 }
 
