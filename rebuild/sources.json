@@ -285,7 +285,8 @@
       "deep-links",
       "dynamic-filters",
       "image-request",
-      "page-descriptions"
+      "page-descriptions",
+      "web-login"
     ],
     "features": [
       "search",
@@ -298,7 +299,8 @@
       "deep-links",
       "dynamic-filters",
       "image-request",
-      "page-descriptions"
+      "page-descriptions",
+      "web-login"
     ],
     "listings": [
       "Latest",
@@ -307,9 +309,10 @@
     "dynamic_listings": [
       "Most Faved",
       "Most Fapped",
-      "Most Downloaded"
+      "Most Downloaded",
+      "Bookmarks (login required)"
     ],
-    "limitations": "The three sidebar ranking feeds are finite and may fail independently. Popular-sorted dynamic listings are available for the 50 quick-select tags, with pagination. Home displays the site鈥檚 current and previous Daily Top Rated spotlights. Quick-select menus show up to 50 popular entries for each other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site鈥檚 ASCII slug. The site exposes only relative Posted age text; Chapter.date_uploaded is an approximate timestamp computed when gallery details load.",
+    "limitations": "The three sidebar ranking feeds are finite and may fail independently. Popular-sorted dynamic listings are available for the 50 quick-select tags, with pagination. Home displays the site's current and previous Daily Top Rated spotlights. Quick-select menus show up to 50 popular entries for each other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site's ASCII slug. Favorites require a valid HentaiFox account session; no authenticated account was available for live response checks. The site exposes only relative Posted age text; Chapter.date_uploaded is an approximate timestamp computed when gallery details load.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
@@ -317,8 +320,8 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "The official homepage currently renders the Daily Top Rated Today and Yesterday gallery links and thumbnails server-side; its JavaScript only toggles their visibility locally. Live official /languages/ and /languages/popular/ directories each expose 26 classifications. Sample /language/english/ Latest and Popular routes and the three official sidebar POST routes returned HTTP 200 with current gallery markup. A gallery fetched on 2026-09-25 returns HTTP 200 and exposes language links in ul.languages. Version 24 assigns a BCP 47 chapter language only when exactly one recognized language tag is present; chapter construction and translated-only or mixed-language handling are fixture-tested. Versions 21-23 retain popular-tag listings, completed-title refresh policy and gallery-page CDN Referer propagation, all covered by fixtures. Native Aidoku runtime and device rendering remain unverified. Version 25 populates Chapter.thumbnail from the validated gallery cover URL. Version 26 consumes all 50 official popular-tag directory entries, producing Latest and Popular listings for each; a boundary fixture checks tag 50 and rejects tag 51. A fresh official gallery fetched on 2026-09-25 returns HTTP 200 and exposes a relative Posted label in span.i_text.pages, with no machine-readable exact upload timestamp. Version 27 maps supported relative ages to approximate chapter timestamps; fixtures cover parsing and chapter integration.",
-    "fixture_tests_passed": 29,
+    "live_evidence": "The official homepage currently renders the Daily Top Rated Today and Yesterday gallery links and thumbnails server-side; its JavaScript only toggles their visibility locally. Live official /languages/ and /languages/popular/ directories each expose 26 classifications. Sample /language/english/ Latest and Popular routes and the three official sidebar POST routes returned HTTP 200 with current gallery markup. A gallery fetched on 2026-09-25 returns HTTP 200 and exposes language links in ul.languages. Version 24 assigns a BCP 47 chapter language only when exactly one recognized language tag is present; chapter construction and translated-only or mixed-language handling are fixture-tested. Versions 21-23 retain popular-tag listings, completed-title refresh policy and gallery-page CDN Referer propagation, all covered by fixtures. Native Aidoku runtime and device rendering remain unverified. Version 25 populates Chapter.thumbnail from the validated gallery cover URL. Version 26 consumes all 50 official popular-tag directory entries, producing Latest and Popular listings for each; a boundary fixture checks tag 50 and rejects tag 51. A fresh official gallery fetched on 2026-09-25 returns HTTP 200 and exposes a relative Posted label in span.i_text.pages, with no machine-readable exact upload timestamp. Version 27 maps supported relative ages to approximate chapter timestamps; fixtures cover parsing and chapter integration. Version 28 validates the PHP session against /profile/ and exposes paginated Bookmarks from /includes/user_favs.php, as documented in site JavaScript; authenticated responses were not verified.",
+    "fixture_tests_passed": 33,
     "release_authorized": true
   }
 ]

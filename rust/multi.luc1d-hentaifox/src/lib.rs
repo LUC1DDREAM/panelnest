@@ -1,9 +1,9 @@
 #![no_std]
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
-	Filter, FilterValue, HomePartialResult, ImageRequestProvider, Listing, Manga, MangaPageResult,
-	MangaStatus, Page, PageContent, PageDescriptionProvider, Result, SelectFilter, SortFilter,
-	PageContext, Source, TextFilter, UpdateStrategy, Viewer,
+	Filter, FilterValue, HashMap, HomePartialResult, ImageRequestProvider, Listing, Manga,
+	MangaPageResult, MangaStatus, Page, PageContent, PageContext, PageDescriptionProvider, Result,
+	SelectFilter, SortFilter, Source, TextFilter, UpdateStrategy, Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -12,6 +12,8 @@ use aidoku::{
 	},
 	prelude::*,
 };
+mod auth;
+
 macro_rules! ensure {
 	($condition:expr, $message:expr) => {
 		if !$condition {
@@ -122,6 +124,23 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 			.select_first(".pagination li.active + li:not(.disabled) a, .pagination a[rel=next]")
 			.is_some(),
 	}
+}
+fn parse_favorites(doc: &Document, page: i32) -> Result<MangaPageResult> {
+	ensure!(page > 0, "Invalid page");
+	let mut result = parse_search(doc);
+	if let Some(buttons) = doc.select(".pagination button[data-page]") {
+		result.has_next_page = buttons
+			.filter_map(|button| button.attr("data-page")?.parse::<i32>().ok())
+			.any(|next_page| next_page > page);
+	}
+	Ok(result)
+}
+fn bookmarks_listing(logged_in: bool) -> Option<Listing> {
+	logged_in.then(|| Listing {
+		id: "bookmarks".into(),
+		name: "Bookmarks".into(),
+		..Default::default()
+	})
 }
 fn search_url(query: Option<&str>, page: i32) -> Result<String> {
 	search_url_with_filters(query, page, &[])
@@ -870,6 +889,25 @@ impl aidoku::Home for GallerySource {
 }
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
+		if listing.id == "bookmarks" {
+			ensure!(page > 0, "Invalid page");
+			let cookie = auth::valid_session()?;
+			let response = Request::post(format!("{BASE_URL}/includes/user_favs.php"))?
+				.header("Cookie", &cookie)
+				.header("Referer", format!("{BASE_URL}/profile/").as_str())
+				.header("X-Requested-With", "XMLHttpRequest")
+				.header("Content-Type", "application/x-www-form-urlencoded")
+				.body(format!("page={page}"))
+				.send()?;
+			ensure!(
+				response.status_code() == 200
+					&& response.get_url().is_some_and(|url| {
+						url.starts_with(&format!("{BASE_URL}/includes/user_favs.php"))
+					}),
+				"HentaiFox Bookmarks request failed"
+			);
+			return parse_favorites(&response.get_html()?, page);
+		}
 		let popular_tag = popular_sorted_tag_slug(&listing.id).is_some();
 		if popular_tag || popular_tag_slug(&listing.id).is_some() {
 			let doc = Request::get(popular_tag_url(&listing.id, page, popular_tag)?)?.html()?;
@@ -914,6 +952,9 @@ impl DynamicListings for GallerySource {
 				..Default::default()
 			})
 			.collect::<Vec<_>>();
+		if let Some(bookmarks) = bookmarks_listing(auth::is_logged_in()) {
+			listings.push(bookmarks);
+		}
 		if let Ok(response) = Request::get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
 			.and_then(|request| request.html())
 		{
@@ -922,6 +963,11 @@ impl DynamicListings for GallerySource {
 			}
 		}
 		Ok(listings)
+	}
+}
+impl WebLoginHandler for GallerySource {
+	fn handle_web_login(&self, _key: String, cookies: HashMap<String, String>) -> Result<bool> {
+		auth::handle_web_login(cookies)
 	}
 }
 impl DeepLinkHandler for GallerySource {
@@ -1098,7 +1144,8 @@ aidoku::register_source!(
 	DynamicListings,
 	DeepLinkHandler,
 	DynamicFilters,
-	PageDescriptionProvider
+	PageDescriptionProvider,
+	WebLoginHandler
 );
 
 #[cfg(test)]

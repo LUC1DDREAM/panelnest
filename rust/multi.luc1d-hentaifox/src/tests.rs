@@ -690,7 +690,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 27);
+	assert_eq!(manifest["info"]["version"], 28);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -718,6 +718,35 @@ fn synthetic_search() {
 		Some(format!("{BASE_URL}/cover.png"))
 	);
 	assert!(result.has_next_page);
+}
+
+#[aidoku_test]
+fn authenticated_bookmarks_listing_is_hidden_without_a_valid_login() {
+	assert!(bookmarks_listing(false).is_none());
+	let listing = bookmarks_listing(true).unwrap();
+	assert_eq!(listing.id, "bookmarks");
+	assert_eq!(listing.name, "Bookmarks");
+}
+
+#[aidoku_test]
+fn favorites_response_parses_gallery_cards_and_button_pagination() {
+	let first_page = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"><img src="/cover.jpg"></a></div><div class="caption">Saved title</div></div><div class="pagination"><button data-page="1">1</button><button data-page="2">Next</button></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let result = parse_favorites(&first_page, 1).unwrap();
+	assert_eq!(result.entries.len(), 1);
+	assert_eq!(result.entries[0].key, "42");
+	assert!(result.has_next_page);
+
+	let last_page = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/43/"><img src="/cover.jpg"></a></div><div class="caption">Last title</div></div><div class="pagination"><button data-page="2">2</button></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert!(!parse_favorites(&last_page, 2).unwrap().has_next_page);
+	assert!(parse_favorites(&last_page, 0).is_err());
 }
 
 #[aidoku_test]
