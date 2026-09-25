@@ -28,7 +28,7 @@ const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X)
 						  AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/300.0.598994205 \
 			Mobile/15E148 Safari/604";
 const POPULAR_TAG_LISTING_PREFIX: &str = "popular-tag-";
-const MAX_POPULAR_TAG_LISTINGS: usize = 25;
+const MAX_POPULAR_TAG_LISTINGS: usize = 120;
 
 fn chapter_language(gallery: &NHentaiGallery) -> Option<String> {
 	let languages = gallery

@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-nhentai",
-  "version": 21,
+  "version": 22,
   "sha256": "9b24f7525dc0ddd7e1f72aeafccc7ef03123862462b749778b6d49a90d76b310",
   "bytes": 103831,
   "languages": [
@@ -13,8 +13,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 17,
-  "official_site_checks": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries; the freeform Tag field routes other names through the official tag search operator. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). The official search endpoint accepted artist:\"ankoman\" with 25 entries on its first page; the first result's detail API confirmed the matching artist tag. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified. Version 18 adds an ImageRequestProvider for the official i.nhentai.net and t.nhentai.net CDNs. Version 19 registers DynamicListings for up to 25 highest-ranked tag feeds. Version 20 uses the API's actual scanlator name and maps a single recognized language to the chapter. Version 21 uses the gallery thumbnail for the chapter list; the image request provider accepts only the official HTTPS CDNs. Fixtures cover official API fields, language ambiguity, scanlator and thumbnail mapping. API runtime and device rendering remain unverified.",
+  "fixture_tests_passed": 18,
+  "official_site_checks": "The official paginated tag API reported 40 pages and 4,728 total entries. The bundled tag filter contains 807 entries with at least ten galleries; the freeform Tag field routes other names through the official tag search operator. The official language directory returns 14 classifications on one page. Popular artist, group, parody and character endpoints returned 120 correctly typed entries each on page 1 (277, 211, 37 and 149 pages respectively). The official search endpoint accepted artist:\"ankoman\" with 25 entries on its first page; the first result's detail API confirmed the matching artist tag. Source requests are paced at one per second to reduce rate-limit errors. Four sort page-1/2 probes passed in the prior live run; Home hit HTTP 429, so the complete live suite and device runtime remain unverified. Version 18 adds an ImageRequestProvider for the official i.nhentai.net and t.nhentai.net CDNs. Version 19 registers DynamicListings for popular tags; version 22 exposes all 120 entries returned on the current first ranking page. Version 20 uses the API's actual scanlator name and maps a single recognized language to the chapter. Version 21 uses the gallery thumbnail for the chapter list; the image request provider accepts only the official HTTPS CDNs. Fixtures cover official API fields, language ambiguity, scanlator and thumbnail mapping. API runtime and device rendering remain unverified. A current request to /api/v2/tags/tag?sort=popular&page=1&per_page=100 returned HTTP 200 with 120 entries across 40 pages; a boundary fixture verifies that all 120 are exposed.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

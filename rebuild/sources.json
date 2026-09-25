@@ -151,17 +151,17 @@
       "Popular All",
       "Latest"
     ],
-    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable. A freeform Tag field reaches other official tag search terms. Dynamic quick-select filters expose the 120 most popular entries from each artist, group, parody and character directory first page; free-text search remains available for other values.",
+    "limitations": "The site may rate-limit live requests (HTTP 429). The bundled tag selector contains entries with at least ten galleries and is refreshed from the official paginated tag API; refreshes abort without replacing the current list if any page is unavailable. A freeform Tag field reaches other official tag search terms. Dynamic quick-select filters expose the 120 most popular entries from each artist, group, parody and character directory first page; the Popular tag listing exposes all 120 entries from the first ranking page, while free-text search reaches other values.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,
     "device_tested": false,
     "status": "public; release authorized; automated device certification not claimed",
-    "live_evidence": "The official paginated tag API reports thousands of tag entries and the language directory returns 14 classifications. Source requests are paced at one per second; prior live requests have returned HTTP 429, so Aidoku runtime and device behavior remain unverified. Versions 18 and 19 added the official CDN ImageRequestProvider and up to 25 paginated Popular tag listings. Version 20 uses the API scanlator and a single recognized BCP 47 language tag in the matching Chapter fields; version 21 uses the API gallery thumbnail on each chapter. Synthetic API fixtures verify language ambiguity, scanlator, thumbnail and official CDN mapping.",
-    "fixture_tests_passed": 17,
+    "live_evidence": "The official paginated tag API reports thousands of tag entries and the language directory returns 14 classifications. Source requests are paced at one per second; prior live requests have returned HTTP 429, so Aidoku runtime and device behavior remain unverified. Versions 18 and 19 added the official CDN ImageRequestProvider and Popular tag listings. A current per_page=100 ranking request returned 120 entries; version 22 exposes all 120. Version 20 uses the API scanlator and a single recognized BCP 47 language tag in the matching Chapter fields; version 21 uses the API gallery thumbnail on each chapter. Synthetic API fixtures verify language ambiguity, scanlator, thumbnail, official CDN mapping and the 120-entry listing boundary.",
+    "fixture_tests_passed": 18,
     "release_authorized": true,
     "dynamic_listings": [
-      "Popular tags (up to 25 from the live tag ranking)"
+      "Popular tags (up to 120 from the live tag ranking)"
     ]
   },
   {
@@ -309,7 +309,7 @@
       "Most Fapped",
       "Most Downloaded"
     ],
-    "limitations": "The three sidebar ranking feeds are finite and may fail independently. Popular-sorted dynamic listings are available for the 50 quick-select tags, with pagination. Home displays the site\u2019s current and previous Daily Top Rated spotlights. Quick-select menus show up to 50 popular entries for each other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site\u2019s ASCII slug.",
+    "limitations": "The three sidebar ranking feeds are finite and may fail independently. Popular-sorted dynamic listings are available for the 50 quick-select tags, with pagination. Home displays the site’s current and previous Daily Top Rated spotlights. Quick-select menus show up to 50 popular entries for each other category; the official language directory currently exposes 26 entries. Freeform ASCII name/slug filters reach additional official tag, artist, character, parody and group routes. Names with non-ASCII characters require the site’s ASCII slug.",
     "package_verified": true,
     "runtime_tested": false,
     "publish": true,

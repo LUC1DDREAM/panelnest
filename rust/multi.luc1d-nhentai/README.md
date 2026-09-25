@@ -2,11 +2,11 @@
 
 Independent vendored current-API source, `multi.luc1d-nhentai`; pinned Aidoku SDK `e1320b0a2e11afb59e4dee374883a2212d325699`. Existing source/license provenance is retained in the repository. This change does not add any downloaded adult imagery or explicit fixture text.
 
-## Website-backed capabilities (source version 21)
+## Website-backed capabilities (source version 22)
 
 Version 21 uses the API's gallery thumbnail on the Aidoku chapter entry. Version 20 stores the API's actual scanlator in Aidoku's scanlator field and maps a single recognized language tag to the chapter language. Translated and rewrite tags are ignored; mixed and unknown languages remain unset.
 
-Version 19 adds up to 25 dynamic Popular tag feeds from the official tag ranking. Each feed uses the exact tag name and popular search order; offline fixtures cover stable listing IDs and search filters. The new directory call is not runtime-tested.
+Version 19 adds dynamic Popular tag feeds from the official tag ranking. Version 22 exposes all 120 tag entries returned by the API first ranking page. Each feed uses the exact tag name and popular search order; fixtures cover stable listing IDs and the 120-entry boundary. A live request confirmed that the first page currently returns 120 entries; remaining tags are reachable through freeform tag search.
 
 Existing `/api/v2/search` sorts are `popular-today`, `popular-week`, `popular` (all time), and `date`. Home, four listings, static tag/artist/group filters and language/blocklist settings already existed. They are not newly invented features. Home queries apply configured language and blocklist constraints, so ranks are within that selected result set. Gallery details now include the API's language tags alongside tags, artists, groups, parodies, and characters; they were previously omitted from the description. Version 16 adds a freeform Tag field that uses the official `tag:"..."` query operator, so tags outside the 807 common-tag picker can be searched without waiting for a filter refresh. Version 17 fixes the freeform Artist field to use the official typed `artist:"..."` search operator while retaining its published `author` filter ID, so non-popular artists can be targeted instead of searched as generic text.
 

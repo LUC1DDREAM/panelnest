@@ -87,6 +87,34 @@ fn dynamic_popular_tag_listings_are_stable_and_use_popular_tag_search() {
 	assert!(super::popular_tag_filters("popular-tag-missing").is_err());
 	assert!(super::popular_tag_filters("unsupported").unwrap().is_none());
 }
+
+#[aidoku_test]
+fn dynamic_popular_tag_listings_expose_all_120_api_entries() {
+	use aidoku::alloc::{format, Vec};
+
+	let tags = (1..=121)
+		.map(|id| NHentaiTag {
+			id,
+			name: format!("tag {id}"),
+			count: 1000 - id,
+			r#type: "tag".into(),
+			url: format!("/tag/tag-{id}/"),
+			slug: Some(format!("tag-{id}")),
+		})
+		.collect::<Vec<_>>();
+	let listings = super::popular_tag_listings(&tags);
+	assert_eq!(listings.len(), 120);
+	assert!(
+		listings
+			.iter()
+			.any(|listing| listing.name == "Popular tag: tag 120")
+	);
+	assert!(
+		!listings
+			.iter()
+			.any(|listing| listing.name == "Popular tag: tag 121")
+	);
+}
 #[cfg(feature = "live-tests")]
 #[aidoku_test]
 fn live_discovery_metadata_only() {
