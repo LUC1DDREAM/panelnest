@@ -10,7 +10,7 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 26,
+  "fixture_tests_passed": 25,
   "official_site_checks": "Live official reader checked on 2026-09-25: chapter HTML loads images from /chapters/<ULID>/images?is_prev=False&reading_style=long_strip. The response contains section#chapter-images with ordered img children on scans.lastation.us. Version 20 parses this actual endpoint markup as well as legacy scroll sections and errors when no valid pages are returned. Fixtures cover current markup, order, descriptions, invalid URLs and empty/broken-image responses. Device rendering remains unverified. Previous releases retain the documented discovery, filters, listings, metadata and chapter features. Version 21 separately extracts volume and chapter numbers from labels, preserving both values for combined labels such as Volume 3 Chapter 24.5. Offline fixture tests cover combined, chapter-only and volume-only labels; live chapter-list parsing could not be independently checked because Cloudflare returns HTTP 403.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
