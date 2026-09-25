@@ -147,6 +147,25 @@ fn gallery_groups(doc: &Document) -> Vec<String> {
 		})
 		.unwrap_or_default()
 }
+fn description_with_groups(description: Option<String>, groups: &[String]) -> Option<String> {
+	let description = description.unwrap_or_default();
+	let previous_summary = if description.starts_with("Groups: ") {
+		""
+	} else {
+		description.as_str()
+	};
+	let summary = previous_summary
+		.split_once("\n\nGroups: ")
+		.map_or(previous_summary, |(summary, _)| summary);
+	let summary = summary.trim_end();
+	let groups = groups.join(", ");
+	match (summary.is_empty(), groups.is_empty()) {
+		(true, true) => None,
+		(false, true) => Some(summary.to_string()),
+		(true, false) => Some(format!("Groups: {groups}")),
+		(false, false) => Some(format!("{summary}\n\nGroups: {groups}")),
+	}
+}
 fn parse_search(doc: &Document) -> MangaPageResult {
 	let entries = doc
 		.select("div.thumb")
@@ -451,15 +470,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 		manga.artists = Some(gallery_artists(doc));
 		manga.authors = Some(Vec::new());
 		let groups = gallery_groups(doc);
-		if !groups.is_empty() {
-			let group_description = format!("Groups: {}", groups.join(", "));
-			manga.description = Some(match manga.description.take() {
-				Some(description) if !description.trim().is_empty() => {
-					format!("{description}\n\n{group_description}")
-				}
-				_ => group_description,
-			});
-		}
+		manga.description = description_with_groups(manga.description.take(), &groups);
 		manga.tags = Some(if IS_IM {
 			doc.select("li")
 				.map(|els| {

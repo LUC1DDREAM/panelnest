@@ -89,6 +89,22 @@ fn live_gallery_artist_and_group_metadata_maps_to_aidoku_fields() {
 		existing.description.as_deref(),
 		Some("Existing summary\n\nGroups: studio mizuyokan")
 	);
+	assert_eq!(
+		description_with_groups(
+			Some("Existing summary\n\nGroups: previous group".into()),
+			&gallery_groups(&doc),
+		)
+		.as_deref(),
+		Some("Existing summary\n\nGroups: studio mizuyokan")
+	);
+	assert_eq!(
+		description_with_groups(
+			Some("Existing summary\n\nGroups: previous group".into()),
+			&[],
+		)
+		.as_deref(),
+		Some("Existing summary")
+	);
 }
 
 #[aidoku_test]
@@ -731,7 +747,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 33);
+	assert_eq!(manifest["info"]["version"], 34);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()

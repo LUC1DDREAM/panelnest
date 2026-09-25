@@ -1,7 +1,9 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 33)\nVersion 33 maps the separate official ul.groups taxonomy into Manga.description as Groups: ..., preserving any existing description and keeping groups separate from tags. A live gallery fixture checks group and artist metadata.
+## Discovery (source version 34)
+Version 34 refreshes the Groups: metadata idempotently, replacing stale values and removing the field when no groups are present.
+Version 33 maps the separate official ul.groups taxonomy into Manga.description as Groups: ..., preserving any existing description and keeping groups separate from tags. A live gallery fixture checks group and artist metadata.
 Version 32 maps official gallery artist links from ul.artists into Aidoku Manga.artists, trims whitespace, and clears Manga.authors because the site exposes no separate Authors field. A sanitized live gallery fixture verifies the mapping.
 
 Version 24 fills Aidoku's chapter language when the gallery has exactly one recognized language tag. Unknown, translated-only and mixed-language galleries leave the field unset rather than guessing.
