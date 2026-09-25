@@ -46,3 +46,5 @@ Version 24 fills Aidoku Chapter.date_uploaded from the official relative Posted 
 Version 25 always opens a gallery chapter at reader page 1. Gallery pages also link to arbitrary thumbnail pages, which must not become the chapter start URL.
 
 Version 26 adds a sanitized fixture from the current live page-one reader response. Its full 50-page manifest is parsed in the WASM fixture suite, including the first and last image URL and reader referer context.
+
+Version 27 reads the reader manifest from the full document if Aidoku's script-element query does not expose it, while retaining the direct script path when available. The reader test now parses the actual sanitized live response fixture rather than reconstructing only its image and manifest elements.

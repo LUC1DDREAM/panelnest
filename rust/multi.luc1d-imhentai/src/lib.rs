@@ -547,6 +547,28 @@ fn gallery_referer(gallery_id: &str) -> Result<String> {
 fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 	parse_pages_with_referer(doc, &format!("{BASE_URL}/view/1/1/"))
 }
+fn reader_manifest(doc: &Document) -> Result<serde_json::Value> {
+	let script_html = doc
+		.select("script")
+		.and_then(|scripts| {
+			scripts
+				.filter_map(|element| element.html())
+				.find(|html| html.contains("$.parseJSON('"))
+		});
+	let html = match script_html {
+		Some(html) => html,
+		None => doc
+			.select_first("html")
+			.and_then(|element| element.outer_html())
+			.ok_or(error!("Reader page manifest missing"))?,
+	};
+	let raw = html
+		.split("$.parseJSON('")
+		.nth(1)
+		.and_then(|value| value.split("');").next())
+		.ok_or(error!("Reader page manifest missing"))?;
+	serde_json::from_str(raw).map_err(|_| error!("Invalid reader page manifest"))
+}
 fn parse_pages_with_referer(doc: &Document, reader_url: &str) -> Result<Vec<Page>> {
 	if doc.select_first("#gimg").is_some() {
 		let current = doc
@@ -575,19 +597,7 @@ fn parse_pages_with_referer(doc: &Document, reader_url: &str) -> Result<Vec<Page
 			.parse::<usize>()
 			.map_err(|_| error!("Invalid current reader page number"))?;
 		ensure!(current_page > 0, "Invalid current reader image filename");
-		let manifest = doc
-			.select("script")
-			.and_then(|scripts| {
-				scripts.filter_map(|element| element.html()).find_map(|script| {
-					let raw = script
-						.split("$.parseJSON('")
-						.nth(1)?
-						.split("');")
-						.next()?;
-					serde_json::from_str::<serde_json::Value>(raw).ok()
-				})
-			})
-			.ok_or(error!("Reader page manifest missing"))?;
+		let manifest = reader_manifest(doc)?;
 		let manifest = manifest
 			.as_object()
 			.ok_or(error!("Invalid reader page manifest"))?;
@@ -664,22 +674,7 @@ fn parse_pages_with_referer(doc: &Document, reader_url: &str) -> Result<Vec<Page
 		);
 		host.to_string()
 	};
-	let script = doc
-		.select("script")
-		.and_then(|els| {
-			els.filter_map(|e| e.html())
-				.find(|s| s.contains("$.parseJSON('"))
-		})
-		.ok_or(error!(
-			"Reader manifest missing; thumbnail guessing is unsupported"
-		))?;
-	let raw = script
-		.split("$.parseJSON('")
-		.nth(1)
-		.and_then(|s| s.split("');").next())
-		.ok_or(error!("Invalid reader manifest"))?;
-	let map: serde_json::Value =
-		serde_json::from_str(raw).map_err(|_| error!("Invalid reader JSON"))?;
+	let map = reader_manifest(doc)?;
 	let map = map.as_object().ok_or(error!("Invalid reader map"))?;
 	let count = input(doc, "load_pages")?
 		.parse::<usize>()

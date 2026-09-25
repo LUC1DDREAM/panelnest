@@ -375,20 +375,11 @@ fn current_imhentai_reader_uses_view_image_path_and_manifest() {
 
 #[aidoku_test]
 fn current_live_imhentai_reader_fixture_builds_all_pages() {
-	let mut manifest = String::from("{");
-	for number in 1..=50 {
-		if number > 1 {
-			manifest.push(',');
-		}
-		let format = if number == 2 { "w" } else { "j" };
-		manifest.push_str(&format!("\"{number}\":\"{format},1280,1810\""));
-	}
-	manifest.push('}');
-	let html = format!(
-		r#"<img id="gimg" src="https://m11.imhentai.xxx/033/nja31r49bw/1.jpg"><script>var g_th = $.parseJSON('{}');</script>"#,
-		manifest
-	);
-	let doc = Html::parse_with_url(&html, "https://imhentai.xxx/view/1743990/1/").unwrap();
+	let doc = Html::parse_with_url(
+		include_str!("../fixtures/live-reader-page-one.html"),
+		"https://imhentai.xxx/view/1743990/1/",
+	)
+	.unwrap();
 	let reader_url = "https://imhentai.xxx/view/1743990/1/";
 	let pages = parse_pages_with_referer(&doc, reader_url).unwrap();
 	assert_eq!(pages.len(), 50);
@@ -403,7 +394,7 @@ fn current_live_imhentai_reader_fixture_builds_all_pages() {
 		panic!("reader page must carry its referer context");
 	}
 	if let PageContent::Url(url, _) = &pages[1].content {
-		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/2.webp");
+		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/2.jpg");
 	} else {
 		panic!("page must be a URL");
 	}
@@ -590,7 +581,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 26);
+	assert_eq!(manifest["info"]["version"], 27);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
