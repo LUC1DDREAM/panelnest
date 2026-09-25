@@ -52,6 +52,52 @@ fn synthetic_details_and_chapter_flags() {
 }
 
 #[aidoku_test]
+fn chapter_language_maps_all_official_language_tags_and_ignores_classifications() {
+	for (label, expected) in [
+		("chinese", "zh"),
+		("english", "en"),
+		("french", "fr"),
+		("german", "de"),
+		("hindi", "hi"),
+		("indonesian", "id"),
+		("italian", "it"),
+		("japanese", "ja"),
+		("javanese", "jv"),
+		("korean", "ko"),
+		("norwegian", "no"),
+		("portuguese", "pt"),
+		("romanian", "ro"),
+		("russian", "ru"),
+		("sanskrit", "sa"),
+		("spanish", "es"),
+		("tagalog", "tl"),
+		("thai", "th"),
+		("turkish", "tr"),
+		("ukrainian", "uk"),
+		("vietnamese", "vi"),
+	] {
+		let html = format!(
+			"<ul class='languages'><span class='i_text'>Languages:</span><li><a class='tag_btn'>{label}</a></li></ul>"
+		);
+		let doc = Html::parse_with_url(&html, BASE_URL).unwrap();
+		assert_eq!(gallery_language(&doc).as_deref(), Some(expected), "{label}");
+	}
+	for classification in ["translated", "rewrite", "speechless", "text cleaned", "textless narrative"] {
+		let html = format!(
+			"<ul class='languages'><span class='i_text'>Languages:</span><li><a class='tag_btn'>{classification}</a></li></ul>"
+		);
+		let doc = Html::parse_with_url(&html, BASE_URL).unwrap();
+		assert_eq!(gallery_language(&doc), None, "{classification}");
+	}
+	let mixed = Html::parse_with_url(
+		"<ul class='languages'><span class='i_text'>Languages:</span><li><a class='tag_btn'>english</a></li><li><a class='tag_btn'>japanese</a></li></ul>",
+		BASE_URL,
+	)
+	.unwrap();
+	assert_eq!(gallery_language(&mixed), None);
+}
+
+#[aidoku_test]
 fn live_gallery_artist_and_group_metadata_maps_to_aidoku_fields() {
 	let doc = Html::parse_with_url(
 		&format!(
@@ -747,7 +793,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 34);
+	assert_eq!(manifest["info"]["version"], 35);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()

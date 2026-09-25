@@ -524,13 +524,27 @@ fn gallery_language(doc: &Document) -> Option<String> {
 				.unwrap_or_default()
 		})
 		.filter_map(|tag| match tag.trim().to_ascii_lowercase().as_str() {
+			"chinese" => Some("zh"),
+			"hindi" => Some("hi"),
+			"indonesian" => Some("id"),
+			"italian" => Some("it"),
+			"javanese" => Some("jv"),
 			"english" => Some("en"),
 			"japanese" => Some("ja"),
-			"spanish" => Some("es"),
-			"french" => Some("fr"),
 			"korean" => Some("ko"),
+			"norwegian" => Some("no"),
+			"portuguese" => Some("pt"),
+			"romanian" => Some("ro"),
 			"german" => Some("de"),
 			"russian" => Some("ru"),
+			"sanskrit" => Some("sa"),
+			"spanish" => Some("es"),
+			"tagalog" => Some("tl"),
+			"thai" => Some("th"),
+			"turkish" => Some("tr"),
+			"ukrainian" => Some("uk"),
+			"vietnamese" => Some("vi"),
+			"french" => Some("fr"),
 			_ => None,
 		})
 		.collect::<Vec<_>>();

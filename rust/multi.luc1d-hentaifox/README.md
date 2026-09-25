@@ -1,7 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 34)
+## Discovery (source version 35)
+Version 35 maps all 21 human languages in the live official popular-language directory to BCP 47 Chapter.language values; translated, rewrite, speechless and text-cleaning labels are not misclassified as languages. Fixtures cover the complete list, mixed languages and all classification tags.
 Version 34 refreshes the Groups: metadata idempotently, replacing stale values and removing the field when no groups are present.
 Version 33 maps the separate official ul.groups taxonomy into Manga.description as Groups: ..., preserving any existing description and keeping groups separate from tags. A live gallery fixture checks group and artist metadata.
 Version 32 maps official gallery artist links from ul.artists into Aidoku Manga.artists, trims whitespace, and clears Manga.authors because the site exposes no separate Authors field. A sanitized live gallery fixture verifies the mapping.
