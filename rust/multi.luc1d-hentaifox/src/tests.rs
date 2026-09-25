@@ -13,7 +13,8 @@ fn synthetic_details_and_chapter_flags() {
 	)
 	.unwrap();
 	assert_eq!(m.title, "Sample 2");
-	assert_eq!(m.authors.unwrap()[0], "Artist 7");
+	assert_eq!(m.artists.as_deref(), Some(&[String::from("Artist 7")][..]));
+	assert_eq!(m.authors.as_deref(), Some(&[][..]));
 	let chapters = m.chapters.unwrap();
 	assert_eq!(chapters[0].key, "42");
 	assert_eq!(chapters[0].language.as_deref(), Some("en"));
@@ -48,6 +49,16 @@ fn synthetic_details_and_chapter_flags() {
 		)
 		.is_err()
 	);
+}
+
+#[aidoku_test]
+fn live_gallery_artist_metadata_maps_to_aidoku_artists() {
+	let doc = Html::parse_with_url(
+		include_str!("../fixtures/live-gallery-artists.html"),
+		"https://hentaifox.com/gallery/173753/",
+	)
+	.unwrap();
+	assert_eq!(gallery_artists(&doc), vec!["kumatora"]);
 }
 
 #[aidoku_test]
@@ -690,7 +701,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 31);
+	assert_eq!(manifest["info"]["version"], 32);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
