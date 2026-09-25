@@ -66,3 +66,7 @@ requests.
 Version 18 populates chapter thumbnails with the existing series cover when available.
 
 Version 19 fills Chapter.language with en, as declared by this source manifest.
+
+## Reader fix (package version 20)
+
+The live /chapters/<id>/images response uses section#chapter-images with ordered image children. The reader now parses that markup, validates HTTPS image URLs, and returns an error when the response has no valid pages. Legacy scroll-section markup remains supported. Fixtures cover ordering, page descriptions, invalid URLs, empty responses and the broken-image placeholder. Live endpoint checked 2026-09-25; Aidoku device rendering remains unverified.

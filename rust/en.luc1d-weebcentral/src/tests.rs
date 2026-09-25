@@ -31,7 +31,10 @@ fn discovery_listings_use_real_search_sorts() {
 
 #[aidoku_test]
 fn completed_series_skip_library_refresh_and_other_statuses_keep_refreshing() {
-	assert_eq!(library_update_strategy(MangaStatus::Completed), UpdateStrategy::Never);
+	assert_eq!(
+		library_update_strategy(MangaStatus::Completed),
+		UpdateStrategy::Never
+	);
 	for status in [
 		MangaStatus::Ongoing,
 		MangaStatus::Hiatus,
@@ -49,12 +52,16 @@ fn dynamic_genre_listings_expose_every_official_genre_with_stable_ids() {
 	assert_eq!(listings.len(), SEARCH_GENRES.len());
 	assert_eq!(listings[0].id, "genre-action");
 	assert_eq!(listings[0].name, "Action");
-	assert!(listings.iter().any(|listing| {
-		listing.id == "genre-gender-bender" && listing.name == "Gender Bender"
-	}));
-	assert!(listings.iter().any(|listing| {
-		listing.id == "genre-sci-fi" && listing.name == "Sci-fi"
-	}));
+	assert!(
+		listings.iter().any(|listing| {
+			listing.id == "genre-gender-bender" && listing.name == "Gender Bender"
+		})
+	);
+	assert!(
+		listings
+			.iter()
+			.any(|listing| { listing.id == "genre-sci-fi" && listing.name == "Sci-fi" })
+	);
 	for (index, listing) in listings.iter().enumerate() {
 		assert!(
 			listings[..index]
@@ -78,13 +85,50 @@ fn reader_pages_keep_order_and_expose_page_descriptions() {
 	assert_eq!(pages.len(), 2);
 	assert!(pages.iter().all(|page| page.has_description));
 	let mut pages = pages;
-	assert_eq!(WeebCentral.get_page_description(pages.remove(0)).unwrap(), "Page 1");
-	assert_eq!(WeebCentral.get_page_description(pages.remove(0)).unwrap(), "Page 2");
+	assert_eq!(
+		WeebCentral.get_page_description(pages.remove(0)).unwrap(),
+		"Page 1"
+	);
+	assert_eq!(
+		WeebCentral.get_page_description(pages.remove(0)).unwrap(),
+		"Page 2"
+	);
 	let source = include_str!("lib.rs");
 	let normalized = source.split_whitespace().collect::<Vec<_>>().join(" ");
 	assert!(normalized.contains(
 		"register_source!( WeebCentral, ListingProvider, DynamicListings, DynamicFilters, Home, ImageRequestProvider, PageDescriptionProvider, DeepLinkHandler );"
 	));
+}
+
+#[aidoku_test]
+fn current_live_reader_markup_parses_images_and_rejects_empty_or_invalid_results() {
+	use aidoku::PageDescriptionProvider;
+	let html = Html::parse_with_url(
+		r#"<section id="chapter-images"><img src="https://scans.lastation.us/manga/Sample/001.png" alt="Page 1"><img src="https://scans.lastation.us/manga/Sample/002.png" alt="Page 2"><img src="http://invalid.test/3.jpg"></section>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let pages = parse_reader_pages(&html);
+	assert_eq!(pages.len(), 2);
+	let mut pages = pages;
+	assert_eq!(
+		WeebCentral.get_page_description(pages.remove(0)).unwrap(),
+		"Page 1"
+	);
+	assert_eq!(
+		WeebCentral.get_page_description(pages.remove(0)).unwrap(),
+		"Page 2"
+	);
+
+	let empty_reader =
+		Html::parse_with_url(r#"<section id="chapter-images"></section>"#, BASE_URL).unwrap();
+	assert!(parse_reader_pages(&empty_reader).is_empty());
+	let irrelevant_page = Html::parse_with_url(
+		r#"<section id="chapter-images"><img src="https://weebcentral.com/static/images/broken_image.jpg"></section>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert!(parse_reader_pages(&irrelevant_page).is_empty());
 }
 
 #[aidoku_test]
@@ -105,15 +149,17 @@ fn genre_listing_routes_to_paginated_popular_search() {
 #[aidoku_test]
 fn unknown_genre_listing_is_rejected_without_network_access() {
 	use aidoku::ListingProvider;
-	assert!(WeebCentral
-		.get_manga_list(
-			Listing {
-				id: "genre-unknown".into(),
-				..Default::default()
-			},
-			1,
-		)
-		.is_err());
+	assert!(
+		WeebCentral
+			.get_manga_list(
+				Listing {
+					id: "genre-unknown".into(),
+					..Default::default()
+				},
+				1,
+			)
+			.is_err()
+	);
 }
 
 #[aidoku_test]
@@ -178,10 +224,7 @@ fn series_description_includes_associated_names_and_related_series() {
 	)
 	.unwrap();
 	let details = html.select_first("#details").unwrap();
-	let description = append_detail_metadata(
-		&details,
-		Some("A sample description.".into()),
-	);
+	let description = append_detail_metadata(&details, Some("A sample description.".into()));
 	assert_eq!(
 		description.as_deref(),
 		Some(
@@ -192,7 +235,10 @@ fn series_description_includes_associated_names_and_related_series() {
 
 #[aidoku_test]
 fn series_description_metadata_is_optional_and_preserves_description() {
-	let html = Html::parse("<section><ul><li><strong>Description</strong><p>Only description.</p></li></ul></section>").unwrap();
+	let html = Html::parse(
+		"<section><ul><li><strong>Description</strong><p>Only description.</p></li></ul></section>",
+	)
+	.unwrap();
 	let details = html.select_first("section").unwrap();
 	let description = append_detail_metadata(&details, Some("Only description.".into()));
 	assert_eq!(description.as_deref(), Some("Only description."));
@@ -286,7 +332,10 @@ fn official_anime_and_adult_checks_use_matching_site_fields() {
 fn advanced_search_filters_are_exposed_to_aidoku() {
 	use aidoku::DynamicFilters;
 	let filters = WeebCentral.get_dynamic_filters().unwrap();
-	let ids = filters.iter().map(|filter| filter.id.as_ref()).collect::<Vec<_>>();
+	let ids = filters
+		.iter()
+		.map(|filter| filter.id.as_ref())
+		.collect::<Vec<_>>();
 	for expected in [
 		"sort", "author", "genre", "status", "type", "official", "anime", "adult",
 	] {
@@ -307,7 +356,7 @@ fn advanced_search_filters_are_exposed_to_aidoku() {
 			.unwrap()
 			.title
 			.as_deref(),
-			Some("Series Status")
+		Some("Series Status")
 	);
 	assert_eq!(SEARCH_GENRES.len(), 38);
 }
@@ -390,9 +439,16 @@ fn chapters_reuse_the_existing_series_cover_as_thumbnail() {
 		Chapter::default(),
 		&Some("https://weebcentral.com/cover.jpg".into()),
 	);
-	assert_eq!(chapter.thumbnail.as_deref(), Some("https://weebcentral.com/cover.jpg"));
+	assert_eq!(
+		chapter.thumbnail.as_deref(),
+		Some("https://weebcentral.com/cover.jpg")
+	);
 	assert_eq!(chapter.language.as_deref(), Some("en"));
-	assert!(with_series_thumbnail(Chapter::default(), &None).thumbnail.is_none());
+	assert!(
+		with_series_thumbnail(Chapter::default(), &None)
+			.thumbnail
+			.is_none()
+	);
 }
 
 #[aidoku_test]

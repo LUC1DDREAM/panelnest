@@ -2,10 +2,15 @@
 use aidoku::{
 	AidokuError, Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult,
 	DynamicFilters, DynamicListings, Filter, FilterValue, Home, HomeComponent, HomeLayout,
-	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
-	MultiSelectFilter, Page, PageContent, Result, SortFilter, SortFilterDefault, Source, TextFilter,
-	Viewer, PageContext, PageDescriptionProvider, UpdateStrategy,
-	alloc::{String, Vec, borrow::{Cow, ToOwned}, string::ToString, vec},
+	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus,
+	MangaWithChapter, MultiSelectFilter, Page, PageContent, PageContext, PageDescriptionProvider,
+	Result, SortFilter, SortFilterDefault, Source, TextFilter, UpdateStrategy, Viewer,
+	alloc::{
+		String, Vec,
+		borrow::{Cow, ToOwned},
+		string::ToString,
+		vec,
+	},
 	imports::{
 		html::{Document, Element},
 		net::{Request, TimeUnit, set_rate_limit},
@@ -52,7 +57,12 @@ fn numbered_reader_page(url: String, number: usize) -> Page {
 
 fn parse_reader_pages(html: &Document) -> Vec<Page> {
 	let mut pages = Vec::new();
-	if let Some(elements) = html.select("section[x-data*=scroll] > img") {
+	let selector = if html.select_first("#chapter-images").is_some() {
+		"#chapter-images > img"
+	} else {
+		"section[x-data*=scroll] > img"
+	};
+	if let Some(elements) = html.select(selector) {
 		for element in elements {
 			let Some(page_url) = element.attr("abs:src") else {
 				continue;
@@ -67,11 +77,44 @@ fn parse_reader_pages(html: &Document) -> Vec<Page> {
 }
 
 const SEARCH_GENRES: [&str; 38] = [
-	"Action", "Adult", "Adventure", "Comedy", "Doujinshi", "Drama", "Ecchi", "Fantasy",
-	"Gender Bender", "Harem", "Hentai", "Historical", "Horror", "Isekai", "Josei", "Lolicon",
-	"Martial Arts", "Mature", "Mecha", "Mystery", "Psychological", "Romance", "School Life",
-	"Sci-fi", "Seinen", "Shotacon", "Shoujo", "Shoujo Ai", "Shounen", "Shounen Ai",
-	"Slice of Life", "Smut", "Sports", "Supernatural", "Tragedy", "Yaoi", "Yuri", "Other",
+	"Action",
+	"Adult",
+	"Adventure",
+	"Comedy",
+	"Doujinshi",
+	"Drama",
+	"Ecchi",
+	"Fantasy",
+	"Gender Bender",
+	"Harem",
+	"Hentai",
+	"Historical",
+	"Horror",
+	"Isekai",
+	"Josei",
+	"Lolicon",
+	"Martial Arts",
+	"Mature",
+	"Mecha",
+	"Mystery",
+	"Psychological",
+	"Romance",
+	"School Life",
+	"Sci-fi",
+	"Seinen",
+	"Shotacon",
+	"Shoujo",
+	"Shoujo Ai",
+	"Shounen",
+	"Shounen Ai",
+	"Slice of Life",
+	"Smut",
+	"Sports",
+	"Supernatural",
+	"Tragedy",
+	"Yaoi",
+	"Yuri",
+	"Other",
 ];
 
 fn search_filters() -> Vec<Filter> {
@@ -87,7 +130,10 @@ fn search_filters() -> Vec<Filter> {
 	sort.id = Cow::Borrowed("sort");
 	sort.title = Some(Cow::Borrowed("Sort"));
 	sort.can_ascend = true;
-	sort.options = sort_options.iter().map(|value| Cow::Borrowed(*value)).collect();
+	sort.options = sort_options
+		.iter()
+		.map(|value| Cow::Borrowed(*value))
+		.collect();
 	sort.default = Some(SortFilterDefault {
 		index: 0,
 		ascending: false,
@@ -99,7 +145,10 @@ fn search_filters() -> Vec<Filter> {
 	genres.is_genre = true;
 	genres.can_exclude = true;
 	genres.uses_tag_style = true;
-	genres.options = SEARCH_GENRES.iter().map(|value| Cow::Borrowed(*value)).collect();
+	genres.options = SEARCH_GENRES
+		.iter()
+		.map(|value| Cow::Borrowed(*value))
+		.collect();
 
 	let mut status = MultiSelectFilter::default();
 	status.id = Cow::Borrowed("status");
@@ -550,6 +599,9 @@ impl Source for WeebCentral {
 		reject_cloudflare(&html)?;
 
 		let pages = parse_reader_pages(&html);
+		if pages.is_empty() {
+			bail!("Reader returned no valid pages");
+		}
 
 		Ok(pages)
 	}
