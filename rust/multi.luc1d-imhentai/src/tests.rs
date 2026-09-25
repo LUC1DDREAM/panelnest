@@ -590,7 +590,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 25);
+	assert_eq!(manifest["info"]["version"], 26);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -600,7 +600,26 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
-	assert_eq!(manifest["info"]["version"], 25);
+}
+
+#[aidoku_test]
+fn live_reader_page_one_fixture_builds_all_manifest_pages() {
+	let reader_url = "https://imhentai.xxx/view/1743990/1/";
+	let html = include_str!("../fixtures/live-reader-page-one.html");
+	let doc = Html::parse_with_url(html, reader_url).unwrap();
+	let pages = parse_pages_with_referer(&doc, reader_url).unwrap();
+	assert_eq!(pages.len(), 50);
+	if let PageContent::Url(url, Some(context)) = &pages[0].content {
+		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/1.jpg");
+		assert_eq!(context.get("url").map(String::as_str), Some(reader_url));
+	} else {
+		panic!("live reader page must retain its reader context");
+	}
+	if let PageContent::Url(url, _) = &pages[49].content {
+		assert_eq!(url, "https://m11.imhentai.xxx/033/nja31r49bw/50.jpg");
+	} else {
+		panic!("last live reader page must be a URL");
+	}
 }
 
 use super::*;

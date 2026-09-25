@@ -44,3 +44,5 @@ Version 23 adds the validated gallery cover URL to the single chapter thumbnail.
 Version 24 fills Aidoku Chapter.date_uploaded from the official relative Posted age. Because the site does not expose an exact date, the timestamp is an approximation anchored to the fetch time; unknown age formats are left unset.
 
 Version 25 always opens a gallery chapter at reader page 1. Gallery pages also link to arbitrary thumbnail pages, which must not become the chapter start URL.
+
+Version 26 adds a sanitized fixture from the current live page-one reader response. Its full 50-page manifest is parsed in the WASM fixture suite, including the first and last image URL and reader referer context.
