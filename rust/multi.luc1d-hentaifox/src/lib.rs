@@ -133,6 +133,20 @@ fn gallery_artists(doc: &Document) -> Vec<String> {
 			.unwrap_or_default()
 	}
 }
+fn gallery_groups(doc: &Document) -> Vec<String> {
+	if IS_IM {
+		return Vec::new();
+	}
+	doc.select("ul.groups a")
+		.map(|groups| {
+			groups
+				.filter_map(|group| group.own_text())
+				.map(|group| group.trim().to_string())
+				.filter(|group| !group.is_empty())
+				.collect()
+		})
+		.unwrap_or_default()
+}
 fn parse_search(doc: &Document) -> MangaPageResult {
 	let entries = doc
 		.select("div.thumb")
@@ -436,6 +450,16 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 		};
 		manga.artists = Some(gallery_artists(doc));
 		manga.authors = Some(Vec::new());
+		let groups = gallery_groups(doc);
+		if !groups.is_empty() {
+			let group_description = format!("Groups: {}", groups.join(", "));
+			manga.description = Some(match manga.description.take() {
+				Some(description) if !description.trim().is_empty() => {
+					format!("{description}\n\n{group_description}")
+				}
+				_ => group_description,
+			});
+		}
 		manga.tags = Some(if IS_IM {
 			doc.select("li")
 				.map(|els| {

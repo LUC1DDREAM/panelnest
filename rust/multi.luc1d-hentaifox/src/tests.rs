@@ -52,13 +52,43 @@ fn synthetic_details_and_chapter_flags() {
 }
 
 #[aidoku_test]
-fn live_gallery_artist_metadata_maps_to_aidoku_artists() {
+fn live_gallery_artist_and_group_metadata_maps_to_aidoku_fields() {
 	let doc = Html::parse_with_url(
-		include_str!("../fixtures/live-gallery-artists.html"),
+		&format!(
+			"<div class='gallery_top'><h1>Sample gallery</h1><div class='cover'><img src='/cover.jpg'></div></div>{}",
+			include_str!("../fixtures/live-gallery-artists.html")
+		),
 		"https://hentaifox.com/gallery/173753/",
 	)
 	.unwrap();
 	assert_eq!(gallery_artists(&doc), vec!["kumatora"]);
+	assert_eq!(gallery_groups(&doc), vec!["studio mizuyokan"]);
+	let manga = update(
+		&doc,
+		Manga {
+			key: "173753".into(),
+			..Default::default()
+		},
+		true,
+		false,
+	)
+	.unwrap();
+	assert_eq!(manga.description.as_deref(), Some("Groups: studio mizuyokan"));
+	let existing = update(
+		&doc,
+		Manga {
+			key: "173753".into(),
+			description: Some("Existing summary".into()),
+			..Default::default()
+		},
+		true,
+		false,
+	)
+	.unwrap();
+	assert_eq!(
+		existing.description.as_deref(),
+		Some("Existing summary\n\nGroups: studio mizuyokan")
+	);
 }
 
 #[aidoku_test]
@@ -701,7 +731,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 32);
+	assert_eq!(manifest["info"]["version"], 33);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
