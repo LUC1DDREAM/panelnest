@@ -136,10 +136,40 @@ fn parse_favorites(doc: &Document, page: i32) -> Result<MangaPageResult> {
 	}
 	Ok(result)
 }
+fn faplist_url(page: i32) -> Result<String> {
+	ensure!(page > 0, "Invalid page");
+	Ok(if page == 1 {
+		format!("{BASE_URL}/faplist/")
+	} else {
+		format!("{BASE_URL}/faplist/pag/{page}/")
+	})
+}
+fn is_faplist_url(url: &str, page: i32) -> bool {
+	url == faplist_url(page).unwrap_or_default()
+}
+fn parse_faplist(doc: &Document) -> Result<MangaPageResult> {
+	let result = parse_search(doc);
+	if !result.entries.is_empty() {
+		return Ok(result);
+	}
+	let is_empty = doc
+		.select_first(".galleries_overview .alert.alert-info")
+		.and_then(|element| element.text())
+		.is_some_and(|text| text.to_ascii_lowercase().contains("faplist is empty"));
+	ensure!(is_empty, "Faplist unavailable or site layout changed");
+	Ok(MangaPageResult::default())
+}
 fn bookmarks_listing(logged_in: bool) -> Option<Listing> {
 	logged_in.then(|| Listing {
 		id: "bookmarks".into(),
 		name: "Bookmarks".into(),
+		..Default::default()
+	})
+}
+fn faplist_listing(logged_in: bool) -> Option<Listing> {
+	logged_in.then(|| Listing {
+		id: "faplist".into(),
+		name: "Faplist".into(),
 		..Default::default()
 	})
 }
@@ -920,6 +950,20 @@ impl aidoku::Home for GallerySource {
 }
 impl aidoku::ListingProvider for GallerySource {
 	fn get_manga_list(&self, listing: aidoku::Listing, page: i32) -> Result<MangaPageResult> {
+		if listing.id == "faplist" {
+			let url = faplist_url(page)?;
+			let cookie = auth::valid_session()?;
+			let response = Request::get(url)?
+				.header("Cookie", &cookie)
+				.header("Referer", format!("{BASE_URL}/").as_str())
+				.send()?;
+			ensure!(
+				response.status_code() == 200
+					&& response.get_url().is_some_and(|url| is_faplist_url(&url, page)),
+				"HentaiFox Faplist request failed"
+			);
+			return parse_faplist(&response.get_html()?);
+		}
 		if listing.id == "bookmarks" {
 			ensure!(page > 0, "Invalid page");
 			let cookie = auth::valid_session()?;
@@ -983,8 +1027,12 @@ impl DynamicListings for GallerySource {
 				..Default::default()
 			})
 			.collect::<Vec<_>>();
-		if let Some(bookmarks) = bookmarks_listing(auth::is_logged_in()) {
+		let logged_in = auth::is_logged_in();
+		if let Some(bookmarks) = bookmarks_listing(logged_in) {
 			listings.push(bookmarks);
+		}
+		if let Some(faplist) = faplist_listing(logged_in) {
+			listings.push(faplist);
 		}
 		if let Ok(response) = Request::get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
 			.and_then(|request| request.html())

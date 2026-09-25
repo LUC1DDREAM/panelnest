@@ -690,7 +690,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 30);
+	assert_eq!(manifest["info"]["version"], 31);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -760,6 +760,54 @@ fn favorites_response_parses_gallery_cards_and_button_pagination() {
 	.unwrap();
 	assert!(!parse_favorites(&last_page, 2).unwrap().has_next_page);
 	assert!(parse_favorites(&last_page, 0).is_err());
+}
+
+#[aidoku_test]
+fn faplist_is_a_login_only_account_listing() {
+	assert!(faplist_listing(false).is_none());
+	let listing = faplist_listing(true).unwrap();
+	assert_eq!(listing.id, "faplist");
+	assert_eq!(listing.name, "Faplist");
+}
+
+#[aidoku_test]
+fn faplist_pages_use_the_official_paginated_route_and_validate_the_response_url() {
+	assert_eq!(
+		faplist_url(1).unwrap(),
+		format!("{BASE_URL}/faplist/")
+	);
+	assert_eq!(
+		faplist_url(2).unwrap(),
+		format!("{BASE_URL}/faplist/pag/2/")
+	);
+	assert!(faplist_url(0).is_err());
+	assert!(is_faplist_url("https://hentaifox.com/faplist/", 1));
+	assert!(!is_faplist_url("https://hentaifox.com.evil/faplist/", 1));
+	assert!(!is_faplist_url("http://hentaifox.com/faplist/", 1));
+	assert!(!is_faplist_url("https://hentaifox.com/faplist/pag/3/", 2));
+}
+
+#[aidoku_test]
+fn faplist_parses_gallery_cards_and_recognizes_the_official_empty_state() {
+	let populated = Html::parse_with_url(
+		r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"><img src="/cover.jpg"></a></div><div class="caption">Saved title</div></div><ul class="pagination"><li class="active"><a href="/faplist/">1</a></li><li><a href="/faplist/pag/2/">Next</a></li></ul>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let result = parse_faplist(&populated).unwrap();
+	assert_eq!(result.entries.len(), 1);
+	assert_eq!(result.entries[0].key, "42");
+	assert!(result.has_next_page);
+
+	let empty = Html::parse_with_url(
+		r#"<div class="galleries_overview"><div class="alert alert-info">Your faplist is empty. You can add some galleries.</div></div>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	let result = parse_faplist(&empty).unwrap();
+	assert!(result.entries.is_empty());
+	assert!(!result.has_next_page);
+	assert!(parse_faplist(&Html::parse("<html>Unexpected response</html>").unwrap()).is_err());
 }
 
 #[aidoku_test]

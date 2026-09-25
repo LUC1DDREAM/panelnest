@@ -47,7 +47,7 @@ pub fn handle_web_login(cookies: HashMap<String, String>) -> Result<bool> {
 
 pub fn valid_session() -> Result<String> {
 	let Some(cookie) = defaults_get::<String>(SESSION_KEY) else {
-		bail!("Log in to HentaiFox to use Bookmarks");
+		bail!("Log in to HentaiFox to use account listings");
 	};
 	let Some(session_id) = cookie.strip_prefix("PHPSESSID=") else {
 		bail!("Invalid HentaiFox session");

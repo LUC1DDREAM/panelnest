@@ -1,7 +1,7 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 29)
+## Discovery (source version 31)
 Version 24 fills Aidoku's chapter language when the gallery has exactly one recognized language tag. Unknown, translated-only and mixed-language galleries leave the field unset rather than guessing.
 Version 23 carries each gallery page¡¯s /gallery/<id>/ URL through Aidoku page context so CDN image requests use the matching Referer. The image provider validates the CDN host and gallery path; fixtures cover valid and malformed contexts. Completed one-gallery entries also use Aidoku¡¯s UpdateStrategy::Never, so routine library refreshes skip their immutable chapter lists.
 Version 21 adds a separate Popular-sorted dynamic listing for each of the 50 popular tags. The existing Tag: listings keep their IDs and Latest ordering; Popular: listings use the official paginated /tag/<slug>/popular/ route.
@@ -36,7 +36,7 @@ aidoku verify package.aix
 Neutral synthetic WASM fixtures cover home/listing routing, schema identity/language/rating, pagination, search escaping, metadata flags and page manifests. Tests do not fetch content or images. Package verification is not device testing.
 
 ## Limits
-No paginated Popular Today/Week/Month listings or generic Popular listing. HentaiFox login opens the official /login/ page through Aidoku WebLogin. After validating the PHP session through /profile/, Bookmarks loads account favorites from /includes/user_favs.php with page-number pagination. The authenticated response was not live-tested because no account session was available. Home includes the current and previous Daily Top Rated spotlight. Keep runtime_tested=false; no Aidoku/device playback is claimed. No thumbnail guessing fallback. IDs, `languages: ["multi"]`, content rating 2, icons, Cargo lockfile and SDK pin are preserved.
+No paginated Popular Today/Week/Month listings or generic Popular listing. Faplist is now exposed separately from Favorites after WebLogin; authenticated gallery contents could not be tested here. HentaiFox login opens the official /login/ page through Aidoku WebLogin. After validating the PHP session through /profile/, Bookmarks loads account favorites from /includes/user_favs.php with page-number pagination. The authenticated response was not live-tested because no account session was available. Home includes the current and previous Daily Top Rated spotlight. Keep runtime_tested=false; no Aidoku/device playback is claimed. No thumbnail guessing fallback. IDs, `languages: ["multi"]`, content rating 2, icons, Cargo lockfile and SDK pin are preserved.
 
 ## Provenance
 Public technical route/schema reference: Keiyoushi extensions-source `GalleryAdults.kt`, `IMHentai.kt`, `HentaiFox.kt` (Apache-2.0; LICENSE retained). HentaiFox Top Rated additionally grounded in its public homepage technical markup. Existing icon retained unchanged. No source package copied. Full discovery feature matrix and check results: `C:/Users/LUC1D/aidoku-research/DISCOVERY-IM-HF.md`.
@@ -51,3 +51,5 @@ Version 27 fills Aidoku Chapter.date_uploaded from the official relative Posted 
 Version 28 adds Aidoku WebLogin and account Bookmarks. Version 29 adds the settings control for logging in and clears the saved session on logout. Login validates the PHP session through /profile/; the official site JavaScript documents paginated favorites at /includes/user_favs.php. An authenticated account response was not available for live testing.
 
 Version 29 exposes the Aidoku login control and handles logout notifications so Bookmarks can be accessed and sessions can be cleared from source settings.
+
+Version 31 adds the account Faplist as a separate login-only paginated listing. It reads the official /faplist/ and /faplist/pag/N/ pages and recognizes the explicit empty-list state.
