@@ -26,6 +26,9 @@ class PublicReleaseTests(unittest.TestCase):
             verification=json.loads(verification_path.read_text())
             self.assertEqual(verification['version'],info['version'],f"{info['id']} verification version")
             self.assertEqual(verification['fixture_tests_passed'],row['fixture_tests_passed'],f"{info['id']} fixture count")
+            self.assertEqual(verification['runtime_tested'],row['runtime_tested'],f"{info['id']} runtime evidence")
+            self.assertEqual(verification['device_tested'],row['device_tested'],f"{info['id']} device evidence")
+            self.assertEqual(verification.get('device_test_evidence'),row.get('device_test_evidence'),f"{info['id']} device evidence details")
             self.assertEqual(set(verification['implemented']),set(row['implemented']),f"{info['id']} implemented features")
             package_name=f"{info['id']}-v{info['version']}.aix"
             package=pipeline.ROOT/'rebuild/published-packages'/package_name
@@ -45,7 +48,11 @@ class PublicReleaseTests(unittest.TestCase):
             self.assertTrue(info['name'].endswith(' [PN]'),info['name'])
         self.assertEqual({i['id'] for i in infos},{'en.luc1d-asurascans','en.luc1d-weebcentral','multi.luc1d-nhentai','multi.luc1d-webtoon','multi.luc1d-imhentai','multi.luc1d-hentaifox'})
         self.assertEqual(len(pipeline.validate_manifest(rows,release=True)),6)
-        self.assertTrue(all(not r['runtime_tested'] and not r['device_tested'] for r in rows))
+        for row in rows:
+            self.assertIsInstance(row['runtime_tested'], bool)
+            self.assertIsInstance(row['device_tested'], bool)
+            if row['device_tested']:
+                self.assertTrue(row.get('device_test_evidence'), row['id'])
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
             (root/'index.json').write_text(json.dumps({'name':'PanelNest','sources':infos}))

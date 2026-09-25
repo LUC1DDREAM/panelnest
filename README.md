@@ -12,18 +12,18 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 - Discovery menu reads the genre and sort links from the selected locale current page, falling back to bundled defaults if fetching or parsing fails. Filters and home links then track WEBTOON catalog changes. Named listings cover each known genre in all three official sort orders and keep existing IDs.
 | Display name | Stable ID | Version |
 |---|---|---:|
-| Asura Scans [PN] | `en.luc1d-asurascans` | 16 |
-| Weeb Central [PN] | `en.luc1d-weebcentral` | 20 |
-| nhentai [PN] | `multi.luc1d-nhentai` | 24 |
-| WEBTOON [PN] | `multi.luc1d-webtoon` | 21 |
-| IMHentai [PN] | `multi.luc1d-imhentai` | 26 |
-| HentaiFox [PN] | `multi.luc1d-hentaifox` | 31 |
+| Asura Scans [PN] | `en.luc1d-asurascans` | 17 |
+| Weeb Central [PN] | `en.luc1d-weebcentral` | 21 |
+| nhentai [PN] | `multi.luc1d-nhentai` | 25 |
+| WEBTOON [PN] | `multi.luc1d-webtoon` | 23 |
+| IMHentai [PN] | `multi.luc1d-imhentai` | 31 |
+| HentaiFox [PN] | `multi.luc1d-hentaifox` | 35 |
 
 ## Verification and approval
 
 The [Aidoku capability audit](rebuild/aidoku-capability-audit.md) compares every pinned SDK source trait with the six implementations and records why the remaining handlers do not fit current site behavior.
 
-The user explicitly authorized publication and removal of public test branding. This is **not automated end-to-end or independently recorded iPhone certification**. `release_authorized=true` records that authorization; `runtime_tested=false` and `device_tested=false` deliberately remain unchanged. Historical live results, including Cloudflare/HTTP 429 failures, remain in `rebuild/sources.json`; no automated result was forged.
+The user explicitly authorized publication and removal of public test branding. Automated end-to-end and independent iPhone certification are not claimed. Runtime and device evidence is recorded per source; IMHentai v31 has a user-confirmed Aidoku device check for opening a chapter and displaying its page images. `release_authorized=true` records publication authorization separately from testing. Historical live results, including Cloudflare/HTTP 429 failures, remain in `rebuild/sources.json`.
 
 Publication requires complete source functionality, package verification, publication approval, and either recorded runtime evidence or explicit release authorization. Every release rebuilds and executes all six locked WASM fixture suites, verifies packages and exact source/package/catalog metadata, opaque 128×128 icons, languages, ratings, IDs and hashes. Same-version ZIP/member immutability fails closed; prior versioned packages remain available.
 
