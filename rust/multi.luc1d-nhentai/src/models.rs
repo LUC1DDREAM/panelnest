@@ -228,6 +228,9 @@ impl From<NHentaiGallery> for Manga {
 			if !characters.is_empty() {
 				info_parts.push(format!("Characters: {}", characters.join(", ")));
 			}
+			if !groups.is_empty() {
+				info_parts.push(format!("Groups: {}", groups.join(", ")));
+			}
 			if !languages.is_empty() {
 				info_parts.push(format!("Languages: {}", languages.join(", ")));
 			}
@@ -256,14 +259,12 @@ impl From<NHentaiGallery> for Manga {
 			Viewer::RightToLeft
 		};
 
-		let combined_authors = [groups, artists.clone()].concat();
-
 		Manga {
 			key: value.id.to_string(),
 			title,
 			cover: Some(make_image_url(&value.cover.path, true)),
 			description: Some(description),
-			authors: Some(combined_authors),
+			authors: Some(Vec::new()),
 			artists: Some(artists),
 			url: Some(format!("https://nhentai.net/g/{}", value.id)),
 			tags: Some(tags),

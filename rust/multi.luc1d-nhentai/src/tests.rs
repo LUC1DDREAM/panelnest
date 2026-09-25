@@ -4,7 +4,7 @@ fn source_metadata_matches_aidoku_multilingual_filter() {
 	let manifest: serde_json::Value =
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	let languages = manifest["info"]["languages"].as_array().unwrap();
-	assert_eq!(manifest["info"]["version"], 24);
+	assert_eq!(manifest["info"]["version"], 25);
 	assert!(languages.iter().any(|language| language == "multi"));
 	for language in ["en", "ja", "zh"] {
 		assert!(languages.iter().any(|value| value == language));
@@ -285,11 +285,18 @@ fn details_include_language_metadata() {
 		"id":123,"media_id":"fixture123","title":{"english":"Fixture","japanese":null,"pretty":"Fixture"},
 		"cover":{"path":"galleries/fixture123/cover.jpg","width":1,"height":1},
 		"thumbnail":{"path":"galleries/fixture123/thumb.jpg","width":1,"height":1},"scanlator":"","upload_date":0,
-		"tags":[{"id":1,"name":"english","count":1,"type":"language","url":"/language/english"}],
+		"tags":[
+			{"id":1,"name":"english","count":1,"type":"language","url":"/language/english"},
+			{"id":2,"name":"circle fixture","count":4,"type":"group","url":"/group/circle-fixture"},
+			{"id":3,"name":"artist fixture","count":8,"type":"artist","url":"/artist/artist-fixture"}
+		],
 		"num_pages":1,"num_favorites":0,"pages":[]
 	}"#).unwrap();
 	let manga: aidoku::Manga = gallery.into();
-	assert!(manga.description.unwrap().contains("Languages: english"));
+	assert!(manga.description.as_deref().unwrap().contains("Languages: english"));
+	assert!(manga.description.as_deref().unwrap().contains("Groups: circle fixture"));
+	assert_eq!(manga.artists.as_deref().unwrap(), &["artist fixture"]);
+	assert!(manga.authors.as_ref().unwrap().is_empty());
 }
 
 #[aidoku_test]

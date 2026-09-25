@@ -2,7 +2,9 @@
 
 Independent vendored current-API source, `multi.luc1d-nhentai`; pinned Aidoku SDK `e1320b0a2e11afb59e4dee374883a2212d325699`. Existing source/license provenance is retained in the repository. This change does not add any downloaded adult imagery or explicit fixture text.
 
-## Website-backed capabilities (source version 24)
+## Website-backed capabilities (source version 25)
+
+Version 25 separates the official Artist and Group tag types: artists populate Aidoku Manga.artists, Manga.authors stays empty because nhentai has no separate author tag, and group names remain visible in description metadata.
 
 Version 24 opens official `/tag/<slug>/` links as the matching Aidoku Popular tag listing. It resolves the canonical name with nhentai's per-slug tag API and validates the returned type, slug and route before creating the existing name-based listing ID.
 
