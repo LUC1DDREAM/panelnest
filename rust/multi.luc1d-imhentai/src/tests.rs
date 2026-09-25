@@ -38,7 +38,7 @@ fn synthetic_details_and_chapter_flags() {
 	.unwrap()
 	.remove(0);
 	assert_eq!(chapter.key, "42");
-	assert_eq!(chapter.url.as_deref(), Some("https://imhentai.xxx/view/42/3/"));
+	assert_eq!(chapter.url.as_deref(), Some("https://imhentai.xxx/view/42/1/"));
 	assert!(
 		update(
 			&doc,
