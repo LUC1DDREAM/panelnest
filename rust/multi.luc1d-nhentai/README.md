@@ -2,7 +2,9 @@
 
 Independent vendored current-API source, `multi.luc1d-nhentai`; pinned Aidoku SDK `e1320b0a2e11afb59e4dee374883a2212d325699`. Existing source/license provenance is retained in the repository. This change does not add any downloaded adult imagery or explicit fixture text.
 
-## Website-backed capabilities (source version 22)
+## Website-backed capabilities (source version 23)
+
+Version 23 adds Aidoku's `multi` language-filter sentinel while retaining the existing English, Japanese, and Chinese language codes. Aidoku 0.9 build 3 filters source-language metadata by exact codes and does not treat `All` as `multi`; the extra code makes nhentai discoverable when users choose multilingual sources.
 
 Version 21 uses the API's gallery thumbnail on the Aidoku chapter entry. Version 20 stores the API's actual scanlator in Aidoku's scanlator field and maps a single recognized language tag to the chapter language. Translated and rewrite tags are ignored; mixed and unknown languages remain unset.
 

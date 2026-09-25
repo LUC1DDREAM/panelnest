@@ -1,5 +1,16 @@
 use super::models::*;
 #[aidoku_test]
+fn source_metadata_matches_aidoku_multilingual_filter() {
+	let manifest: serde_json::Value =
+		serde_json::from_str(include_str!("../res/source.json")).unwrap();
+	let languages = manifest["info"]["languages"].as_array().unwrap();
+	assert_eq!(manifest["info"]["version"], 23);
+	assert!(languages.iter().any(|language| language == "multi"));
+	for language in ["en", "ja", "zh"] {
+		assert!(languages.iter().any(|value| value == language));
+	}
+}
+#[aidoku_test]
 fn today_section_can_browse_real_today_listing() {
 	let component = super::home::today_component(aidoku::alloc::vec![aidoku::Manga {
 		key: "1".into(),

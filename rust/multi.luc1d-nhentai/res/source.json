@@ -2,11 +2,12 @@
   "info": {
     "id": "multi.luc1d-nhentai",
     "name": "nhentai [PN]",
-    "version": 22,
+    "version": 23,
     "url": "https://nhentai.net",
     "contentRating": 2,
     "languages": [
       "All",
+      "multi",
       "en",
       "ja",
       "zh"
