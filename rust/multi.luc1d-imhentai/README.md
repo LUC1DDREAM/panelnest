@@ -1,7 +1,7 @@
 # imhentai (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery and reader requests (source version 22)
+## Discovery and reader requests (source version 24)
 Version 22 fills Aidoku's chapter language when the gallery has exactly one recognized language tag. Unknown, translated-only and mixed-language galleries leave the field unset rather than guessing.
 Version 21 applies a mobile Safari User-Agent and same-site Referer consistently to Home, search, listing, gallery detail and reader HTML requests. Reader and CDN requests retain the actual gallery-page Referer.
 Version 19 uses Aidoku’s UpdateStrategy::Never for completed single-gallery titles so routine library refreshes skip their immutable one-chapter list.
@@ -34,9 +34,11 @@ aidoku verify package.aix
 Neutral synthetic WASM fixtures cover home/listing routing, schema identity/language/rating, pagination, search escaping, metadata flags and page manifests. Tests do not fetch content or images. Package verification is not device testing.
 
 ## Limits
-No Popular Today/Week/Month listings, account/favorites or exact upload dates. On 2026-09-25, gallery, reader and CDN image URLs returned HTTP 200 using the source's mobile Safari headers. This does not certify the Aidoku runtime or device, so runtime_tested and device_tested remain false. No thumbnail guessing fallback. IDs, `languages: ["multi"]`, content rating 2, icons, Cargo lockfile and SDK pin are preserved.
+No Popular Today/Week/Month listings or account/favorites. The site provides only a relative Posted age, which version 24 maps to an approximate chapter timestamp at detail-fetch time. On 2026-09-25, gallery, reader and CDN image URLs returned HTTP 200 using the source's mobile Safari headers. This does not certify the Aidoku runtime or device, so runtime_tested and device_tested remain false. No thumbnail guessing fallback. IDs, `languages: ["multi"]`, content rating 2, icons, Cargo lockfile and SDK pin are preserved.
 
 ## Provenance
 Public technical route/schema reference: Keiyoushi extensions-source `GalleryAdults.kt`, `IMHentai.kt`, `HentaiFox.kt` (Apache-2.0; LICENSE retained). HentaiFox Top Rated additionally grounded in its public homepage technical markup. Existing icon retained unchanged. No source package copied. Full discovery feature matrix and check results: `C:/Users/LUC1D/aidoku-research/DISCOVERY-IM-HF.md`.
 
 Version 23 adds the validated gallery cover URL to the single chapter thumbnail. 
+
+Version 24 fills Aidoku Chapter.date_uploaded from the official relative Posted age. Because the site does not expose an exact date, the timestamp is an approximation anchored to the fetch time; unknown age formats are left unset.

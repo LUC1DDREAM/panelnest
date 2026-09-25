@@ -9,7 +9,7 @@ use aidoku::{
 		html::{Document, Element},
 		net::{Request, RequestError, Response, TimeUnit, set_rate_limit},
 	},
-	imports::std::send_partial_result,
+	imports::std::{current_date, send_partial_result},
 	prelude::*,
 };
 macro_rules! ensure {
@@ -22,6 +22,41 @@ macro_rules! ensure {
 const BASE_URL: &str = "https://imhentai.xxx";
 const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1";
 const IS_IM: bool = true;
+
+fn posted_age_seconds(label: &str) -> Option<i64> {
+	let label = label.trim().strip_prefix("Posted:")?.trim();
+	if label.eq_ignore_ascii_case("just now") {
+		return Some(0);
+	}
+	if label.eq_ignore_ascii_case("yesterday") {
+		return Some(86_400);
+	}
+	let mut parts = label.split_whitespace();
+	let amount = parts.next()?.parse::<i64>().ok()?;
+	let unit = parts.next()?.trim_end_matches('s');
+	if !parts.next()?.eq_ignore_ascii_case("ago") || parts.next().is_some() || amount < 0 {
+		return None;
+	}
+	let seconds_per_unit = match unit {
+		"minute" => 60,
+		"hour" => 3_600,
+		"day" => 86_400,
+		"week" => 604_800,
+		"month" => 2_592_000,
+		"year" => 31_536_000,
+		_ => return None,
+	};
+	Some(amount.saturating_mul(seconds_per_unit))
+}
+
+fn posted_timestamp(doc: &Document) -> Option<i64> {
+	let age = doc
+		.select("li.posted, span.i_text.pages")?
+		.filter_map(|element| element.text())
+		.find_map(|text| posted_age_seconds(&text))?;
+	Some(current_date().saturating_sub(age))
+}
+
 fn site_request(url: String, referer: &str) -> Result<Request> {
 	Ok(Request::get(url)?
 		.header("Referer", referer)
@@ -445,6 +480,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 			key: manga.key.clone(),
 			title: Some("Gallery".into()),
 			chapter_number: Some(1.0),
+			date_uploaded: posted_timestamp(doc),
 			language: gallery_language(doc),
 			thumbnail: chapter_thumbnail,
 			url: Some(reader_url),
