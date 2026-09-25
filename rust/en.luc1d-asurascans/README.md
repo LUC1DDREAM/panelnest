@@ -1,6 +1,6 @@
 # Asura Scans
 
-## Discovery and library updates (package version 12)
+## Discovery and library updates (package version 17)
 
 Completed series are excluded from periodic library refreshes. Ongoing, hiatus, cancelled and unknown titles continue to refresh.
 

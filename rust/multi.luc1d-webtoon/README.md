@@ -1,4 +1,4 @@
-## Discovery and library updates (package version 19)
+## Discovery and library updates
 
 Each episode now carries the selected WEBTOON language (`en`, `zh`, `th`, `id`, `es`, `fr`, or `de`) in Aidoku's chapter metadata.
 

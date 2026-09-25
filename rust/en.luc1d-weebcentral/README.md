@@ -1,4 +1,4 @@
-## Discovery and library updates (package version 17)
+## Current source behavior (package version 21)
 
 Completed series are excluded from periodic library refreshes. Ongoing, hiatus, cancelled and unknown titles remain refreshable.
 
@@ -6,7 +6,7 @@ Version 16 adds numbered page descriptions to reader images and skips entries wi
 
 # Weeb Central (LUC1D)
 
-## Discovery (package version 14)
+## Advanced discovery (introduced in package version 14)
 
 Version 14 exposes Aidoku search filters for the site's six sorts, author name,
 tri-state Official Translation / Anime Adaptation / Adult Content, and the
