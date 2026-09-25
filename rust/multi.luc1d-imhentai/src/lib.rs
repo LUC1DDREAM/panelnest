@@ -94,7 +94,8 @@ fn gallery_artists(doc: &Document) -> Vec<String> {
 						.map(|artists| {
 							artists
 								.filter_map(|artist| artist.own_text())
-								.filter(|artist| !artist.trim().is_empty())
+								.map(|artist| artist.trim().to_string())
+								.filter(|artist| !artist.is_empty())
 								.collect::<Vec<_>>()
 						})
 						.unwrap_or_default()
@@ -107,7 +108,8 @@ fn gallery_artists(doc: &Document) -> Vec<String> {
 			.map(|artists| {
 				artists
 					.filter_map(|artist| artist.own_text())
-					.filter(|artist| !artist.trim().is_empty())
+					.map(|artist| artist.trim().to_string())
+					.filter(|artist| !artist.is_empty())
 					.collect()
 			})
 			.unwrap_or_default()
