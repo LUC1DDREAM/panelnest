@@ -8,7 +8,7 @@ use aidoku::{
 	imports::{
 		html::{Document, Element},
 		net::{Request, TimeUnit, set_rate_limit},
-		std::send_partial_result,
+		std::{current_date, send_partial_result},
 	},
 	prelude::*,
 };
@@ -21,6 +21,41 @@ macro_rules! ensure {
 }
 const BASE_URL: &str = "https://hentaifox.com";
 const IS_IM: bool = false;
+
+fn posted_age_seconds(label: &str) -> Option<i64> {
+	let label = label.trim().strip_prefix("Posted:")?.trim();
+	if label.eq_ignore_ascii_case("just now") {
+		return Some(0);
+	}
+	if label.eq_ignore_ascii_case("yesterday") {
+		return Some(86_400);
+	}
+	let mut parts = label.split_whitespace();
+	let amount = parts.next()?.parse::<i64>().ok()?;
+	let unit = parts.next()?.trim_end_matches('s');
+	if !parts.next()?.eq_ignore_ascii_case("ago") || parts.next().is_some() || amount < 0 {
+		return None;
+	}
+	let seconds_per_unit = match unit {
+		"minute" => 60,
+		"hour" => 3_600,
+		"day" => 86_400,
+		"week" => 604_800,
+		"month" => 2_592_000,
+		"year" => 31_536_000,
+		_ => return None,
+	};
+	Some(amount.saturating_mul(seconds_per_unit))
+}
+
+fn posted_timestamp(doc: &Document) -> Option<i64> {
+	let age = doc
+		.select("span.i_text.pages")?
+		.filter_map(|element| element.text())
+		.find_map(|text| posted_age_seconds(&text))?;
+	Some(current_date().saturating_sub(age))
+}
+
 const SIDEBAR_URL: &str = "https://hentaifox.com/includes/sidebar.php";
 const SIDEBAR_LISTINGS: [(&str, &str, &str); 3] = [
 	("most-faved", "Most Faved", "top_faved"),
@@ -360,6 +395,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 			key: manga.key.clone(),
 			title: Some("Gallery".into()),
 			chapter_number: Some(1.0),
+			date_uploaded: posted_timestamp(doc),
 			language: gallery_language(doc),
 			thumbnail: chapter_thumbnail,
 			url: Some(format!("{BASE_URL}/gallery/{}/", manga.key)),

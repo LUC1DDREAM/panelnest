@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-hentaifox",
-  "version": 26,
+  "version": 27,
   "sha256": "620dfaba472b8f958ca0d649e1dd01939133f38c8555b19ae94accb3f3e75cfd",
   "bytes": 75553,
   "languages": [
@@ -10,8 +10,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 28,
-  "official_site_checks": "The official homepage and language, tag and sidebar routes retain their prior live checks. A gallery page fetched on 2026-09-25 returns HTTP 200 and includes a Languages list with language links (for example, english and translated). Version 24 maps exactly one recognized tag to a BCP 47 chapter language code; translated-only, unknown and mixed languages remain unset. Fixtures cover chapter construction and language extraction. Version 23 carries the gallery-page URL through Aidoku PageContext for CDN Referer requests; its host and gallery ID validation remains fixture-covered. Device rendering and native Aidoku runtime remain unverified. Version 25 populates Chapter.thumbnail from the gallery cover URL and fixtures verify it. Version 26 consumes all 50 live entries from the official /tags/popular/ directory, exposing 50 quick-select tag filters and 100 sort-specific tag listings; fixture verifies the boundary.",
+  "fixture_tests_passed": 29,
+  "official_site_checks": "The official homepage and language, tag and sidebar routes retain their prior live checks. A gallery page fetched on 2026-09-25 returns HTTP 200 and includes a Languages list with language links (for example, english and translated). Version 24 maps exactly one recognized tag to a BCP 47 chapter language code; translated-only, unknown and mixed languages remain unset. Fixtures cover chapter construction and language extraction. Version 23 carries the gallery-page URL through Aidoku PageContext for CDN Referer requests; its host and gallery ID validation remains fixture-covered. Device rendering and native Aidoku runtime remain unverified. Version 25 populates Chapter.thumbnail from the gallery cover URL and fixtures verify it. Version 26 consumes all 50 live entries from the official /tags/popular/ directory, exposing 50 quick-select tag filters and 100 sort-specific tag listings; fixture verifies the boundary. A fresh official gallery fetched on 2026-09-25 returns HTTP 200 and exposes a relative Posted label (for example, Posted: 7 days ago) in span.i_text.pages, without an exact timestamp. Version 27 maps supported relative ages to an approximate Chapter.date_uploaded value at fetch time; unsupported labels remain unset. Fixtures verify supported units, invalid values and chapter integration.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

@@ -1,6 +1,7 @@
 #[aidoku_test]
 fn synthetic_details_and_chapter_flags() {
-	let doc=Html::parse_with_url(r#"<div class="gallery_top gallery_first"><h1>Sample 2</h1><div class="cover left_cover"><img src="/cover.png"></div><ul class="artists"><li><a>Artist 7</a></li></ul><ul class="languages"><span class="i_text">Languages:</span><li><a class="tag_btn">english <span class="t_badge">1</span></a></li><li><a class="tag_btn">translated <span class="t_badge">2</span></a></li></ul><ul><li><span class="tags_text">Artists:</span><a class="tag">Artist 7</a></li></ul></div>"#,BASE_URL).unwrap();
+	let doc=Html::parse_with_url(r#"<div class="gallery_top gallery_first"><h1>Sample 2</h1><div class="cover left_cover"><img src="/cover.png"></div><ul class="artists"><li><a>Artist 7</a></li></ul><ul class="languages"><span class="i_text">Languages:</span><li><a class="tag_btn">english <span class="t_badge">1</span></a></li><li><a class="tag_btn">translated <span class="t_badge">2</span></a></li></ul><span class="i_text pages">Pages: 193</span><span class="i_text pages">Posted: 2 days ago</span><ul><li><span class="tags_text">Artists:</span><a class="tag">Artist 7</a></li></ul></div>"#,BASE_URL).unwrap();
+	let before_update = aidoku::imports::std::current_date();
 	let m = update(
 		&doc,
 		Manga {
@@ -17,6 +18,9 @@ fn synthetic_details_and_chapter_flags() {
 	assert_eq!(chapters[0].key, "42");
 	assert_eq!(chapters[0].language.as_deref(), Some("en"));
 	assert_eq!(chapters[0].thumbnail.as_deref(), Some("https://hentaifox.com/cover.png"));
+	let uploaded_at = chapters[0].date_uploaded.unwrap();
+	assert!(uploaded_at >= before_update - 172_800);
+	assert!(uploaded_at <= aidoku::imports::std::current_date() - 172_800);
 	assert_eq!(m.update_strategy, UpdateStrategy::Never);
 	assert!(
 		update(
@@ -44,6 +48,17 @@ fn synthetic_details_and_chapter_flags() {
 		)
 		.is_err()
 	);
+}
+
+#[aidoku_test]
+fn posted_age_is_converted_to_a_bounded_approximate_timestamp() {
+	assert_eq!(posted_age_seconds("Posted: 7 days ago"), Some(604_800));
+	assert_eq!(posted_age_seconds("Posted: 2 months ago"), Some(5_184_000));
+	assert_eq!(posted_age_seconds("Posted: yesterday"), Some(86_400));
+	assert_eq!(posted_age_seconds("Posted: just now"), Some(0));
+	assert_eq!(posted_age_seconds("Pages: 193"), None);
+	assert_eq!(posted_age_seconds("Posted: someday ago"), None);
+	assert_eq!(posted_age_seconds("Posted: -2 days ago"), None);
 }
 #[aidoku_test]
 fn search_urls_escape_query_and_validate_page() {
@@ -675,7 +690,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 26);
+	assert_eq!(manifest["info"]["version"], 27);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
