@@ -29,6 +29,8 @@ pub fn is_profile_url(url: &str) -> bool {
 
 fn validate_session(cookie: &str) -> Result<bool> {
 	let response = Request::get(format!("{}/profile/", crate::BASE_URL))?
+		.header("User-Agent", crate::USER_AGENT)
+		.header("Accept-Encoding", "identity")
 		.header("Cookie", cookie)
 		.send()?;
 	Ok(response.get_url().is_some_and(|url| is_profile_url(&url)))

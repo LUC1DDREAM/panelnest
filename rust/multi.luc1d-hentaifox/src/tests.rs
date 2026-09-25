@@ -348,7 +348,7 @@ fn dynamic_sidebar_rankings_are_registered_and_parse_scoped_entries() {
 	assert_eq!(sidebar_type("most-downloaded"), Some("top_downloaded"));
 	assert_eq!(sidebar_type("unknown"), None);
 	let doc = Html::parse_with_url(
-		r#"<div class="item"><a href="/gallery/77/"><img alt="Sample Ranked" src="/cover.png"></a></div><div class="item"><a href="https://invalid.example/gallery/78/"><img alt="Foreign"></a></div>"#,
+		r#"<div id="middle_sidebar"><div class="item"><div class="image"><a href="/gallery/77/"><img alt="Sample Ranked" src="//i3.hentaifox.com/005/123/thumb.jpg"></a></div></div><div class="item"><div class="image"><a href="https://invalid.example/gallery/78/"><img alt="Foreign"></a></div></div></div>"#,
 		BASE_URL,
 	)
 	.unwrap();
@@ -359,6 +359,20 @@ fn dynamic_sidebar_rankings_are_registered_and_parse_scoped_entries() {
 	assert_eq!(result.entries[0].update_strategy, UpdateStrategy::Never);
 	assert!(!result.has_next_page);
 	assert!(parse_sidebar_items(&Html::parse("<html></html>").unwrap()).is_err());
+}
+
+#[aidoku_test]
+fn homepage_session_cookie_is_forwarded_to_ajax_sidebar() {
+	assert_eq!(
+		php_session_cookie("PHPSESSID=abc123; path=/; HttpOnly; SameSite=Lax").as_deref(),
+		Some("PHPSESSID=abc123")
+	);
+	assert_eq!(
+		php_session_cookie("other=value; path=/, PHPSESSID=abc123; path=/").as_deref(),
+		Some("PHPSESSID=abc123")
+	);
+	assert_eq!(php_session_cookie("PHPSESSID=; path=/"), None);
+	assert_eq!(php_session_cookie("path=/; HttpOnly"), None);
 }
 
 #[aidoku_test]
@@ -793,7 +807,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 35);
+	assert_eq!(manifest["info"]["version"], 36);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -823,7 +837,7 @@ use aidoku::imports::html::Html;
 use aidoku_test::aidoku_test;
 #[aidoku_test]
 fn synthetic_search() {
-	let doc=Html::parse_with_url(r#"<div class="thumb"><div class="inner_thumb"><a href="/gallery/42/"><img data-src="/cover.png"></a></div><div class="caption">Sample</div></div><div class="thumb"><div class="inner_thumb"><a href="https://invalid.example/gallery/43/"></a></div><div class="caption">Foreign</div></div><ul class="pagination"><li class="active">1</li><li><a href="?page=2">2</a></li></ul>"#,BASE_URL).unwrap();
+	let doc=Html::parse_with_url(r#"<div class="galleries_overview"><div class="lc_galleries"><div class="thumb"><div class="g_type"><h3 class="g_cat"><a class="t_cat" href="/category/doujinshi/">Doujinshi</a></h3></div><div class="inner_thumb"><a href="/gallery/42/"><img class="lazy" src="https://i3.hentaifox.com/005/123/thumb.jpg" data-src="https://i3.hentaifox.com/005/123/thumb.jpg" alt=""></a></div><div class="caption"><h2 class="g_title"><a href="/gallery/42/">Sample</a></h2></div></div><div class="thumb"><div class="inner_thumb"><a href="https://invalid.example/gallery/43/"></a></div><div class="caption"><h2 class="g_title"><a href="/gallery/43/">Foreign</a></h2></div></div></div></div><ul class="pagination"><li class="page-item active"><a>1</a></li><li class="page-item"><a href="?page=2">2</a></li></ul>"#,BASE_URL).unwrap();
 	let result = parse_search(&doc);
 	assert_eq!(result.entries.len(), 1);
 	assert_eq!(result.entries[0].key, "42");
@@ -831,7 +845,7 @@ fn synthetic_search() {
 	assert_eq!(result.entries[0].update_strategy, UpdateStrategy::Never);
 	assert_eq!(
 		result.entries[0].cover,
-		Some(format!("{BASE_URL}/cover.png"))
+		Some("https://i3.hentaifox.com/005/123/thumb.jpg".into())
 	);
 	assert!(result.has_next_page);
 }

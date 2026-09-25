@@ -8,7 +8,7 @@ use aidoku::{
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
-		net::{Request, TimeUnit, set_rate_limit},
+		net::{Request, RequestError, TimeUnit, set_rate_limit},
 		std::{current_date, send_partial_result},
 	},
 	prelude::*,
@@ -23,7 +23,22 @@ macro_rules! ensure {
 	};
 }
 const BASE_URL: &str = "https://hentaifox.com";
+const USER_AGENT: &str = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1";
 const IS_IM: bool = false;
+
+fn site_get(url: String) -> core::result::Result<Request, RequestError> {
+	Ok(Request::get(url)?
+		.header("User-Agent", USER_AGENT)
+		.header("Accept-Encoding", "identity"))
+}
+
+fn site_post(url: &str, referer: &str) -> core::result::Result<Request, RequestError> {
+	Ok(Request::post(url)?
+		.header("User-Agent", USER_AGENT)
+		.header("Accept-Encoding", "identity")
+		.header("Referer", referer)
+		.header("Origin", BASE_URL))
+}
 
 fn posted_age_seconds(label: &str) -> Option<i64> {
 	let label = label.trim().strip_prefix("Posted:")?.trim();
@@ -172,7 +187,15 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 		.map(|els| {
 			els.filter_map(|el| {
 				let key = key_from_url(&el.select_first(".inner_thumb a")?.attr("href")?)?;
-				let title = el.select_first(".caption")?.text()?;
+				let title = el
+					.select_first(".caption .g_title a, .caption a")
+					.and_then(|element| element.text())
+					.or_else(|| el.select_first(".caption").and_then(|element| element.text()))
+					.or_else(|| {
+						el.select_first(".inner_thumb img")
+							.and_then(|image| image.attr("alt"))
+							.filter(|title| !title.trim().is_empty())
+					})?;
 				if title.trim().is_empty() {
 					return None;
 				}
@@ -884,29 +907,47 @@ fn fetch_sidebar_listing(category: &str) -> Result<MangaPageResult> {
 			.any(|(_, _, value)| *value == category),
 		"Unsupported sidebar ranking"
 	);
-	let page = Request::get(format!("{BASE_URL}/"))?.html()?;
+	let response = site_get(format!("{BASE_URL}/"))?.send()?;
+	ensure!(response.status_code() == 200, "HentaiFox homepage request failed");
+	let cookie = response
+		.get_header("set-cookie")
+		.and_then(|header| php_session_cookie(&header))
+		.ok_or(error!("Missing homepage session cookie"))?;
+	let page = response.get_html()?;
 	let token = sidebar_csrf_token(&page).ok_or(error!("Missing homepage CSRF token"))?;
-	post_sidebar_listing(category, &token)
+	post_sidebar_listing(category, &token, &cookie)
 }
 fn sidebar_csrf_token(doc: &Document) -> Option<String> {
 	doc.select_first("[name=csrf-token]")
 		.and_then(|el| el.attr("content"))
 		.filter(|value| !value.trim().is_empty())
 }
-fn post_sidebar_listing(category: &str, token: &str) -> Result<MangaPageResult> {
+fn php_session_cookie(header: &str) -> Option<String> {
+	header
+		.split([';', ','])
+		.map(str::trim)
+		.find(|part| {
+			part.strip_prefix("PHPSESSID=")
+				.is_some_and(|value| !value.is_empty())
+		})
+		.map(ToString::to_string)
+}
+fn post_sidebar_listing(category: &str, token: &str, cookie: &str) -> Result<MangaPageResult> {
 	ensure!(
 		SIDEBAR_LISTINGS
 			.iter()
 			.any(|(_, _, value)| *value == category),
 		"Unsupported sidebar ranking"
 	);
-	let response = Request::post(SIDEBAR_URL)?
+	let response = site_post(SIDEBAR_URL, &format!("{BASE_URL}/"))?
+		.header("Cookie", cookie)
 		.header("X-Csrf-Token", token)
 		.header("X-Requested-With", "XMLHttpRequest")
 		.header("Content-Type", "application/x-www-form-urlencoded")
 		.body(format!("type={category}"))
-		.html()?;
-	parse_sidebar_items(&response)
+		.send()?;
+	ensure!(response.status_code() == 200, "HentaiFox sidebar request failed");
+	parse_sidebar_items(&response.get_html()?)
 }
 fn latest_component(doc: &Document) -> Result<aidoku::HomeComponent> {
 	let result = parse_search(doc);
@@ -1003,12 +1044,17 @@ fn parse_daily_top_rated(doc: &Document) -> Vec<(&'static str, Manga)> {
 
 impl aidoku::Home for GallerySource {
 	fn get_home(&self) -> Result<aidoku::HomeLayout> {
-		let homepage = Request::get(listing_url("latest", 1)?)?.html()?;
+		let response = site_get(listing_url("latest", 1)?)?.send()?;
+		ensure!(response.status_code() == 200, "HentaiFox homepage request failed");
+		let cookie = response
+			.get_header("set-cookie")
+			.and_then(|header| php_session_cookie(&header));
+		let homepage = response.get_html()?;
 		let mut home = parse_home(&homepage)?;
 		send_partial_result(&HomePartialResult::Layout(home.clone()));
-		if let Some(token) = sidebar_csrf_token(&homepage) {
+		if let (Some(token), Some(cookie)) = (sidebar_csrf_token(&homepage), cookie) {
 			for (id, title, category) in SIDEBAR_LISTINGS {
-				if let Ok(result) = post_sidebar_listing(category, &token) {
+				if let Ok(result) = post_sidebar_listing(category, &token, &cookie) {
 					let component = sidebar_home_component(id, title, result);
 					send_partial_result(&HomePartialResult::Component(component.clone()));
 					home.components.push(component);
@@ -1023,7 +1069,7 @@ impl aidoku::ListingProvider for GallerySource {
 		if listing.id == "faplist" {
 			let url = faplist_url(page)?;
 			let cookie = auth::valid_session()?;
-			let response = Request::get(url)?
+			let response = site_get(url)?
 				.header("Cookie", &cookie)
 				.header("Referer", format!("{BASE_URL}/").as_str())
 				.send()?;
@@ -1037,9 +1083,11 @@ impl aidoku::ListingProvider for GallerySource {
 		if listing.id == "bookmarks" {
 			ensure!(page > 0, "Invalid page");
 			let cookie = auth::valid_session()?;
-			let response = Request::post(format!("{BASE_URL}/includes/user_favs.php"))?
+			let response = site_post(
+				&format!("{BASE_URL}/includes/user_favs.php"),
+				&format!("{BASE_URL}/profile/"),
+			)?
 				.header("Cookie", &cookie)
-				.header("Referer", format!("{BASE_URL}/profile/").as_str())
 				.header("X-Requested-With", "XMLHttpRequest")
 				.header("Content-Type", "application/x-www-form-urlencoded")
 				.body(format!("page={page}"))
@@ -1055,7 +1103,7 @@ impl aidoku::ListingProvider for GallerySource {
 		}
 		let popular_tag = popular_sorted_tag_slug(&listing.id).is_some();
 		if popular_tag || popular_tag_slug(&listing.id).is_some() {
-			let doc = Request::get(popular_tag_url(&listing.id, page, popular_tag)?)?.html()?;
+			let doc = site_get(popular_tag_url(&listing.id, page, popular_tag)?)?.html()?;
 			let result = parse_search(&doc);
 			ensure!(
 				!result.entries.is_empty(),
@@ -1076,9 +1124,9 @@ impl aidoku::ListingProvider for GallerySource {
 			if page > 1 {
 				return Ok(MangaPageResult::default());
 			}
-			return parse_top_rated(&Request::get(url)?.html()?);
+			return parse_top_rated(&site_get(url)?.html()?);
 		}
-		let doc = Request::get(url)?.html()?;
+		let doc = site_get(url)?.html()?;
 		let result = parse_search(&doc);
 		ensure!(
 			!result.entries.is_empty(),
@@ -1104,7 +1152,7 @@ impl DynamicListings for GallerySource {
 		if let Some(faplist) = faplist_listing(logged_in) {
 			listings.push(faplist);
 		}
-		if let Ok(response) = Request::get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
+		if let Ok(response) = site_get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
 			.and_then(|request| request.html())
 		{
 			if let Ok(popular_tags) = parse_popular_tag_listings(&response) {
@@ -1137,7 +1185,7 @@ impl DynamicFilters for GallerySource {
 	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
 		let mut filters = search_filters();
 		for (directory, kind, title) in POPULAR_TAXONOMIES {
-			let Ok(doc) = Request::get(format!("{BASE_URL}/{directory}/popular/"))
+			let Ok(doc) = site_get(format!("{BASE_URL}/{directory}/popular/"))
 				.and_then(|request| request.html())
 			else {
 				continue;
@@ -1147,7 +1195,7 @@ impl DynamicFilters for GallerySource {
 			};
 			filters.push(taxonomy_filter(kind, title, values));
 		}
-		if let Ok(doc) = Request::get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
+		if let Ok(doc) = site_get(format!("{BASE_URL}{POPULAR_TAGS_PATH}"))
 			.and_then(|request| request.html())
 		{
 			if let Ok(listings) = parse_popular_tag_listings(&doc) {
@@ -1217,10 +1265,9 @@ impl Source for GallerySource {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
-		let doc =
-			Request::get(search_url_with_filters(query.as_deref(), page, &filters)?)?.html()?;
+		let doc = site_get(search_url_with_filters(query.as_deref(), page, &filters)?)?.html()?;
 		ensure!(
-			doc.select_first("div.thumb, .pagination, .content, .container")
+			doc.select_first(".galleries_overview, .lc_galleries, div.thumb, .pagination, .content, .container")
 				.is_some(),
 			"Search unavailable or layout changed"
 		);
@@ -1240,7 +1287,7 @@ impl Source for GallerySource {
 			!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()),
 			"Invalid gallery key"
 		);
-		let doc = Request::get(format!("{BASE_URL}/gallery/{}/", manga.key))?.html()?;
+		let doc = site_get(format!("{BASE_URL}/gallery/{}/", manga.key))?.html()?;
 		update(&doc, manga, needs_details, needs_chapters)
 	}
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
@@ -1251,7 +1298,7 @@ impl Source for GallerySource {
 			"Invalid gallery key"
 		);
 		parse_pages(
-			&Request::get(format!("{BASE_URL}/gallery/{}/", chapter.key))?.html()?,
+			&site_get(format!("{BASE_URL}/gallery/{}/", chapter.key))?.html()?,
 			&chapter.key,
 		)
 	}
@@ -1291,7 +1338,7 @@ impl ImageRequestProvider for GallerySource {
 				"Invalid image referer"
 			);
 		}
-		Ok(Request::get(url)?.header("Referer", &referer))
+		Ok(site_get(url)?.header("Referer", &referer))
 	}
 }
 aidoku::register_source!(

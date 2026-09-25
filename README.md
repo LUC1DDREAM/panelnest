@@ -17,7 +17,7 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 | nhentai [PN] | `multi.luc1d-nhentai` | 25 |
 | WEBTOON [PN] | `multi.luc1d-webtoon` | 23 |
 | IMHentai [PN] | `multi.luc1d-imhentai` | 31 |
-| HentaiFox [PN] | `multi.luc1d-hentaifox` | 35 |
+| HentaiFox [PN] | `multi.luc1d-hentaifox` | 36 |
 
 ## Verification and approval
 
