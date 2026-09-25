@@ -1,11 +1,11 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
-	Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue, HomeLayout,
-	ImageRequestProvider, Link, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus,
-	MangaWithChapter, MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent,
-	PageContext, PageDescriptionProvider, RangeFilter, Result, Source, TextFilter, UpdateStrategy,
-	Viewer, WebLoginHandler,
+	Chapter, CheckFilter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters,
+	DynamicListings, Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue,
+	HomeLayout, ImageRequestProvider, Link, Listing, ListingProvider, Manga, MangaPageResult,
+	MangaStatus, MangaWithChapter, MigrationHandler, MultiSelectFilter, NotificationHandler, Page,
+	PageContent, PageContext, PageDescriptionProvider, RangeFilter, Result, Source, TextFilter,
+	UpdateStrategy, Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	helpers::uri::QueryParameters,
 	imports::{
@@ -16,6 +16,7 @@ use aidoku::{
 };
 
 mod auth;
+mod bookmarks;
 mod chapters;
 mod discovery;
 mod helpers;
@@ -113,6 +114,19 @@ fn browse_url(query: Option<&str>, page: i32, filters: &[FilterValue]) -> Result
 	Ok(format!("{BASE_URL}/browse?{qs}"))
 }
 
+fn hide_bookmarked_requested(filters: &[FilterValue]) -> bool {
+	filters.iter().any(|filter| {
+		matches!(filter, FilterValue::Check { id, value: 1 } if id.as_str() == "hide_bookmarked")
+	})
+}
+
+fn remove_bookmarked(entries: Vec<Manga>, bookmarked_slugs: &[String]) -> Vec<Manga> {
+	entries
+		.into_iter()
+		.filter(|manga| !bookmarked_slugs.iter().any(|slug| slug == &manga.key))
+		.collect()
+}
+
 impl Source for AsuraScans {
 	fn new() -> Self {
 		set_rate_limit(2, 2, TimeUnit::Seconds);
@@ -125,10 +139,11 @@ impl Source for AsuraScans {
 		page: i32,
 		filters: Vec<FilterValue>,
 	) -> Result<MangaPageResult> {
+		let hide_bookmarked = hide_bookmarked_requested(&filters);
 		let url = browse_url(query.as_deref(), page, &filters)?;
 		let html = Request::get(url)?.html()?;
 
-		let entries = html
+		let mut entries = html
 			.select("#series-grid > .series-card")
 			.map(|els| {
 				els.filter_map(|el| {
@@ -145,6 +160,9 @@ impl Source for AsuraScans {
 				.collect()
 			})
 			.unwrap_or_default();
+		if hide_bookmarked {
+			entries = remove_bookmarked(entries, &bookmarks::get_bookmarked_slugs()?);
+		}
 
 		let has_next_page = html
 			.select_first("button[aria-label=\"Next page\"].cursor-pointer")
@@ -416,6 +434,18 @@ fn dynamic_search_filters(genres: Vec<(String, String)>) -> Vec<Filter> {
 	filters
 }
 
+fn with_bookmark_filter(mut filters: Vec<Filter>, logged_in: bool) -> Vec<Filter> {
+	if logged_in {
+		let mut hide_bookmarked = CheckFilter::default();
+		hide_bookmarked.id = "hide_bookmarked".into();
+		hide_bookmarked.title = Some("Hide Bookmarked".into());
+		hide_bookmarked.name = Some("Hide Bookmarked".into());
+		hide_bookmarked.default = Some(false);
+		filters.push(hide_bookmarked.into());
+	}
+	filters
+}
+
 impl Home for AsuraScans {
 	fn get_home(&self) -> Result<HomeLayout> {
 		let html = Request::get(BASE_URL)?.html()?;
@@ -639,7 +669,10 @@ impl ListingProvider for AsuraScans {
 
 impl DynamicFilters for AsuraScans {
 	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
-		Ok(dynamic_search_filters(browse_genres().unwrap_or_default()))
+		Ok(with_bookmark_filter(
+			dynamic_search_filters(browse_genres().unwrap_or_default()),
+			auth::is_logged_in(),
+		))
 	}
 }
 
@@ -713,7 +746,7 @@ mod filter_tests {
 	fn breaking_change_migration_is_enabled_for_the_historical_key_change() {
 		let config: serde_json::Value =
 			serde_json::from_str(include_str!("../res/source.json")).unwrap();
-		assert_eq!(config["info"]["version"], 16);
+		assert_eq!(config["info"]["version"], 17);
 		assert_eq!(config["config"]["breakingChangeVersion"], 12);
 
 		let source = AsuraScans;
@@ -811,7 +844,12 @@ mod filter_tests {
 				id: "artist".into(),
 				value: "Studio".into(),
 			},
+			FilterValue::Check {
+				id: "hide_bookmarked".into(),
+				value: 1,
+			},
 		];
+		assert!(hide_bookmarked_requested(&values));
 		let url = browse_url(Some("dragon"), 2, &values).unwrap();
 		assert!(url.starts_with("https://asurascans.com/browse?page=2&q=dragon"));
 		assert!(url.contains("sort=rating&order=asc"));
@@ -821,7 +859,64 @@ mod filter_tests {
 		assert!(url.contains("author=Daum"));
 		assert!(url.contains("artist=Studio"));
 		assert!(!url.contains("type=all"));
+		assert!(!url.contains("hide_bookmarked"));
 		assert!(browse_url(None, 0, &[]).is_err());
+	}
+
+	#[aidoku_test]
+	fn hide_bookmarked_filter_matches_series_slugs_without_reordering_results() {
+		let entries = vec![
+			Manga {
+				key: "dragon-1".into(),
+				title: "Dragon".into(),
+				..Default::default()
+			},
+			Manga {
+				key: "moon-2".into(),
+				title: "Moon".into(),
+				..Default::default()
+			},
+			Manga {
+				key: "star-3".into(),
+				title: "Star".into(),
+				..Default::default()
+			},
+		];
+		let visible = remove_bookmarked(entries, &["moon-2".into()]);
+		assert_eq!(
+			visible
+				.iter()
+				.map(|manga| manga.key.as_str())
+				.collect::<Vec<_>>(),
+			["dragon-1", "star-3"]
+		);
+		assert!(!hide_bookmarked_requested(&[FilterValue::Check {
+			id: "hide_bookmarked".into(),
+			value: 0
+		}]));
+	}
+
+	#[aidoku_test]
+	fn logged_in_dynamic_filters_include_hide_bookmarked_check() {
+		let filters = dynamic_search_filters(vec![]);
+		let filters = with_bookmark_filter(filters, true);
+		assert_eq!(filters.len(), 4);
+		assert_eq!(filters.last().unwrap().id.as_ref(), "hide_bookmarked");
+		match &filters.last().unwrap().kind {
+			FilterKind::Check {
+				default,
+				can_exclude,
+				..
+			} => {
+				assert_eq!(*default, Some(false));
+				assert!(!can_exclude);
+			}
+			_ => panic!("Hide Bookmarked should be a boolean check"),
+		}
+		assert_eq!(
+			with_bookmark_filter(dynamic_search_filters(vec![]), false).len(),
+			3
+		);
 	}
 
 	#[aidoku_test]

@@ -119,3 +119,9 @@ Version 15 loads up to 100 entries for each official trending period; the API ig
 ## Automatic migration (package version 16)
 
 The source manifest now declares config.breakingChangeVersion 12, matching the historical manga-key change already handled by MigrationHandler. Aidoku can automatically migrate installs older than v12; chapter keys remain unchanged. A WASM fixture verifies the threshold and old/current manga and chapter key mappings.
+
+## Hide bookmarked (package version 17)
+
+When signed in, dynamic search filters include **Hide Bookmarked**, matching the official Browse page's client-side behavior. With the filter checked, Aidoku reads all saved series slugs from the existing paginated `/api/me/bookmarks` endpoint and removes those series from the current result page while preserving the remaining order and the site's pagination state. Bookmark slugs match the manga keys returned by browse results.
+
+The bookmark set is fetched only when the filter is enabled and cached for five minutes; login and logout clear the cache. The account endpoint and authenticated UI behavior could not be verified with a live account in this environment, so device behavior remains unverified.

@@ -84,11 +84,16 @@ impl BookmarkResponse {
 	pub fn has_next_page(&self, offset: i32) -> bool {
 		offset.saturating_add(self.data.len() as i32) < self.meta.total
 	}
+
+	pub fn into_slugs(self) -> Vec<String> {
+		self.data.into_iter().map(|item| item.series.slug).collect()
+	}
 }
 
 #[cfg(test)]
 mod bookmark_pagination_tests {
 	use super::*;
+	use aidoku::alloc::vec;
 	use aidoku_test::aidoku_test;
 
 	#[aidoku_test]
@@ -104,6 +109,21 @@ mod bookmark_pagination_tests {
 			meta: BookmarkResponseMeta { total: 0 },
 		};
 		assert!(!empty.has_next_page(0));
+	}
+
+	#[aidoku_test]
+	fn bookmark_series_slugs_match_browse_manga_keys() {
+		let response: BookmarkResponse = serde_json::from_str(
+			r#"{
+			"data":[
+				{"series":{"cover_url":"https://example.invalid/a.jpg","slug":"series-a","title":"A"}},
+				{"series":{"cover_url":"https://example.invalid/b.jpg","slug":"series-b","title":"B"}}
+			],
+			"meta":{"total":2}
+		}"#,
+		)
+		.unwrap();
+		assert_eq!(response.into_slugs(), vec!["series-a", "series-b"]);
 	}
 }
 

@@ -63,12 +63,14 @@ pub fn handle_login(cookies: HashMap<String, String>) -> Result<bool> {
 	let Ok(status) = refresh(refresh_token) else {
 		bail!("Failed to authenticate");
 	};
+	crate::bookmarks::clear_cache();
 	defaults_set_data(AUTH_KEY, status);
 	Ok(true)
 }
 
 pub fn logout() {
 	defaults_set(AUTH_KEY, DefaultValue::Null);
+	crate::bookmarks::clear_cache();
 }
 
 pub fn get_access_token() -> Result<String> {
