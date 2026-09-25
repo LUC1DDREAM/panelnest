@@ -39,7 +39,11 @@ The feature list and per-source exceptions are recorded in `rebuild/sources.json
 
 ## Remaining verification limits
 
-Feature support does not certify successful playback on an Aidoku device. Every source manifest currently records `runtime_tested` and `device_tested` as false. In particular, WeebCentral requests may receive Cloudflare 403 responses, nhentai may rate-limit requests, and HentaiFox authenticated bookmarks have not been verified with an account session. IMHentai v26 has fixture coverage for its live reader manifest and direct HTTP checks, but an Aidoku device run still needs the app's error output and installed source version to diagnose the user's chapter-opening failure.
+Feature support does not certify successful playback on an Aidoku device. Every source manifest currently records `runtime_tested` and `device_tested` as false. In particular, WeebCentral requests may receive Cloudflare 403 responses, nhentai may rate-limit requests, and HentaiFox authenticated bookmarks have not been verified with an account session. IMHentai v27 now falls back to the complete reader document when the inline manifest is absent from the script-element query; fixtures cover the captured 50-page reader response and the fallback path. Native playback still needs an Aidoku device run.
+
+## Aidoku model-field coverage
+
+The SDK's manga fields (metadata, status, content rating, viewer, update strategy and URLs) and chapter fields (numbering, date, language, scanlator, thumbnail and lock state) were compared against each source parser. WEBTOON Originals already populate episode dates from the official API. The public CANVAS list also displays date-only episode labels, so source version 22 now parses verified English month-name and ISO formats into UTC-midnight `Chapter.date_uploaded`; unknown or invalid labels remain unset. Other chapter fields are populated only where the site exposes verified values. No reviewed site exposes a dependable next-update timestamp.
 
 The practical next step for future site changes is to recheck the applicable SDK traits, source manifest, registration macro, fixtures, and live site behavior before deciding whether a new handler is useful.
 

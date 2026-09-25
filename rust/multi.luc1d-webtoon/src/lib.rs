@@ -382,6 +382,62 @@ fn parse_episodes(v: Value, language: &str) -> Result<(Vec<Chapter>, Option<u64>
 		.filter(|n| *n > 0);
 	Ok((chapters, next))
 }
+fn canvas_date_uploaded(value: &str) -> Option<i64> {
+	let value = value.trim();
+	let (year, month, day) = if value.contains('-') {
+		let mut parts = value.split('-');
+		let year = parts.next()?.parse::<i64>().ok()?;
+		let month = parts.next()?.parse::<i64>().ok()?;
+		let day = parts.next()?.parse::<i64>().ok()?;
+		if parts.next().is_some() {
+			return None;
+		}
+		(year, month, day)
+	} else {
+		let mut parts = value.split_whitespace();
+		let month = match parts.next()?.trim_end_matches(',').to_ascii_lowercase().as_str() {
+			"jan" | "january" => 1,
+			"feb" | "february" => 2,
+			"mar" | "march" => 3,
+			"apr" | "april" => 4,
+			"may" => 5,
+			"jun" | "june" => 6,
+			"jul" | "july" => 7,
+			"aug" | "august" => 8,
+			"sep" | "september" => 9,
+			"oct" | "october" => 10,
+			"nov" | "november" => 11,
+			"dec" | "december" => 12,
+			_ => return None,
+		};
+		let day = parts.next()?.trim_end_matches(',').parse::<i64>().ok()?;
+		let year = parts.next()?.trim_end_matches(',').parse::<i64>().ok()?;
+		if parts.next().is_some() {
+			return None;
+		}
+		(year, month, day)
+	};
+	if !(1970..=9999).contains(&year) || !(1..=12).contains(&month) {
+		return None;
+	}
+	let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+	let days_in_month = match month {
+		2 if leap => 29,
+		2 => 28,
+		4 | 6 | 9 | 11 => 30,
+		_ => 31,
+	};
+	if !(1..=days_in_month).contains(&day) {
+		return None;
+	}
+	let adjusted_year = year - i64::from(month <= 2);
+	let era = adjusted_year / 400;
+	let year_of_era = adjusted_year - era * 400;
+	let shifted_month = month + if month > 2 { -3 } else { 9 };
+	let day_of_year = (153 * shifted_month + 2) / 5 + day - 1;
+	let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+	Some((era * 146_097 + day_of_era - 719_468) * 86_400)
+}
 fn parse_canvas_episodes(
 	html: &Document,
 	page: u32,
@@ -425,6 +481,10 @@ fn parse_canvas_episodes(
 					.and_then(|title| title.text())
 					.map(String::from),
 				chapter_number: Some(episode_no as f32),
+				date_uploaded: element
+					.select_first(".date")
+					.and_then(|date| date.text())
+					.and_then(|date| canvas_date_uploaded(&date)),
 				language: Some(language.into()),
 				thumbnail: thumbnail.map(String::from),
 				..Default::default()

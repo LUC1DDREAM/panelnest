@@ -545,6 +545,7 @@ fn canvas_episode_html_fixture_parses_chapters_and_pagination() {
 	assert!(has_next);
 	assert_eq!(chapters.len(), 2);
 	assert_eq!(chapters[0].chapter_number, Some(54.0));
+	assert_eq!(chapters[0].date_uploaded, Some(1_789_257_600));
 	assert_eq!(chapters[0].title.as_deref(), Some("Episode 43"));
 	assert_eq!(chapters[0].language.as_deref(), Some("en"));
 	assert_eq!(
@@ -554,6 +555,7 @@ fn canvas_episode_html_fixture_parses_chapters_and_pagination() {
 	assert!(chapters[0].key.contains("title_no=803012"));
 	assert!(chapters[0].key.contains("episode_no=54"));
 	assert_eq!(chapters[1].title.as_deref(), Some("Intermission - 1 (4th Anniversary)"));
+	assert_eq!(chapters[1].date_uploaded, None);
 
 	let last_page = Html::parse(
 		r#"<a class="detail_list_link" href="/en/canvas/barcoded/ep-1/viewer?title_no=803012&amp;episode_no=1"><span class="subj">Episode 1</span></a><div class="paginate"><a href="/en/canvas/barcoded/list?title_no=803012&amp;page=5">5</a></div>"#,
@@ -562,6 +564,17 @@ fn canvas_episode_html_fixture_parses_chapters_and_pagination() {
 	let (oldest, has_next) = parse_canvas_episodes(&last_page, 6, "en").unwrap();
 	assert_eq!(oldest.len(), 1);
 	assert!(!has_next);
+}
+
+#[aidoku_test]
+fn canvas_dates_parse_english_months_and_iso_dates_without_guessing_invalid_values() {
+	assert_eq!(canvas_date_uploaded("Sep 13, 2026"), Some(1_789_257_600));
+	assert_eq!(canvas_date_uploaded("September 13, 2026"), Some(1_789_257_600));
+	assert_eq!(canvas_date_uploaded("2026-09-13"), Some(1_789_257_600));
+	assert_eq!(canvas_date_uploaded("Feb 29, 2024"), Some(1_709_164_800));
+	for value in ["Feb 29, 2025", "Sep 31, 2026", "yesterday", "13 Sep 2026", ""] {
+		assert_eq!(canvas_date_uploaded(value), None, "{value}");
+	}
 }
 
 #[aidoku_test]
