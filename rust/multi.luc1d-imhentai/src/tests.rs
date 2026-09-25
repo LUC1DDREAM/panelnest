@@ -338,6 +338,17 @@ fn synthetic_pages_order_formats_and_validation() {
 }
 
 #[aidoku_test]
+fn reader_manifest_falls_back_to_full_document_markup() {
+	let doc = Html::parse_with_url(
+		r#"<html><body><!-- g_th = $.parseJSON('{"1":"j,1280,960"}'); --></body></html>"#,
+		BASE_URL,
+	)
+	.unwrap();
+	assert!(doc.select_first("script").is_none());
+	assert_eq!(reader_manifest(&doc).unwrap()["1"], "j,1280,960");
+}
+
+#[aidoku_test]
 fn current_imhentai_reader_uses_view_image_path_and_manifest() {
 	let doc = Html::parse_with_url(
 		r#"<input id="pages" value=""><input id="image_dir" value=""><input id="gallery_id" value=""><img id="gimg" src="https://m11.imhentai.xxx/033/readerkey/1.webp"><script>var g_th = $.parseJSON('{"1":"w,792,1224","2":"w,792,1224","3":"w,792,1224"}');</script>"#,
