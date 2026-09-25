@@ -12,6 +12,7 @@ class PublicReleaseTests(unittest.TestCase):
     def test_public_catalog_keeps_legacy_alias(self):
         rows=json.loads((pipeline.ROOT/'rebuild/sources.json').read_text())
         infos=[json.loads((pipeline.ROOT/r['path']/'res/source.json').read_text())['info'] for r in rows]
+        readme=(pipeline.ROOT/'README.md').read_text(encoding='utf-8')
         self.assertEqual(len(infos),6)
         installed={}
         for path in (pipeline.ROOT/'rebuild/published-packages').glob('*.aix'):
@@ -19,6 +20,7 @@ class PublicReleaseTests(unittest.TestCase):
                 previous=json.loads(archive.read('Payload/source.json'))['info']
                 if previous['id'] not in installed or previous['version']>installed[previous['id']]['version']: installed[previous['id']]=previous
         for info in infos:
+            self.assertIn(f"`{info['id']}` | {info['version']} |",readme,f"{info['id']} README version")
             previous=installed[info['id']]
             row=next(r for r in rows if r['id']==info['id'])
             verification_path=pipeline.ROOT/row['path']/'verification.json'
