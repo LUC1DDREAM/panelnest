@@ -439,8 +439,9 @@ fn parse_canvas_episodes(
 		.is_some_and(|links| {
 			links.into_iter().any(|link| {
 				link.attr("href")
-					.and_then(|href| parameter(&href, "page"))
-					.and_then(|page| page.parse::<u32>().ok())
+					.and_then(|href| {
+						parameter(&href, "page").and_then(|page| page.parse::<u32>().ok())
+					})
 					.is_some_and(|linked_page| linked_page > page)
 			})
 		});
