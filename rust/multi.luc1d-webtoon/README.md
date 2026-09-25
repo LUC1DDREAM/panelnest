@@ -6,7 +6,7 @@ Completed series are excluded from periodic library refreshes. Ongoing and unkno
 
 # Official WEBTOON (LUC1D)
 
-Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 22).
+Independent current-API source, ID `multi.luc1d-webtoon`, not WebtoonXYZ (package version 23).
 SDK pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
 ## Support and limits
@@ -41,3 +41,5 @@ Version 20 includes each official episode API thumbnail in Chapter.thumbnail aft
 Version 21 uses the public CANVAS series page to list episodes when the CANVAS JSON API is unavailable. A live official CANVAS series and viewer were checked on 2026-09-25; sanitized fixtures verify chapter links, episode numbers, thumbnails, pagination and host validation. Originals continue to use the cursor API.
 
 Version 22 maps recognized date-only labels from public CANVAS episode cards into Aidoku chapter upload timestamps. English month names and ISO dates are supported; unknown or invalid date text remains unset. Timestamps represent midnight UTC because the page provides a date without a time or timezone.
+
+Version 23 maps WEBTOON's official `data-title-unsuitable-for-children` discovery flag and `isMatureTitle` detail state to Aidoku content ratings. Mature titles are marked NSFW; titles explicitly marked suitable are Safe. Missing or unrecognized flags preserve the existing rating.

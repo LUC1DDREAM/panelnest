@@ -31,6 +31,7 @@ fn captured_discovery_retains_site_order_and_full_list() {
 	let result = parse_search(&html);
 	assert_eq!(result.entries.len(), 595);
 	assert!(result.entries[0].key.contains("title_no=8135"));
+	assert_eq!(result.entries[0].content_rating, ContentRating::NSFW);
 	assert!(!result.has_next_page);
 }
 
@@ -508,6 +509,26 @@ fn details_fixture() {
 	assert_eq!(m.title, "Space Boy");
 	assert!(m.description.unwrap().len() > 30);
 	assert!(m.authors.unwrap().join(",").contains("Stephen"));
+	assert_eq!(m.content_rating, ContentRating::Safe);
+}
+
+#[aidoku_test]
+fn mature_detail_metadata_maps_to_nsfw_without_overwriting_missing_values() {
+	let mature = Html::parse(
+		r#"<h1 class="subj">Mature Example</h1><script>addFavoriteParam = { isMatureTitle: true };</script>"#,
+	)
+	.unwrap();
+	assert_eq!(detail_content_rating(&mature), Some(ContentRating::NSFW));
+
+	let missing = Html::parse("<h1 class='subj'>Unrated</h1>").unwrap();
+	let existing = Manga {
+		content_rating: ContentRating::NSFW,
+		..Default::default()
+	};
+	assert_eq!(
+		parse_details(existing, &missing).unwrap().content_rating,
+		ContentRating::NSFW
+	);
 }
 #[aidoku_test]
 fn episodes_fixture_and_cursor() {

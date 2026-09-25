@@ -1,14 +1,14 @@
 #![no_std]
 use aidoku::{
-	Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
-	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider,
-	Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page, PageContent, PageContext,
-	PageDescriptionProvider, UpdateStrategy,
-	Result, SelectFilter, SortFilter, SortFilterDefault, Source, Viewer,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
+	Filter, FilterValue, HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult,
+	ImageRequestProvider, Listing, ListingKind, Manga, MangaPageResult, MangaStatus, Page,
+	PageContent, PageContext, PageDescriptionProvider, Result, SelectFilter, SortFilter,
+	SortFilterDefault, Source, UpdateStrategy, Viewer,
 	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	imports::{
 		defaults::defaults_get,
-		html::Document,
+		html::{Document, Element},
 		net::{Request, TimeUnit, set_rate_limit},
 		std::send_partial_result,
 	},
@@ -16,6 +16,34 @@ use aidoku::{
 };
 use serde_json::Value;
 const BASE: &str = "https://m.webtoons.com";
+
+fn content_rating(value: &str) -> Option<ContentRating> {
+	match value.trim() {
+		"true" => Some(ContentRating::NSFW),
+		"false" => Some(ContentRating::Safe),
+		_ => None,
+	}
+}
+
+fn card_content_rating(card: &Element) -> ContentRating {
+	card.select_first(".image_wrap")
+		.and_then(|element| element.attr("data-title-unsuitable-for-children"))
+		.and_then(|value| content_rating(&value))
+		.unwrap_or_default()
+}
+
+fn detail_content_rating(html: &Document) -> Option<ContentRating> {
+	html.select("script")?.find_map(|script| {
+		let script = script.html()?;
+		let (_, value) = script.split_once("isMatureTitle")?;
+		let (_, value) = value.split_once(':')?;
+		let value = value
+			.trim_start()
+			.split(|character: char| !character.is_ascii_alphanumeric())
+			.next()?;
+		content_rating(value)
+	})
+}
 
 fn library_update_strategy(status: MangaStatus) -> UpdateStrategy {
 	if status == MangaStatus::Completed {
@@ -298,6 +326,7 @@ fn parse_search(html: &Document) -> MangaPageResult {
 				url: Some(format!("{BASE}{key}")),
 				key,
 				title,
+				content_rating: card_content_rating(&el),
 				cover: el
 					.select_first("img")
 					.and_then(|e| e.attr("data-src").or_else(|| e.attr("src"))),
@@ -327,6 +356,9 @@ fn parse_details(mut m: Manga, h: &Document) -> Result<Manga> {
 			.collect()
 	});
 	m.tags = text(".detail_header .genre").map(|s| vec![s]);
+	if let Some(rating) = detail_content_rating(h) {
+		m.content_rating = rating;
+	}
 	let status = text(".day_info").unwrap_or_default().to_lowercase();
 	m.status = if status.contains("completed") {
 		MangaStatus::Completed
