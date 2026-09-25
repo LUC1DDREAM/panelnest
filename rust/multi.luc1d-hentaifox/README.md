@@ -1,8 +1,8 @@
 # hentaifox (LUC1D)
 Independent Aidoku API implementation. SDK remains pinned to `e1320b0a2e11afb59e4dee374883a2212d325699`.
 
-## Discovery (source version 36)
-Version 36 sends HentaiFox's required mobile Safari User-Agent and an uncompressed HTML preference on source requests. Live requests without a browser User-Agent return HTTP 403; the same search route returns 20 gallery cards with the mobile Safari header. Sidebar AJAX rankings also require the homepage PHPSESSID cookie alongside the CSRF and XHR headers; all three ranking types return 10 entries when the session cookie is forwarded. Fixtures cover the current nested card markup and PHP session cookie extraction.
+## Discovery (source version 37)
+Version 37 sends HentaiFox's required mobile Safari User-Agent and an uncompressed HTML preference on source requests. Live requests without a browser User-Agent return HTTP 403; the same search route returns 20 gallery cards with the mobile Safari header. Sidebar AJAX rankings also require the homepage PHPSESSID cookie alongside the CSRF and XHR headers; all three ranking types return 10 entries when the session cookie is forwarded. Fixtures cover the current nested card markup and PHP session cookie extraction.
 Version 35 maps all 21 human languages in the live official popular-language directory to BCP 47 Chapter.language values; translated, rewrite, speechless and text-cleaning labels are not misclassified as languages. Fixtures cover the complete list, mixed languages and all classification tags.
 Version 34 refreshes the Groups: metadata idempotently, replacing stale values and removing the field when no groups are present.
 Version 33 maps the separate official ul.groups taxonomy into Manga.description as Groups: ..., preserving any existing description and keeping groups separate from tags. A live gallery fixture checks group and artist metadata.
