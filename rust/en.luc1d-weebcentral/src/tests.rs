@@ -104,7 +104,7 @@ fn reader_pages_keep_order_and_expose_page_descriptions() {
 fn current_live_reader_markup_parses_images_and_rejects_empty_or_invalid_results() {
 	use aidoku::PageDescriptionProvider;
 	let html = Html::parse_with_url(
-		r#"<section id="chapter-images"><img src="https://scans.lastation.us/manga/Sample/001.png" alt="Page 1"><img src="https://scans.lastation.us/manga/Sample/002.png" alt="Page 2"><img src="http://invalid.test/3.jpg"></section>"#,
+		r#"<section id="chapter-images"><img src="https://scans.lastation.us/manga/Sample/001.png" alt="Page 1"><img src="https://scans.lastation.us/manga/Sample/002.png" alt="Page 2"><img src="https://foreign.invalid/3.jpg"></section>"#,
 		BASE_URL,
 	)
 	.unwrap();

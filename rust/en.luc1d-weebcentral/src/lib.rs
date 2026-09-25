@@ -67,7 +67,13 @@ fn parse_reader_pages(html: &Document) -> Vec<Page> {
 			let Some(page_url) = element.attr("abs:src") else {
 				continue;
 			};
-			if !page_url.starts_with("https://") {
+			let Some(host) = page_url
+				.strip_prefix("https://")
+				.and_then(|url| url.split(['/', '?', '#']).next())
+			else {
+				continue;
+			};
+			if !matches!(host, "scans.lastation.us" | "temp.compsci88.com") {
 				continue;
 			}
 			pages.push(numbered_reader_page(page_url, pages.len() + 1));
