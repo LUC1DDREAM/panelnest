@@ -12,14 +12,16 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 - Discovery menu reads the genre and sort links from the selected locale current page, falling back to bundled defaults if fetching or parsing fails. Filters and home links then track WEBTOON catalog changes. Named listings cover each known genre in all three official sort orders and keep existing IDs.
 | Display name | Stable ID | Version |
 |---|---|---:|
-| Asura Scans [PN] | `en.luc1d-asurascans` | 12 |
-| Weeb Central [PN] | `en.luc1d-weebcentral` | 17 |
-| nhentai [PN] | `multi.luc1d-nhentai` | 19 |
-| WEBTOON [PN] | `multi.luc1d-webtoon` | 18 |
-| IMHentai [PN] | `multi.luc1d-imhentai` | 21 |
-| HentaiFox [PN] | `multi.luc1d-hentaifox` | 22 |
+| Asura Scans [PN] | `en.luc1d-asurascans` | 16 |
+| Weeb Central [PN] | `en.luc1d-weebcentral` | 20 |
+| nhentai [PN] | `multi.luc1d-nhentai` | 23 |
+| WEBTOON [PN] | `multi.luc1d-webtoon` | 20 |
+| IMHentai [PN] | `multi.luc1d-imhentai` | 26 |
+| HentaiFox [PN] | `multi.luc1d-hentaifox` | 29 |
 
 ## Verification and approval
+
+The [Aidoku capability audit](rebuild/aidoku-capability-audit.md) compares every pinned SDK source trait with the six implementations and records why the remaining handlers do not fit current site behavior.
 
 The user explicitly authorized publication and removal of public test branding. This is **not automated end-to-end or independently recorded iPhone certification**. `release_authorized=true` records that authorization; `runtime_tested=false` and `device_tested=false` deliberately remain unchanged. Historical live results, including Cloudflare/HTTP 429 failures, remain in `rebuild/sources.json`; no automated result was forged.
 
