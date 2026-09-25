@@ -50,3 +50,5 @@ Version 26 adds a sanitized fixture from the current live page-one reader respon
 Version 27 reads the reader manifest from the full document if Aidoku's script-element query does not expose it, while retaining the direct script path when available. The reader test now parses the actual sanitized live response fixture rather than reconstructing only its image and manifest elements.
 
 Version 28 maps the official `Artists:` gallery field to Aidoku's `Manga.artists` field and clears the unrelated `Manga.authors` field. A fixture verifies the model mapping.
+
+Version 29 requests identity encoding for IMHentai HTML. This follows the current GalleryAdults client workaround, which removes `Accept-Encoding` to avoid compressed HTML responses that some source runtimes fail to parse. It applies to reader and gallery HTML through the shared request builder; CDN image requests remain unchanged. Live checks return HTTP 200 and the reader manifest builds all 50 page URLs. Aidoku device playback still needs confirmation.

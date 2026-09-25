@@ -1,15 +1,16 @@
 #![no_std]
 use aidoku::{
-	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings, Filter, FilterValue,
-	HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult, ImageRequestProvider, Manga,
-	MangaPageResult, MangaStatus, MultiSelectFilter, Page, PageContent, PageDescriptionProvider,
-	Result, SortFilter, Source, TextFilter, UpdateStrategy, Viewer,
+	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
+	Filter, FilterValue, HomeComponent, HomeComponentValue, HomeLayout, HomePartialResult,
+	ImageRequestProvider, Manga, MangaPageResult, MangaStatus, MultiSelectFilter, Page,
+	PageContent, PageDescriptionProvider, Result, SortFilter, Source, TextFilter, UpdateStrategy,
+	Viewer,
 	alloc::{String, Vec, string::ToString, vec},
+	imports::std::{current_date, send_partial_result},
 	imports::{
 		html::{Document, Element},
 		net::{Request, RequestError, Response, TimeUnit, set_rate_limit},
 	},
-	imports::std::{current_date, send_partial_result},
 	prelude::*,
 };
 macro_rules! ensure {
@@ -60,12 +61,16 @@ fn posted_timestamp(doc: &Document) -> Option<i64> {
 fn site_request(url: String, referer: &str) -> Result<Request> {
 	Ok(Request::get(url)?
 		.header("Referer", referer)
+		// Avoid compressed HTML responses that some source runtimes fail to parse.
+		.header("Accept-Encoding", "identity")
 		.header("User-Agent", USER_AGENT))
 }
 fn key_from_url(url: &str) -> Option<String> {
 	let path = url.strip_prefix(BASE_URL).unwrap_or(url);
 	let path = path.split(['?', '#']).next()?;
-	let path = path.strip_prefix("/gallery/").or_else(|| path.strip_prefix("/view/"))?;
+	let path = path
+		.strip_prefix("/gallery/")
+		.or_else(|| path.strip_prefix("/view/"))?;
 	let key = path.split('/').next()?;
 	if !key.is_empty() && key.bytes().all(|b| b.is_ascii_digit()) {
 		Some(key.into())
@@ -197,7 +202,9 @@ fn search_url_with_filters(
 						.map_or((false, raw_term), |term| (true, term.trim()));
 					let term = raw_term
 						.chars()
-						.filter(|character| !matches!(character, '"' | '\\') && !character.is_control())
+						.filter(|character| {
+							!matches!(character, '"' | '\\') && !character.is_control()
+						})
 						.collect::<String>();
 					let term = term.split_whitespace().collect::<Vec<_>>().join("+");
 					if !term.is_empty() {
@@ -431,7 +438,11 @@ fn discovery_listings() -> Vec<aidoku::Listing> {
 }
 fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Result<Manga> {
 	let chapter_thumbnail = doc
-		.select_first(if IS_IM { ".left_cover img" } else { ".cover img" })
+		.select_first(if IS_IM {
+			".left_cover img"
+		} else {
+			".cover img"
+		})
 		.and_then(|e| image(&e));
 	manga.update_strategy = UpdateStrategy::Never;
 	ensure!(
@@ -568,13 +579,11 @@ fn parse_pages(doc: &Document) -> Result<Vec<Page>> {
 	parse_pages_with_referer(doc, &format!("{BASE_URL}/view/1/1/"))
 }
 fn reader_manifest(doc: &Document) -> Result<serde_json::Value> {
-	let script_html = doc
-		.select("script")
-		.and_then(|scripts| {
-			scripts
-				.filter_map(|element| element.html())
-				.find(|html| html.contains("$.parseJSON('"))
-		});
+	let script_html = doc.select("script").and_then(|scripts| {
+		scripts
+			.filter_map(|element| element.html())
+			.find(|html| html.contains("$.parseJSON('"))
+	});
 	let html = match script_html {
 		Some(html) => html,
 		None => doc
@@ -732,12 +741,15 @@ fn reader_page_content(image_url: String, reader_url: &str) -> Result<PageConten
 	let rest = reader_url
 		.strip_prefix("https://")
 		.ok_or(error!("Reader URL must use HTTPS"))?;
-	let (host, path) = rest
-		.split_once('/')
-		.ok_or(error!("Invalid reader URL"))?;
-	ensure!(host == BASE_URL.trim_start_matches("https://"), "Unexpected reader host");
+	let (host, path) = rest.split_once('/').ok_or(error!("Invalid reader URL"))?;
+	ensure!(
+		host == BASE_URL.trim_start_matches("https://"),
+		"Unexpected reader host"
+	);
 	let path = path.split(['?', '#']).next().unwrap_or_default();
-	let path = path.strip_prefix("view/").ok_or(error!("Invalid reader URL"))?;
+	let path = path
+		.strip_prefix("view/")
+		.ok_or(error!("Invalid reader URL"))?;
 	let mut parts = path.split('/');
 	let gallery_id = parts.next().unwrap_or_default();
 	let page = parts.next().unwrap_or_default();
@@ -749,23 +761,26 @@ fn reader_page_content(image_url: String, reader_url: &str) -> Result<PageConten
 		"Invalid reader URL"
 	);
 	let mut context = aidoku::PageContext::new();
-	context.insert("url".into(), format!("{BASE_URL}/view/{gallery_id}/{page}/"));
+	context.insert(
+		"url".into(),
+		format!("{BASE_URL}/view/{gallery_id}/{page}/"),
+	);
 	Ok(PageContent::url_context(image_url, context))
 }
 fn image_request_referer(url: &str, context: Option<&aidoku::PageContext>) -> Result<String> {
 	let rest = url
 		.strip_prefix("https://")
 		.ok_or(error!("Image URL must use HTTPS"))?;
-	let (host, path) = rest
-		.split_once('/')
-		.ok_or(error!("Invalid image URL"))?;
+	let (host, path) = rest.split_once('/').ok_or(error!("Invalid image URL"))?;
 	let domain = BASE_URL.trim_start_matches("https://");
 	ensure!(
 		host == domain
 			|| (host
 				.strip_suffix(&format!(".{domain}"))
 				.and_then(|prefix| prefix.strip_prefix('m'))
-				.is_some_and(|server| !server.is_empty() && server.bytes().all(|byte| byte.is_ascii_digit()))),
+				.is_some_and(
+					|server| !server.is_empty() && server.bytes().all(|byte| byte.is_ascii_digit())
+				)),
 		"Unexpected image host"
 	);
 	let path = path.split(['?', '#']).next().unwrap_or_default();
@@ -779,11 +794,11 @@ fn image_request_referer(url: &str, context: Option<&aidoku::PageContext>) -> Re
 			&& matches!(extension, "jpg" | "jpeg" | "png" | "webp" | "gif" | "bmp"),
 		"Invalid image filename"
 	);
-	let is_reader_image = path
-		.rsplit('/')
-		.nth(1)
-		.is_some_and(|segment| segment.bytes().all(|byte| byte.is_ascii_alphanumeric() || byte == b'_'))
-		&& !filename.starts_with("cover.");
+	let is_reader_image = path.rsplit('/').nth(1).is_some_and(|segment| {
+		segment
+			.bytes()
+			.all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+	}) && !filename.starts_with("cover.");
 	if is_reader_image {
 		if let Some(context) = context {
 			for key in ["url", "chapter_url", "page_url", "referer"] {
@@ -881,11 +896,7 @@ fn dynamic_listing_url(id: &str, page: i32) -> Result<String> {
 	};
 	search_url_with_filters(None, page, &filters)
 }
-fn listing_component_from_result(
-	id: &str,
-	title: &str,
-	result: MangaPageResult,
-) -> HomeComponent {
+fn listing_component_from_result(id: &str, title: &str, result: MangaPageResult) -> HomeComponent {
 	HomeComponent {
 		title: Some(title.into()),
 		value: HomeComponentValue::Scroller {
@@ -974,9 +985,10 @@ impl aidoku::Home for GallerySource {
 			})
 			.into_iter()
 			.collect::<Result<Vec<_>>>()?;
-		let responses: [core::result::Result<Response, RequestError>; 4] = Request::send_all(requests)
-			.try_into()
-			.expect("request count matches home feeds");
+		let responses: [core::result::Result<Response, RequestError>; 4] =
+			Request::send_all(requests)
+				.try_into()
+				.expect("request count matches home feeds");
 		let results = responses.map(|response| {
 			response.and_then(|response| response.get_html().map(|doc| parse_search(&doc)))
 		});
@@ -994,8 +1006,7 @@ impl aidoku::Home for GallerySource {
 			("popular", "Popular", popular),
 			("top-rated", "Top Rated", top_rated),
 			("downloaded", "Downloaded", downloaded),
-		]
-		{
+		] {
 			if let Ok(result) = result {
 				if !result.entries.is_empty() {
 					let component = listing_component_from_result(id, title, result);
@@ -1077,11 +1088,17 @@ impl Source for GallerySource {
 		update(&doc, manga, needs_details, needs_chapters)
 	}
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
-		ensure!(!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()), "Invalid gallery key");
+		ensure!(
+			!manga.key.is_empty() && manga.key.bytes().all(|b| b.is_ascii_digit()),
+			"Invalid gallery key"
+		);
 		let reader_url = reader_url_for_chapter(&manga.key, &chapter)?;
 		let referer = gallery_referer(&manga.key)?;
 		let reader_doc = site_request(reader_url.clone(), referer.as_str())?.html()?;
-		ensure!(reader_doc.select_first("#gimg, input#load_id").is_some(), "Reader unavailable or site layout changed");
+		ensure!(
+			reader_doc.select_first("#gimg, input#load_id").is_some(),
+			"Reader unavailable or site layout changed"
+		);
 		parse_pages_with_referer(&reader_doc, &reader_url)
 	}
 }

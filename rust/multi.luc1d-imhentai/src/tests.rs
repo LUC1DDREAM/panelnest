@@ -18,7 +18,10 @@ fn synthetic_details_and_chapter_flags() {
 	let chapters = m.chapters.unwrap();
 	assert_eq!(chapters[0].key, "42");
 	assert_eq!(chapters[0].language.as_deref(), Some("fr"));
-	assert_eq!(chapters[0].thumbnail.as_deref(), Some("https://imhentai.xxx/cover.png"));
+	assert_eq!(
+		chapters[0].thumbnail.as_deref(),
+		Some("https://imhentai.xxx/cover.png")
+	);
 	let uploaded_at = chapters[0].date_uploaded.unwrap();
 	assert!(uploaded_at >= before_update - 172_800);
 	assert!(uploaded_at <= aidoku::imports::std::current_date() - 172_800);
@@ -30,7 +33,10 @@ fn synthetic_details_and_chapter_flags() {
 	.unwrap();
 	let chapter = update(
 		&with_reader,
-		Manga { key: "42".into(), ..Default::default() },
+		Manga {
+			key: "42".into(),
+			..Default::default()
+		},
 		false,
 		true,
 	)
@@ -39,7 +45,10 @@ fn synthetic_details_and_chapter_flags() {
 	.unwrap()
 	.remove(0);
 	assert_eq!(chapter.key, "42");
-	assert_eq!(chapter.url.as_deref(), Some("https://imhentai.xxx/view/42/1/"));
+	assert_eq!(
+		chapter.url.as_deref(),
+		Some("https://imhentai.xxx/view/42/1/")
+	);
 	assert!(
 		update(
 			&doc,
@@ -120,7 +129,10 @@ fn chapter_reader_starts_at_page_one_instead_of_a_thumbnail_page() {
 		BASE_URL,
 	)
 	.unwrap();
-	assert_eq!(reader_url_for_gallery(&doc, "42").unwrap(), "https://imhentai.xxx/view/42/1/");
+	assert_eq!(
+		reader_url_for_gallery(&doc, "42").unwrap(),
+		"https://imhentai.xxx/view/42/1/"
+	);
 	assert!(reader_url_for_gallery(&doc, "not-a-gallery").is_err());
 }
 
@@ -128,7 +140,10 @@ fn chapter_reader_starts_at_page_one_instead_of_a_thumbnail_page() {
 fn browser_requests_keep_the_requested_url_and_accept_a_gallery_referer() {
 	let referer = gallery_referer("42").unwrap();
 	let request = site_request("https://imhentai.xxx/gallery/42/".into(), &referer).unwrap();
-	assert_eq!(request.url().map(|url| url.as_str()), Some("https://imhentai.xxx/gallery/42/"));
+	assert_eq!(
+		request.url().map(|url| url.as_str()),
+		Some("https://imhentai.xxx/gallery/42/")
+	);
 	assert!(gallery_referer("not-a-gallery").is_err());
 }
 
@@ -139,14 +154,30 @@ fn stored_reader_url_cannot_start_a_chapter_on_a_thumbnail_page() {
 		url: Some("https://imhentai.xxx/view/42/7/".into()),
 		..Default::default()
 	};
-	assert_eq!(reader_url_for_chapter("42", &chapter).unwrap(), "https://imhentai.xxx/view/42/1/");
-	assert_eq!(reader_url_for_chapter("42", &Chapter { key: "42".into(), ..Default::default() }).unwrap(), "https://imhentai.xxx/view/42/1/");
+	assert_eq!(
+		reader_url_for_chapter("42", &chapter).unwrap(),
+		"https://imhentai.xxx/view/42/1/"
+	);
+	assert_eq!(
+		reader_url_for_chapter(
+			"42",
+			&Chapter {
+				key: "42".into(),
+				..Default::default()
+			}
+		)
+		.unwrap(),
+		"https://imhentai.xxx/view/42/1/"
+	);
 	assert!(reader_url_for_chapter("43", &chapter).is_err());
 }
 
 #[aidoku_test]
 fn reader_navigation_uses_validated_gallery_referer() {
-	assert_eq!(gallery_referer("1744017").unwrap(), "https://imhentai.xxx/gallery/1744017/");
+	assert_eq!(
+		gallery_referer("1744017").unwrap(),
+		"https://imhentai.xxx/gallery/1744017/"
+	);
 	for invalid in ["", "1/2", "-1", "1?x=1"] {
 		assert!(gallery_referer(invalid).is_err(), "{invalid}");
 	}
@@ -194,7 +225,10 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 	assert!(browse.starts_with(&format!("{BASE_URL}/search/?")));
 	let filters = discovery_filters();
 	assert_eq!(filters.len(), 8);
-	for (index, id) in ["tags", "artists", "groups", "parodies", "characters"].iter().enumerate() {
+	for (index, id) in ["tags", "artists", "groups", "parodies", "characters"]
+		.iter()
+		.enumerate()
+	{
 		assert_eq!(filters[index + 3].id.as_ref(), *id);
 	}
 	let popular_only = search_url_with_filters(
@@ -283,15 +317,17 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 	assert!(advanced.contains("+%2Bgroup%3A%22group%22"));
 	assert!(advanced.contains("+%2Bparody%3A%22series%22"));
 	assert!(advanced.contains("+%2Bcharacter%3A%22hero%22"));
-	assert!(search_url_with_filters(
-		Some("title"),
-		1,
-		&[FilterValue::Text {
-			id: "tags".into(),
-			value: "maid".into(),
-		}]
-	)
-	.is_err());
+	assert!(
+		search_url_with_filters(
+			Some("title"),
+			1,
+			&[FilterValue::Text {
+				id: "tags".into(),
+				value: "maid".into(),
+			}]
+		)
+		.is_err()
+	);
 }
 
 #[aidoku_test]
@@ -318,7 +354,12 @@ fn dynamic_category_and_language_listings_use_filtered_paginated_routes() {
 	assert!(language.contains("m=1&d=1&w=1&i=1&a=1&g=1"));
 	assert!(language.contains("en=0&jp=1&es=0&fr=0&kr=0&de=0&ru=0"));
 	assert!(language.ends_with("key=&page=3"));
-	for id in ["category-unknown", "language-unknown", "category-m/../latest", "latest"] {
+	for id in [
+		"category-unknown",
+		"language-unknown",
+		"category-m/../latest",
+		"latest",
+	] {
 		assert!(dynamic_listing_url(id, 1).is_err(), "{id}");
 	}
 	assert!(dynamic_listing_url("category-m", 0).is_err());
@@ -372,10 +413,7 @@ fn current_imhentai_reader_uses_view_image_path_and_manifest() {
 		if let PageContent::Url(url, _) = &page.content {
 			assert_eq!(
 				url,
-				&format!(
-					"https://m11.imhentai.xxx/033/readerkey/{}.webp",
-					index + 1
-				)
+				&format!("https://m11.imhentai.xxx/033/readerkey/{}.webp", index + 1)
 			);
 		} else {
 			panic!("not a URL");
@@ -432,10 +470,7 @@ fn image_requests_use_reader_context_and_validate_image_hosts() {
 	use aidoku::ImageRequestProvider;
 	let source = GallerySource;
 	let mut context = aidoku::PageContext::new();
-	context.insert(
-		"url".into(),
-		"https://imhentai.xxx/view/1743990/12/".into(),
-	);
+	context.insert("url".into(), "https://imhentai.xxx/view/1743990/12/".into());
 	assert_eq!(
 		image_request_referer(
 			"https://m11.imhentai.xxx/033/nja31r49bw/12.jpg",
@@ -445,8 +480,7 @@ fn image_requests_use_reader_context_and_validate_image_hosts() {
 		"https://imhentai.xxx/view/1743990/12/"
 	);
 	assert_eq!(
-		image_request_referer("https://m11.imhentai.xxx/033/nja31r49bw/cover.jpg", None)
-			.unwrap(),
+		image_request_referer("https://m11.imhentai.xxx/033/nja31r49bw/cover.jpg", None).unwrap(),
 		"https://imhentai.xxx/"
 	);
 	for url in [
@@ -457,12 +491,14 @@ fn image_requests_use_reader_context_and_validate_image_hosts() {
 	] {
 		assert!(image_request_referer(url, Some(&context)).is_err(), "{url}");
 	}
-	assert!(source
-		.get_image_request(
-			"https://m11.imhentai.xxx/033/nja31r49bw/12.jpg".into(),
-			Some(context),
-		)
-		.is_ok());
+	assert!(
+		source
+			.get_image_request(
+				"https://m11.imhentai.xxx/033/nja31r49bw/12.jpg".into(),
+				Some(context),
+			)
+			.is_ok()
+	);
 }
 
 #[aidoku_test]
@@ -567,7 +603,11 @@ fn discovery_home_has_working_latest_listing() {
 	} else {
 		panic!("expected popular scroller");
 	}
-	assert!(parse_search(&Html::parse("<div class='container'>Access denied</div>").unwrap()).entries.is_empty());
+	assert!(
+		parse_search(&Html::parse("<div class='container'>Access denied</div>").unwrap())
+			.entries
+			.is_empty()
+	);
 }
 
 #[aidoku_test]
@@ -603,7 +643,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 28);
+	assert_eq!(manifest["info"]["version"], 29);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
