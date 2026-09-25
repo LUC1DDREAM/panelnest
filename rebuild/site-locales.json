@@ -1,6 +1,7 @@
 {
   "en": {
     "native": "English",
+    "card_details": "View source details",
     "title": "PanelNest — Aidoku Source List & Setup for iPhone",
     "description": "Add six independent [PN] sources to Aidoku on iPhone and iPad. Explore the source catalog, installation guide, language filters and help for existing users.",
     "skip": "Skip to content",
@@ -70,6 +71,7 @@
   },
   "de": {
     "native": "Deutsch",
+    "card_details": "Quelldetails ansehen",
     "title": "PanelNest — Aidoku-Quellen & Einrichtung für iPhone",
     "description": "Füge sechs unabhängige [PN]-Quellen zu Aidoku auf iPhone und iPad hinzu. Quellenkatalog, Installationsanleitung, Sprachfilter und Hilfe für bestehende Nutzer.",
     "skip": "Zum Inhalt",
@@ -139,6 +141,7 @@
   },
   "es": {
     "native": "Español",
+    "card_details": "Ver detalles de la fuente",
     "title": "PanelNest — Fuentes de Aidoku y guía para iPhone",
     "description": "Añade seis fuentes independientes [PN] a Aidoku en iPhone y iPad. Consulta el catálogo, la guía de instalación, los filtros de idioma y la ayuda para usuarios.",
     "skip": "Saltar al contenido",
@@ -208,6 +211,7 @@
   },
   "fr": {
     "native": "Français",
+    "card_details": "Voir les détails de la source",
     "title": "PanelNest — Sources Aidoku et installation sur iPhone",
     "description": "Ajoutez six sources indépendantes [PN] à Aidoku sur iPhone et iPad. Catalogue, guide d’installation, filtres de langue et aide pour les utilisateurs existants.",
     "skip": "Aller au contenu",
@@ -277,6 +281,7 @@
   },
   "pt": {
     "native": "Português",
+    "card_details": "Ver detalhes da fonte",
     "title": "PanelNest — Fontes do Aidoku e instalação no iPhone",
     "description": "Adicione seis fontes independentes [PN] ao Aidoku no iPhone e iPad. Catálogo, guia de instalação, filtros de idioma e ajuda para quem já utiliza a lista.",
     "skip": "Ir para o conteúdo",

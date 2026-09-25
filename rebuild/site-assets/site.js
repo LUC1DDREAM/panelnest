@@ -21,7 +21,7 @@
     const dark = document.documentElement.dataset.theme === "dark";
     toggle.textContent = dark ? toggle.dataset.light : toggle.dataset.dark;
     toggle.setAttribute("aria-label", toggle.textContent);
-    document.querySelector('meta[name="theme-color"]').content = dark ? "#101b2a" : "#f4f7fb";
+    document.querySelector('meta[name="theme-color"]').content = dark ? "#0d1423" : "#f5f7fb";
   };
   toggle.hidden = false;
   updateTheme();

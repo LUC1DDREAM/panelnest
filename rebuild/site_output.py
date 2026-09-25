@@ -53,7 +53,14 @@ def render(root, base, repository):
                 limitations = t['limitation']
             limitation_text = (f'<p class="limitations">{esc(str(limitations))}</p>'
                                if limitations else '')
-            cards.append(f'<article class="source-card" id="source-{esc(item["id"])}">{image}<div><h3>{name}</h3><p class="meta">{labels} <span aria-hidden="true">/</span> {t["version"]} {esc(str(item.get("version","")))}</p></div>{capabilities}{discovery}{limitation_text}{adult}</article>')
+            cards.append(
+                f'<article class="source-card" id="source-{esc(item["id"])}">'
+                f'<div class="source-top">{image}<div class="source-title"><h3>{name}</h3>'
+                f'<p class="meta">{labels}</p></div></div>'
+                f'<div class="source-bottom"><span class="version">{t["version"]} {esc(str(item.get("version", "")))}</span>{adult}</div>'
+                f'<details class="source-details"><summary>{t["card_details"]}</summary>'
+                f'<div class="source-detail-content">{capabilities}{discovery}{limitation_text}</div></details></article>'
+            )
         steps = ''.join(f'<li><h3>{t[f"step{i}"]}</h3><p>{t[f"body{i}"]}</p>'+('<a href="https://aidoku.app/">aidoku.app ↗</a>' if i==1 else '')+'</li>' for i in range(1,4))
         faq = ''.join(f'<details><summary>{t[f"q{i}"]}</summary><p>{t[f"a{i}"]}</p></details>' for i in range(1,5))
         schema = json.dumps({'@context':'https://schema.org','@graph':[
@@ -68,7 +75,7 @@ def render(root, base, repository):
         html = f'''<!doctype html>
 <html lang="{lang}" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google-site-verification" content="WWwPJxNyRoW9NBZ3JSonNBXYxp76m_qN3I87ieOerE8" />
-<title>{t['title']}</title><meta name="description" content="{t['description']}"><meta name="theme-color" content="#101b2a">
+<title>{t['title']}</title><meta name="description" content="{t['description']}"><meta name="theme-color" content="#0d1423">
 <link rel="canonical" href="{canonical}">{alternates}
 <meta property="og:type" content="website"><meta property="og:site_name" content="PanelNest"><meta property="og:title" content="{t['title']}"><meta property="og:description" content="{t['description']}"><meta property="og:url" content="{canonical}"><meta property="og:image" content="{base}assets/social.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="PanelNest">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{t['title']}"><meta name="twitter:description" content="{t['description']}"><meta name="twitter:image" content="{base}assets/social.png">
