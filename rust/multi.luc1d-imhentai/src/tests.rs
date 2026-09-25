@@ -103,24 +103,14 @@ fn posted_age_is_converted_to_a_bounded_approximate_timestamp() {
 }
 
 #[aidoku_test]
-fn reader_url_requires_same_gallery_and_page_path() {
+fn chapter_reader_starts_at_page_one_instead_of_a_thumbnail_page() {
 	let doc = Html::parse_with_url(
-		r#"<a href="https://imhentai.xxx/view/42/7/">Read</a>"#,
+		r#"<a href="/view/42/10/"><img src="/preview.jpg"></a><a href="https://imhentai.xxx/view/42/7/">Read</a>"#,
 		BASE_URL,
 	)
 	.unwrap();
-	assert_eq!(reader_url_for_gallery(&doc, "42").unwrap(), "https://imhentai.xxx/view/42/7/");
-	for href in [
-		"https://imhentai.xxx.evil/view/42/7/",
-		"http://imhentai.xxx/view/42/7/",
-		"https://imhentai.xxx/view/43/7/",
-		"https://imhentai.xxx/view/42/nope/",
-		"https://imhentai.xxx/view/42/7/extra/",
-	] {
-		let html = format!(r#"<a href="{href}">Read</a>"#);
-		let doc = Html::parse_with_url(&html, BASE_URL).unwrap();
-		assert!(reader_url_for_gallery(&doc, "42").is_err(), "{href}");
-	}
+	assert_eq!(reader_url_for_gallery(&doc, "42").unwrap(), "https://imhentai.xxx/view/42/1/");
+	assert!(reader_url_for_gallery(&doc, "not-a-gallery").is_err());
 }
 
 #[aidoku_test]
@@ -132,23 +122,14 @@ fn browser_requests_keep_the_requested_url_and_accept_a_gallery_referer() {
 }
 
 #[aidoku_test]
-fn stored_reader_url_is_used_only_for_its_matching_gallery() {
+fn stored_reader_url_cannot_start_a_chapter_on_a_thumbnail_page() {
 	let chapter = Chapter {
 		key: "42".into(),
 		url: Some("https://imhentai.xxx/view/42/7/".into()),
 		..Default::default()
 	};
-	assert_eq!(reader_url_for_chapter("42", &chapter).unwrap(), "https://imhentai.xxx/view/42/7/");
+	assert_eq!(reader_url_for_chapter("42", &chapter).unwrap(), "https://imhentai.xxx/view/42/1/");
 	assert_eq!(reader_url_for_chapter("42", &Chapter { key: "42".into(), ..Default::default() }).unwrap(), "https://imhentai.xxx/view/42/1/");
-	for url in [
-		"https://imhentai.xxx.evil/view/42/7/",
-		"https://imhentai.xxx/view/43/7/",
-		"https://imhentai.xxx/view/42/nope/",
-		"https://imhentai.xxx/view/42/7/?external=1",
-	] {
-		let invalid = Chapter { key: "42".into(), url: Some(url.into()), ..Default::default() };
-		assert!(reader_url_for_chapter("42", &invalid).is_err(), "{url}");
-	}
 	assert!(reader_url_for_chapter("43", &chapter).is_err());
 }
 

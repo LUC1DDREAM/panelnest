@@ -115,3 +115,7 @@ Version 13 populates chapter thumbnails with the already available series cover 
 Version 14 writes the source manifest language (en) into chapter metadata.
 
 Version 15 loads up to 100 entries for each official trending period; the API ignores page and offset parameters, so the results are correctly exposed as a single page.
+
+## Automatic migration (package version 16)
+
+The source manifest now declares config.breakingChangeVersion 12, matching the historical manga-key change already handled by MigrationHandler. Aidoku can automatically migrate installs older than v12; chapter keys remain unchanged. A WASM fixture verifies the threshold and old/current manga and chapter key mappings.

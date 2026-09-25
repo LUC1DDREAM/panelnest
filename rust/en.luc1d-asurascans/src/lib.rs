@@ -1,10 +1,11 @@
 #![no_std]
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
-	Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue, HomeLayout, Link,
-	ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus, MangaWithChapter,
-	MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent, RangeFilter,
-	PageContext, PageDescriptionProvider, Result, Source, TextFilter, UpdateStrategy, Viewer, WebLoginHandler,
+	Filter, FilterValue, HashMap, Home, HomeComponent, HomeComponentValue, HomeLayout,
+	ImageRequestProvider, Link, Listing, ListingProvider, Manga, MangaPageResult, MangaStatus,
+	MangaWithChapter, MigrationHandler, MultiSelectFilter, NotificationHandler, Page, PageContent,
+	PageContext, PageDescriptionProvider, RangeFilter, Result, Source, TextFilter, UpdateStrategy,
+	Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	helpers::uri::QueryParameters,
 	imports::{
@@ -702,11 +703,39 @@ register_source!(
 );
 
 #[cfg(test)]
-	mod filter_tests {
+mod filter_tests {
 	use super::*;
 	use aidoku::alloc::vec;
-	use aidoku::{FilterKind, FilterValue};
+	use aidoku::{FilterKind, FilterValue, MigrationHandler};
 	use aidoku_test::aidoku_test;
+
+	#[aidoku_test]
+	fn breaking_change_migration_is_enabled_for_the_historical_key_change() {
+		let config: serde_json::Value =
+			serde_json::from_str(include_str!("../res/source.json")).unwrap();
+		assert_eq!(config["info"]["version"], 16);
+		assert_eq!(config["config"]["breakingChangeVersion"], 12);
+
+		let source = AsuraScans;
+		assert_eq!(
+			source
+				.handle_manga_migration("legacy-series-".into())
+				.unwrap(),
+			"legacy-series"
+		);
+		assert_eq!(
+			source
+				.handle_manga_migration("current-series".into())
+				.unwrap(),
+			"current-series"
+		);
+		assert_eq!(
+			source
+				.handle_chapter_migration("series".into(), "12.5".into())
+				.unwrap(),
+			"12.5"
+		);
+	}
 
 	#[aidoku_test]
 	fn reader_page_descriptions_follow_both_supported_page_contexts() {
@@ -797,7 +826,10 @@ register_source!(
 
 	#[aidoku_test]
 	fn completed_manga_skip_library_refresh_but_active_statuses_keep_refreshing() {
-		assert_eq!(library_update_strategy(MangaStatus::Completed), UpdateStrategy::Never);
+		assert_eq!(
+			library_update_strategy(MangaStatus::Completed),
+			UpdateStrategy::Never
+		);
 		for status in [
 			MangaStatus::Ongoing,
 			MangaStatus::Hiatus,

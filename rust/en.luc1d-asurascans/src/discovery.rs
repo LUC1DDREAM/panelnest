@@ -19,7 +19,9 @@ pub fn popularity_period(id: &str) -> Option<&'static str> {
 
 pub fn popularity_path(id: &str) -> Option<String> {
 	let period = popularity_period(id)?;
-	Some(aidoku::alloc::format!("/trending/{period}?limit={POPULARITY_LIMIT}"))
+	Some(aidoku::alloc::format!(
+		"/trending/{period}?limit={POPULARITY_LIMIT}"
+	))
 }
 
 #[derive(Deserialize)]
@@ -98,7 +100,9 @@ mod tests {
 		assert_eq!(page.entries[0].title, "The Academy’s Weapon Replicator");
 		assert_eq!(
 			page.entries[0].cover.as_deref(),
-			Some("https://cdn.asurascans.com/asura-images/covers/the-academy-s-weapon-replicator.2096c2.webp")
+			Some(
+				"https://cdn.asurascans.com/asura-images/covers/the-academy-s-weapon-replicator.2096c2.webp"
+			)
 		);
 		assert!(!page.has_next_page);
 	}
@@ -145,7 +149,12 @@ mod tests {
 	fn live_popularity_metadata_only() {
 		use aidoku::{Home, HomeComponentValue};
 		let home = crate::AsuraScans.get_home().unwrap();
-		for expected in ["popular-today", "popular-week", "popular-month", "popular-all"] {
+		for expected in [
+			"popular-today",
+			"popular-week",
+			"popular-month",
+			"popular-all",
+		] {
 			assert!(home.components.iter().any(|c| match &c.value {
 				HomeComponentValue::Scroller {
 					entries,
@@ -156,7 +165,12 @@ mod tests {
 		}
 		use aidoku::{Listing, ListingProvider, Source};
 		let source = crate::AsuraScans::new();
-		for id in ["popular-today", "popular-week", "popular-month", "popular-all"] {
+		for id in [
+			"popular-today",
+			"popular-week",
+			"popular-month",
+			"popular-all",
+		] {
 			let page = source
 				.get_manga_list(
 					Listing {

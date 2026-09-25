@@ -525,34 +525,17 @@ fn input(doc: &Document, id: &str) -> Result<String> {
 		.filter(|s| !s.is_empty())
 		.ok_or(error!("Missing reader metadata"))
 }
-fn reader_url_for_gallery(doc: &Document, gallery_id: &str) -> Result<String> {
-	let fallback = format!("{BASE_URL}/view/{gallery_id}/1/");
-	let Some(link) = doc.select_first("a[href*='/view/']") else { return Ok(fallback); };
-	let Some(href) = link.attr("href") else { return Ok(fallback); };
-	if !href.contains("/view/") { return Ok(fallback); }
-	let url = if href.starts_with("https://") { href } else if href.starts_with("http://") { bail!("Reader URL must use HTTPS") } else if href.starts_with('/') { format!("{BASE_URL}{href}") } else { return Ok(fallback); };
-	let rest = url.strip_prefix("https://").ok_or(error!("Invalid reader URL"))?;
-	let (host, path) = rest.split_once('/').ok_or(error!("Invalid reader URL"))?;
-	ensure!(host == BASE_URL.trim_start_matches("https://"), "Unexpected reader host");
-	let path = path.split(['?', '#']).next().unwrap_or_default();
-	let path = path.strip_prefix("view/").ok_or(error!("Invalid reader URL"))?;
-	let mut parts = path.trim_end_matches('/').split('/');
-	let id = parts.next().unwrap_or_default();
-	let page = parts.next().unwrap_or_default();
-	ensure!(id == gallery_id && !page.is_empty() && page.bytes().all(|b| b.is_ascii_digit()) && parts.next().is_none(), "Invalid gallery reader URL");
-	Ok(format!("{BASE_URL}/view/{id}/{page}/"))
+fn reader_url_for_gallery(_doc: &Document, gallery_id: &str) -> Result<String> {
+	ensure!(
+		!gallery_id.is_empty() && gallery_id.bytes().all(|byte| byte.is_ascii_digit()),
+		"Invalid gallery key"
+	);
+	// Gallery pages link to arbitrary preview pages; a chapter starts at page 1.
+	Ok(format!("{BASE_URL}/view/{gallery_id}/1/"))
 }
 fn reader_url_for_chapter(gallery_id: &str, chapter: &Chapter) -> Result<String> {
 	ensure!(chapter.key == gallery_id, "Invalid gallery chapter key");
-	let prefix = format!("{BASE_URL}/view/{gallery_id}/");
-	let Some(url) = chapter.url.as_deref() else { return Ok(format!("{prefix}1/")); };
-	let Some(page) = url.strip_prefix(&prefix) else {
-		ensure!(!url.contains("/view/"), "Invalid gallery reader URL");
-		return Ok(format!("{prefix}1/"));
-	};
-	let page = page.strip_suffix('/').ok_or(error!("Invalid gallery reader URL"))?;
-	ensure!(!page.is_empty() && page.bytes().all(|byte| byte.is_ascii_digit()), "Invalid gallery reader URL");
-	Ok(format!("{prefix}{page}/"))
+	Ok(format!("{BASE_URL}/view/{gallery_id}/1/"))
 }
 fn gallery_referer(gallery_id: &str) -> Result<String> {
 	ensure!(

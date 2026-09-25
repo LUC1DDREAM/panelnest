@@ -1,4 +1,7 @@
-use aidoku::{Chapter, alloc::{String, string::ToString}};
+use aidoku::{
+	Chapter,
+	alloc::{String, string::ToString},
+};
 use serde_json::Value;
 
 /// Convert one public Astro chapter row without changing chapter identity/order.
@@ -168,8 +171,15 @@ mod tests {
 			Chapter::default(),
 			&Some("https://cdn.asurascans.com/asura-images/covers/series.webp".into()),
 		);
-		assert_eq!(chapter.thumbnail.as_deref(), Some("https://cdn.asurascans.com/asura-images/covers/series.webp"));
-		assert!(with_series_thumbnail(Chapter::default(), &None).thumbnail.is_none());
+		assert_eq!(
+			chapter.thumbnail.as_deref(),
+			Some("https://cdn.asurascans.com/asura-images/covers/series.webp")
+		);
+		assert!(
+			with_series_thumbnail(Chapter::default(), &None)
+				.thumbnail
+				.is_none()
+		);
 	}
 
 	#[aidoku_test]

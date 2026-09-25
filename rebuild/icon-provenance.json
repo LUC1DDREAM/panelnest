@@ -1,7 +1,7 @@
 [
   {
     "id": "en.luc1d-asurascans",
-    "version": 15,
+    "version": 16,
     "previous_version": 2,
     "asset_changed": true,
     "provenance": "original vector interpretation by assistant",
@@ -77,7 +77,7 @@
   },
   {
     "id": "multi.luc1d-imhentai",
-    "version": 24,
+    "version": 25,
     "previous_version": 3,
     "asset_changed": true,
     "provenance": "original vector interpretation by assistant",
