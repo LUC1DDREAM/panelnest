@@ -387,7 +387,9 @@ fn parse_canvas_episodes(
 	page: u32,
 	language: &str,
 ) -> Result<(Vec<Chapter>, bool)> {
-	ensure!(page > 0, "Invalid CANVAS episode page");
+	if page == 0 {
+		return Err(error!("Invalid CANVAS episode page"));
+	}
 	let mut chapters = Vec::new();
 	if let Some(links) = html.select("a.detail_list_link[href*='title_no=']") {
 		for element in links {
@@ -429,7 +431,9 @@ fn parse_canvas_episodes(
 			});
 		}
 	}
-	ensure!(!chapters.is_empty(), "WEBTOON CANVAS episode list unavailable");
+	if chapters.is_empty() {
+		return Err(error!("WEBTOON CANVAS episode list unavailable"));
+	}
 	let has_next = html
 		.select(".paginate a[href*='page=']")
 		.is_some_and(|links| {
@@ -549,14 +553,15 @@ impl Source for Webtoon {
 							chapters.push(chapter);
 						}
 					}
-					ensure!(
-						chapters.len() > previous_len,
-						"WEBTOON CANVAS pagination repeated"
-					);
+					if chapters.len() <= previous_len {
+						return Err(error!("WEBTOON CANVAS pagination repeated"));
+					}
 					if !has_next {
 						break;
 					}
-					ensure!(batch < 99, "WEBTOON CANVAS episode pagination limit exceeded");
+					if batch >= 99 {
+						return Err(error!("WEBTOON CANVAS episode pagination limit exceeded"));
+					}
 				}
 			} else {
 				let mut cursor = 0;
