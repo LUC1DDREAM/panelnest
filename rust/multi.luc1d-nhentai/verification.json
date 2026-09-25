@@ -1,14 +1,14 @@
 {
   "id": "multi.luc1d-nhentai",
   "version": 23,
-  "sha256": "9b24f7525dc0ddd7e1f72aeafccc7ef03123862462b749778b6d49a90d76b310",
-  "bytes": 103831,
+  "sha256": "5044a021a681a10a36fbe3c7d8a1180ea4459090a68c4ca615e11be835a9b891",
+  "bytes": 104950,
   "languages": [
     "All",
+    "multi",
     "en",
     "ja",
-    "zh",
-    "multi"
+    "zh"
   ],
   "contentRating": 2,
   "package_verified": true,
