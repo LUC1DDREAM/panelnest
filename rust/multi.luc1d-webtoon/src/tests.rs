@@ -533,6 +533,46 @@ fn episodes_fixture_and_cursor() {
 	assert!(unsafe_thumb[0].thumbnail.is_none());
 	assert!(parse_episodes(serde_json::json!({"error":"denied"}), "en").is_err());
 }
+
+#[aidoku_test]
+fn canvas_episode_html_fixture_parses_chapters_and_pagination() {
+	let html = Html::parse_with_url(
+		include_str!("../tests/fixtures/canvas-episodes.html"),
+		"https://www.webtoons.com/en/canvas/barcoded/list?title_no=803012",
+	)
+	.unwrap();
+	let (chapters, has_next) = parse_canvas_episodes(&html, 1, "en").unwrap();
+	assert!(has_next);
+	assert_eq!(chapters.len(), 2);
+	assert_eq!(chapters[0].chapter_number, Some(54.0));
+	assert_eq!(chapters[0].title.as_deref(), Some("Episode 43"));
+	assert_eq!(chapters[0].language.as_deref(), Some("en"));
+	assert_eq!(
+		chapters[0].thumbnail.as_deref(),
+		Some("https://webtoon-phinf.pstatic.net/20260830_279/1788069031618YXjsd_PNG/episode-54.png?type=f160_151")
+	);
+	assert!(chapters[0].key.contains("title_no=803012"));
+	assert!(chapters[0].key.contains("episode_no=54"));
+	assert_eq!(chapters[1].title.as_deref(), Some("Intermission - 1 (4th Anniversary)"));
+
+	let last_page = Html::parse(
+		r#"<a class="detail_list_link" href="/en/canvas/barcoded/ep-1/viewer?title_no=803012&amp;episode_no=1"><span class="subj">Episode 1</span></a><div class="paginate"><a href="/en/canvas/barcoded/list?title_no=803012&amp;page=5">5</a></div>"#,
+	)
+	.unwrap();
+	let (oldest, has_next) = parse_canvas_episodes(&last_page, 6, "en").unwrap();
+	assert_eq!(oldest.len(), 1);
+	assert!(!has_next);
+}
+
+#[aidoku_test]
+fn canvas_episode_html_rejects_foreign_chapter_hosts_and_missing_lists() {
+	let foreign = Html::parse(
+		r#"<a class="detail_list_link" href="https://attacker.example/en/canvas/barcoded/ep-1/viewer?title_no=803012&amp;episode_no=1"></a>"#,
+	)
+	.unwrap();
+	assert!(parse_canvas_episodes(&foreign, 1, "en").is_err());
+	assert!(parse_canvas_episodes(&Html::parse("<main>Unavailable</main>").unwrap(), 1, "en").is_err());
+}
 #[aidoku_test]
 fn pages_fixture_and_restricted_response() {
 	let h = Html::parse(include_str!("../tests/fixtures/viewer.html")).unwrap();

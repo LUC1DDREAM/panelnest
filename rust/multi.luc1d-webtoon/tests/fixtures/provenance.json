@@ -1,6 +1,6 @@
 {
-  "captured_utc": "2026-09-07T16:09:14.067233+00:00",
-  "notes": "HTTP 200 for each. HTML redirected by WEBTOON to www.webtoons.com with webtoon-platform-redirect=true; episode API remained mobile. Public response bodies, no images requested. page parameter is ignored by API; implementation uses verified cursor parameter.",
+  "captured_utc": "2026-09-25T04:48:39+00:00",
+  "notes": "Originals fixtures are public responses from 2026-09-07. A public CANVAS series page and episode viewer were checked on 2026-09-25; the CANVAS JSON episodes endpoint returned HTTP 500, while the HTML series list and viewer returned HTTP 200. The viewer contained 153 image URLs and the first image CDN request returned HTTP 200. The sanitized CANVAS chapter fixture preserves route, metadata and pagination structure without episode image data.",
   "fixtures": [
     {
       "file": "search.html",
@@ -21,6 +21,11 @@
       "file": "viewer.html",
       "url": "https://m.webtoons.com/en/sf/space-boy/ep-1/viewer?title_no=400&episode_no=1",
       "sha256": "a7173596a935c27e4bd9a3ecebcf4f32af02a8bdcca8e579bd13d9178d03901b"
+    },
+    {
+      "file": "canvas-episodes.html",
+      "url": "https://www.webtoons.com/en/canvas/barcoded/list?title_no=803012",
+      "sha256": "26285772b3bf7481579f8b56212804a8f3b0c3bf6b10ee6c9a7cd1deb90749d7"
     }
   ]
 }

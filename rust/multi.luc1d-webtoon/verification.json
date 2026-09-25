@@ -1,6 +1,6 @@
 {
   "id": "multi.luc1d-webtoon",
-  "version": 20,
+  "version": 21,
   "sha256": "495bfb1b45c27eaf46721b2f0be1c06683d7a3be65132f4a57dfacac9d20f148",
   "bytes": 76179,
   "languages": [
@@ -16,8 +16,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 25,
-  "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Version 19 copies the selected source language to each episode's Aidoku Chapter.language field; fixtures verify English and Chinese selections. Official episode API viewerLink includes title_no and episode_no, mapped to stable chapter keys. All-results pagination follows pages until empty results. WASM fixtures verify discovery menus, genres, and chapter deep links. Regression tests enforce 51 unique canonical genre-sort listings and map Home sections to those listing IDs. ImageRequestProvider sends the official site Referer for pages. Version 17 registers PageDescriptionProvider; version 18 marks completed series UpdateStrategy::Never. Device and live Aidoku runs remain unverified. Version 20 maps validated episode thumbnail paths from the official API to the image CDN; fixtures verify the URL.",
+  "fixture_tests_passed": 27,
+  "official_site_checks": "Official public pages confirm 17 genres with three sorts and seven supported language regions (English, Traditional Chinese, Thai, Indonesian, Spanish, French and German). Aidoku language selection routes search and discovery to that locale; manga and episode URLs retain the locale from official links. Version 19 copies the selected source language to each episode's Aidoku Chapter.language field; fixtures verify English and Chinese selections. Official episode API viewerLink includes title_no and episode_no, mapped to stable chapter keys. All-results pagination follows pages until empty results. WASM fixtures verify discovery menus, genres, and chapter deep links. Regression tests enforce 51 unique canonical genre-sort listings and map Home sections to those listing IDs. ImageRequestProvider sends the official site Referer for pages. Version 17 registers PageDescriptionProvider; version 18 marks completed series UpdateStrategy::Never. Version 20 maps validated episode thumbnail paths from the official Originals API to the image CDN; fixtures verify the URL. On 2026-09-25, a live official CANVAS series page returned HTTP 200 with paginated episode links and cover URLs, while /api/v1/canvas/<title_no>/episodes returned HTTP 500. The source now reads CANVAS chapters from the public paginated series HTML; the official episode viewer returned HTTP 200 and exposed 153 valid #_imageList img[data-url] pages. Fixtures cover CANVAS chapter parsing, pagination and rejection of foreign links. Aidoku runtime and device rendering remain unverified.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

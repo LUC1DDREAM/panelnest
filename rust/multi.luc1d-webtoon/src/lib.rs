@@ -382,6 +382,66 @@ fn parse_episodes(v: Value, language: &str) -> Result<(Vec<Chapter>, Option<u64>
 		.filter(|n| *n > 0);
 	Ok((chapters, next))
 }
+fn parse_canvas_episodes(
+	html: &Document,
+	page: u32,
+	language: &str,
+) -> Result<(Vec<Chapter>, bool)> {
+	ensure!(page > 0, "Invalid CANVAS episode page");
+	let mut chapters = Vec::new();
+	if let Some(links) = html.select("a.detail_list_link[href*='title_no=']") {
+		for element in links {
+			let Some(path) = element.attr("href").and_then(|href| official_path(&href)) else {
+				continue;
+			};
+			let Some(title_no) = parameter(&path, "title_no")
+				.and_then(|id| id.parse::<u64>().ok())
+			else {
+				continue;
+			};
+			let Some(episode_no) = parameter(&path, "episode_no")
+				.and_then(|id| id.parse::<u64>().ok())
+			else {
+				continue;
+			};
+			if title_no == 0 || episode_no == 0 {
+				continue;
+			}
+			let thumbnail = element
+				.select_first("img")
+				.and_then(|image| image.attr("data-src").or_else(|| image.attr("src")))
+				.filter(|url| {
+					url.starts_with("https://webtoon-phinf.pstatic.net/")
+						&& !url.contains("..")
+						&& !url.contains('\\')
+				});
+			chapters.push(Chapter {
+				key: path.clone(),
+				url: Some(format!("{BASE}{path}")),
+				title: element
+					.select_first(".subj")
+					.and_then(|title| title.text())
+					.map(String::from),
+				chapter_number: Some(episode_no as f32),
+				language: Some(language.into()),
+				thumbnail: thumbnail.map(String::from),
+				..Default::default()
+			});
+		}
+	}
+	ensure!(!chapters.is_empty(), "WEBTOON CANVAS episode list unavailable");
+	let has_next = html
+		.select(".paginate a[href*='page=']")
+		.is_some_and(|links| {
+			links.into_iter().any(|link| {
+				link.attr("href")
+					.and_then(|href| parameter(&href, "page"))
+					.and_then(|page| page.parse::<u32>().ok())
+					.is_some_and(|linked_page| linked_page > page)
+			})
+		});
+	Ok((chapters, has_next))
+}
 fn parse_pages(h: &Document) -> Result<Vec<Page>> {
 	let mut pages = Vec::new();
 	if let Some(elements) = h.select("#_imageList img") {
@@ -473,25 +533,52 @@ impl Source for Webtoon {
 				"webtoon"
 			};
 			let mut chapters: Vec<Chapter> = Vec::new();
-			let mut cursor = 0;
-			for batch in 0..100 {
-				let value: Value = request(&format!(
-					"/api/v1/{kind}/{id}/episodes?pageSize=100&cursor={cursor}"
-				))?
-				.json_owned()?;
-				let (entries, next) = parse_episodes(value, selected_language_code())?;
-				for chapter in entries {
-					if !chapters.iter().any(|c| c.key == chapter.key) {
-						chapters.push(chapter);
+			if kind == "canvas" {
+				// The public CANVAS HTML remains available when its episodes API returns HTTP 500.
+				for batch in 0..100u32 {
+					let mut page_path = path.clone();
+					if batch > 0 {
+						page_path.push_str(&format!("&page={}", batch + 1));
 					}
+					let html = request(&page_path)?.html()?;
+					let (entries, has_next) =
+						parse_canvas_episodes(&html, batch + 1, selected_language_code())?;
+					let previous_len = chapters.len();
+					for chapter in entries {
+						if !chapters.iter().any(|current| current.key == chapter.key) {
+							chapters.push(chapter);
+						}
+					}
+					ensure!(
+						chapters.len() > previous_len,
+						"WEBTOON CANVAS pagination repeated"
+					);
+					if !has_next {
+						break;
+					}
+					ensure!(batch < 99, "WEBTOON CANVAS episode pagination limit exceeded");
 				}
-				match next {
-					None => break,
-					Some(n) if n > cursor => cursor = n,
-					_ => return Err(error!("WEBTOON repeated pagination cursor")),
-				}
-				if batch == 99 {
-					return Err(error!("WEBTOON episode pagination limit exceeded"));
+			} else {
+				let mut cursor = 0;
+				for batch in 0..100 {
+					let value: Value = request(&format!(
+						"/api/v1/{kind}/{id}/episodes?pageSize=100&cursor={cursor}"
+					))?
+					.json_owned()?;
+					let (entries, next) = parse_episodes(value, selected_language_code())?;
+					for chapter in entries {
+						if !chapters.iter().any(|current| current.key == chapter.key) {
+							chapters.push(chapter);
+						}
+					}
+					match next {
+						None => break,
+						Some(next_cursor) if next_cursor > cursor => cursor = next_cursor,
+						_ => return Err(error!("WEBTOON repeated pagination cursor")),
+					}
+					if batch == 99 {
+						return Err(error!("WEBTOON episode pagination limit exceeded"));
+					}
 				}
 			}
 			chapters.reverse();

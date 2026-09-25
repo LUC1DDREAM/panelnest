@@ -58,9 +58,9 @@
   },
   {
     "id": "multi.luc1d-webtoon",
-    "version": 20,
-    "previous_version": 15,
-    "asset_changed": true,
+    "version": 21,
+    "previous_version": 20,
+    "asset_changed": false,
     "provenance": "original vector interpretation by assistant",
     "official_assets": false,
     "method": "Hand-authored SVG, resvg-py rasterization, Pillow opaque RGB export; no generative image service output.",
