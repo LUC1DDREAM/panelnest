@@ -502,7 +502,11 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 		manga.status = MangaStatus::Completed;
 		manga.update_strategy = UpdateStrategy::Never;
 		manga.content_rating = ContentRating::NSFW;
-		manga.viewer = Viewer::RightToLeft;
+		manga.viewer = if is_western_gallery(doc) {
+			Viewer::LeftToRight
+		} else {
+			Viewer::RightToLeft
+		};
 		manga.url = Some(format!("{BASE_URL}/gallery/{}/", manga.key));
 	}
 	if chapters {
@@ -549,6 +553,22 @@ fn gallery_language(doc: &Document) -> Option<String> {
 	} else {
 		None
 	}
+}
+fn is_western_gallery(doc: &Document) -> bool {
+	IS_IM
+		&& doc.select("li").is_some_and(|items| {
+			items.into_iter().any(|item| {
+				item.select_first(".tags_text")
+					.and_then(|label| label.text())
+					.is_some_and(|label| label.trim() == "Category:")
+					&& item.select("a.tag").is_some_and(|links| {
+						links.into_iter().any(|link| {
+							link.own_text()
+								.is_some_and(|text| text.trim().eq_ignore_ascii_case("western"))
+						})
+					})
+			})
+		})
 }
 fn input(doc: &Document, id: &str) -> Result<String> {
 	doc.select_first(&format!("input#{id}"))

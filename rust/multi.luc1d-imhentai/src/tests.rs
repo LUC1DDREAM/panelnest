@@ -112,6 +112,27 @@ fn live_gallery_artist_metadata_maps_to_aidoku_artists() {
 }
 
 #[aidoku_test]
+fn official_western_gallery_uses_left_to_right_viewer() {
+	let doc = Html::parse_with_url(
+		include_str!("../fixtures/live-gallery-western.html"),
+		"https://imhentai.xxx/gallery/1744476/",
+	)
+	.unwrap();
+	assert!(is_western_gallery(&doc));
+	let manga = update(
+		&doc,
+		Manga {
+			key: "1744476".into(),
+			..Default::default()
+		},
+		true,
+		false,
+	)
+	.unwrap();
+	assert_eq!(manga.viewer, Viewer::LeftToRight);
+}
+
+#[aidoku_test]
 fn posted_age_is_converted_to_a_bounded_approximate_timestamp() {
 	assert_eq!(posted_age_seconds("Posted: 8 hours ago"), Some(28_800));
 	assert_eq!(posted_age_seconds("Posted: 2 days ago"), Some(172_800));
@@ -661,7 +682,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 30);
+	assert_eq!(manifest["info"]["version"], 31);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
