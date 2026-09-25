@@ -3,7 +3,8 @@ use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
 	Filter, FilterValue, HashMap, HomePartialResult, ImageRequestProvider, Listing, Manga,
 	MangaPageResult, MangaStatus, Page, PageContent, PageContext, PageDescriptionProvider, Result,
-	SelectFilter, SortFilter, Source, TextFilter, UpdateStrategy, Viewer, WebLoginHandler,
+	NotificationHandler, SelectFilter, SortFilter, Source, TextFilter, UpdateStrategy, Viewer,
+	WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -970,6 +971,13 @@ impl WebLoginHandler for GallerySource {
 		auth::handle_web_login(cookies)
 	}
 }
+impl NotificationHandler for GallerySource {
+	fn handle_notification(&self, notification: String) {
+		if notification == "login" && auth::is_login_setting_cleared() {
+			auth::logout();
+		}
+	}
+}
 impl DeepLinkHandler for GallerySource {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
 		Ok(deep_link_key(&url).map(|key| DeepLinkResult::Manga { key }))
@@ -1145,7 +1153,8 @@ aidoku::register_source!(
 	DeepLinkHandler,
 	DynamicFilters,
 	PageDescriptionProvider,
-	WebLoginHandler
+	WebLoginHandler,
+	NotificationHandler
 );
 
 #[cfg(test)]

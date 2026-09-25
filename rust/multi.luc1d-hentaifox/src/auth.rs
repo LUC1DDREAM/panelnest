@@ -61,6 +61,14 @@ pub fn valid_session() -> Result<String> {
 	Ok(cookie)
 }
 
+pub fn logout() {
+	defaults_set(SESSION_KEY, DefaultValue::Null);
+}
+
+pub fn is_login_setting_cleared() -> bool {
+	defaults_get::<String>("login").is_none()
+}
+
 pub fn is_logged_in() -> bool {
 	valid_session().is_ok()
 }

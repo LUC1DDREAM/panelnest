@@ -286,7 +286,8 @@
       "dynamic-filters",
       "image-request",
       "page-descriptions",
-      "web-login"
+      "web-login",
+      "notifications"
     ],
     "features": [
       "search",
@@ -300,7 +301,8 @@
       "dynamic-filters",
       "image-request",
       "page-descriptions",
-      "web-login"
+      "web-login",
+      "notifications"
     ],
     "listings": [
       "Latest",
@@ -320,7 +322,7 @@
     "path": "rust/multi.luc1d-hentaifox",
     "sdk_commit": "e1320b0a2e11afb59e4dee374883a2212d325699",
     "device_tested": false,
-    "live_evidence": "The official homepage currently renders the Daily Top Rated Today and Yesterday gallery links and thumbnails server-side; its JavaScript only toggles their visibility locally. Live official /languages/ and /languages/popular/ directories each expose 26 classifications. Sample /language/english/ Latest and Popular routes and the three official sidebar POST routes returned HTTP 200 with current gallery markup. A gallery fetched on 2026-09-25 returns HTTP 200 and exposes language links in ul.languages. Version 24 assigns a BCP 47 chapter language only when exactly one recognized language tag is present; chapter construction and translated-only or mixed-language handling are fixture-tested. Versions 21-23 retain popular-tag listings, completed-title refresh policy and gallery-page CDN Referer propagation, all covered by fixtures. Native Aidoku runtime and device rendering remain unverified. Version 25 populates Chapter.thumbnail from the validated gallery cover URL. Version 26 consumes all 50 official popular-tag directory entries, producing Latest and Popular listings for each; a boundary fixture checks tag 50 and rejects tag 51. A fresh official gallery fetched on 2026-09-25 returns HTTP 200 and exposes a relative Posted label in span.i_text.pages, with no machine-readable exact upload timestamp. Version 27 maps supported relative ages to approximate chapter timestamps; fixtures cover parsing and chapter integration. Version 28 validates the PHP session against /profile/ and exposes paginated Bookmarks from /includes/user_favs.php, as documented in site JavaScript; authenticated responses were not verified.",
+    "live_evidence": "The official homepage currently renders the Daily Top Rated Today and Yesterday gallery links and thumbnails server-side; its JavaScript only toggles their visibility locally. Live official /languages/ and /languages/popular/ directories each expose 26 classifications. Sample /language/english/ Latest and Popular routes and the three official sidebar POST routes returned HTTP 200 with current gallery markup. A gallery fetched on 2026-09-25 returns HTTP 200 and exposes language links in ul.languages. Version 24 assigns a BCP 47 chapter language only when exactly one recognized language tag is present; chapter construction and translated-only or mixed-language handling are fixture-tested. Versions 21-23 retain popular-tag listings, completed-title refresh policy and gallery-page CDN Referer propagation, all covered by fixtures. Native Aidoku runtime and device rendering remain unverified. Version 25 populates Chapter.thumbnail from the validated gallery cover URL. Version 26 consumes all 50 official popular-tag directory entries, producing Latest and Popular listings for each; a boundary fixture checks tag 50 and rejects tag 51. A fresh official gallery fetched on 2026-09-25 returns HTTP 200 and exposes a relative Posted label in span.i_text.pages, with no machine-readable exact upload timestamp. Version 27 maps supported relative ages to approximate chapter timestamps; fixtures cover parsing and chapter integration. Version 28 validates the PHP session against /profile/ and exposes paginated Bookmarks from /includes/user_favs.php, as documented in site JavaScript; authenticated responses were not verified. Version 29 exposes the WebLogin setting in the packaged Aidoku settings and clears its session on logout notifications; fixture covers the UI setting contract.",
     "fixture_tests_passed": 33,
     "release_authorized": true
   }

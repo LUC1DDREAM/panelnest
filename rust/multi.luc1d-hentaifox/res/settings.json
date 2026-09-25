@@ -1,0 +1,17 @@
+[
+  {
+    "type": "group",
+    "title": "ACCOUNT",
+    "items": [
+      {
+        "type": "login",
+        "key": "login",
+        "notification": "login",
+        "method": "web",
+        "title": "Log in to HentaiFox",
+        "url": "https://hentaifox.com/login/",
+        "refreshes": ["listings"]
+      }
+    ]
+  }
+]

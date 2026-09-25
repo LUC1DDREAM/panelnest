@@ -690,7 +690,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 28);
+	assert_eq!(manifest["info"]["version"], 29);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -700,6 +700,19 @@ fn manifest_preserves_identity_and_matches_discovery() {
 	for listing in manifest["listings"].as_array().unwrap() {
 		assert!(listing_url(listing["id"].as_str().unwrap(), 1).is_ok());
 	}
+}
+
+#[aidoku_test]
+fn web_login_has_an_account_setting_and_logout_notification() {
+	let settings: serde_json::Value =
+		serde_json::from_str(include_str!("../res/settings.json")).unwrap();
+	let login = &settings[0]["items"][0];
+	assert_eq!(login["type"], "login");
+	assert_eq!(login["key"], "login");
+	assert_eq!(login["method"], "web");
+	assert_eq!(login["notification"], "login");
+	assert_eq!(login["url"], "https://hentaifox.com/login/");
+	assert_eq!(login["refreshes"][0], "listings");
 }
 
 use super::*;
