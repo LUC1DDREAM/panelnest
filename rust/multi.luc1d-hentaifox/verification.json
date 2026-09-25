@@ -1,8 +1,8 @@
 {
   "id": "multi.luc1d-hentaifox",
-  "version": 29,
-  "sha256": "ea51a255a1be1e45602590dc7055df4281cece42828393c0478ed3bc6aaed887",
-  "bytes": 83354,
+  "version": 30,
+  "sha256": null,
+  "bytes": null,
   "languages": [
     "multi"
   ],
@@ -10,8 +10,8 @@
   "package_verified": true,
   "runtime_tested": false,
   "device_tested": false,
-  "fixture_tests_passed": 34,
-  "official_site_checks": "The official homepage and language, tag and sidebar routes retain their prior live checks. A gallery page fetched on 2026-09-25 returns HTTP 200 and includes a Languages list with language links (for example, english and translated). Version 24 maps exactly one recognized tag to a BCP 47 chapter language code; translated-only, unknown and mixed languages remain unset. Fixtures cover chapter construction and language extraction. Version 23 carries the gallery-page URL through Aidoku PageContext for CDN Referer requests; its host and gallery ID validation remains fixture-covered. Device rendering and native Aidoku runtime remain unverified. Version 25 populates Chapter.thumbnail from the gallery cover URL and fixtures verify it. Version 26 consumes all 50 live entries from the official /tags/popular/ directory, exposing 50 quick-select tag filters and 100 sort-specific tag listings; fixture verifies the boundary. A fresh official gallery fetched on 2026-09-25 returns HTTP 200 and exposes a relative Posted label (for example, Posted: 7 days ago) in span.i_text.pages, without an exact timestamp. Version 27 maps supported relative ages to an approximate Chapter.date_uploaded value at fetch time; unsupported labels remain unset. Version 28 adds WebLogin by validating PHPSESSID against the official /profile/ route and exposes the official JavaScript-documented paginated /includes/user_favs.php Bookmarks route. Authenticated response and device login were not verified. Fixtures cover cookie validation, profile URL validation, logged-out listing visibility and favorites pagination. Version 29 adds an Aidoku login setting wired to the official /login/ route and clears the stored session on logout notifications; fixtures verify the setting metadata.",
+  "fixture_tests_passed": 35,
+  "official_site_checks": "The official homepage and language, tag and sidebar routes retain their prior live checks. A gallery page fetched on 2026-09-25 returns HTTP 200 and includes a Languages list with language links (for example, english and translated). Version 24 maps exactly one recognized tag to a BCP 47 chapter language code; translated-only, unknown and mixed languages remain unset. Fixtures cover chapter construction and language extraction. Version 23 carries the gallery-page URL through Aidoku PageContext for CDN Referer requests; its host and gallery ID validation remains fixture-covered. Device rendering and native Aidoku runtime remain unverified. Version 25 populates Chapter.thumbnail from the gallery cover URL and fixtures verify it. Version 26 consumes all 50 live entries from the official /tags/popular/ directory, exposing 50 quick-select tag filters and 100 sort-specific tag listings; fixture verifies the boundary. A fresh official gallery fetched on 2026-09-25 returns HTTP 200 and exposes a relative Posted label (for example, Posted: 7 days ago) in span.i_text.pages, without an exact timestamp. Version 27 maps supported relative ages to an approximate Chapter.date_uploaded value at fetch time; unsupported labels remain unset. Version 28 adds WebLogin by validating PHPSESSID against the official /profile/ route and exposes the official JavaScript-documented paginated /includes/user_favs.php Bookmarks route. Authenticated response and device login were not verified. Fixtures cover cookie validation, profile URL validation, logged-out listing visibility and favorites pagination. Version 29 adds an Aidoku login setting wired to the official /login/ route and clears the stored session on logout notifications; fixtures verify the setting metadata. Version 30 maps official tag URLs to the existing Latest and Popular Aidoku listings, covered by fixtures.",
   "live_aidoku_suite": "not run for this release",
   "implemented": [
     "search",

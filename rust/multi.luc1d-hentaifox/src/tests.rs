@@ -788,6 +788,48 @@ fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 }
 
 #[aidoku_test]
+fn deep_links_open_tag_latest_and_popular_listings() {
+	use aidoku::DeepLinkHandler;
+	let source = GallerySource;
+	for (url, expected_id) in [
+		("https://hentaifox.com/tag/english/", "popular-tag-english"),
+		(
+			"https://hentaifox.com/tag/english/popular/",
+			"tag-popular-english",
+		),
+		(
+			"https://hentaifox.com/tag/english/?from=share#top",
+			"popular-tag-english",
+		),
+	] {
+		let Some(DeepLinkResult::Listing(listing)) =
+			source.handle_deep_link(url.into()).unwrap()
+		else {
+			panic!("Expected listing deep link for {url}");
+		};
+		assert_eq!(listing.id, expected_id);
+		let is_popular = expected_id.starts_with("tag-popular-");
+		assert_eq!(
+			popular_tag_url(&listing.id, 1, is_popular).unwrap(),
+			if is_popular {
+				"https://hentaifox.com/tag/english/popular/"
+			} else {
+				"https://hentaifox.com/tag/english/"
+			}
+		);
+	}
+	for url in [
+		"https://hentaifox.com.evil/tag/english/",
+		"http://hentaifox.com/tag/english/",
+		"https://hentaifox.com/tag/English/",
+		"https://hentaifox.com/tag/english/pag/2/",
+		"https://hentaifox.com/language/english/",
+	] {
+		assert!(deep_link_listing(url).is_none(), "Unexpected listing for {url}");
+	}
+}
+
+#[aidoku_test]
 fn search_sort_filter_preserves_latest_and_maps_popular_to_site_parameter() {
 	let popular = vec![FilterValue::Sort {
 		id: "sort".into(),

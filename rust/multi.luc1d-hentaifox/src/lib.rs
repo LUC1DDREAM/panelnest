@@ -577,6 +577,36 @@ fn deep_link_key(url: &str) -> Option<String> {
 	}
 	key_from_url(&format!("{BASE_URL}/{path}"))
 }
+fn deep_link_listing(url: &str) -> Option<Listing> {
+	let rest = url.strip_prefix("https://")?;
+	let (host, path) = rest.split_once('/')?;
+	if host != BASE_URL.trim_start_matches("https://") {
+		return None;
+	}
+	let path = path.split(['?', '#']).next()?;
+	let path = path.strip_suffix('/').unwrap_or(path);
+	let (slug, popular) = if let Some(tag_path) = path.strip_prefix("tag/") {
+		if let Some(slug) = tag_path.strip_suffix("/popular") {
+			(slug, true)
+		} else {
+			(tag_path, false)
+		}
+	} else {
+		return None;
+	};
+	if slug.is_empty()
+		|| !slug
+			.bytes()
+			.all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+	{
+		return None;
+	}
+	Some(Listing {
+		id: format!("{}{slug}", if popular { "tag-popular-" } else { "popular-tag-" }),
+		name: format!("{}: {}", if popular { "Popular" } else { "Tag" }, slug.replace('-', " ")),
+		..Default::default()
+	})
+}
 fn sidebar_type(id: &str) -> Option<&'static str> {
 	SIDEBAR_LISTINGS
 		.iter()
@@ -980,7 +1010,9 @@ impl NotificationHandler for GallerySource {
 }
 impl DeepLinkHandler for GallerySource {
 	fn handle_deep_link(&self, url: String) -> Result<Option<DeepLinkResult>> {
-		Ok(deep_link_key(&url).map(|key| DeepLinkResult::Manga { key }))
+		Ok(deep_link_key(&url)
+			.map(|key| DeepLinkResult::Manga { key })
+			.or_else(|| deep_link_listing(&url).map(DeepLinkResult::Listing)))
 	}
 }
 impl DynamicFilters for GallerySource {
