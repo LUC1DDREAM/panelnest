@@ -28,6 +28,6 @@ class SeoTests(unittest.TestCase):
                 self.assertEqual(page['url'],canonical)
                 item=page['mainEntity']['itemListElement'][0]
                 self.assertEqual(item['name'],'Fixture [PN]')
-                self.assertEqual(item['url'],canonical+'#source-en.fixture')
+                self.assertEqual(item['url'],canonical+'sources/en.fixture/')
                 self.assertNotIn('aggregateRating',text)
                 self.assertNotIn('noindex',text)
