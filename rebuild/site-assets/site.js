@@ -32,17 +32,19 @@
     updateTheme();
   });
   const copy = document.getElementById("copy-url");
-  copy.hidden = false;
-  copy.addEventListener("click", async () => {
-    const code = document.getElementById("list-url");
-    const status = document.getElementById("copy-status");
-    try {
-      await navigator.clipboard.writeText(code.textContent);
-      status.textContent = copy.dataset.success;
-    } catch (_) {
-      const range = document.createRange(); range.selectNodeContents(code);
-      const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
-      code.focus(); status.textContent = copy.dataset.failure;
-    }
-  });
+  if (copy) {
+    copy.hidden = false;
+    copy.addEventListener("click", async () => {
+      const code = document.getElementById("list-url");
+      const status = document.getElementById("copy-status");
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        status.textContent = copy.dataset.success;
+      } catch (_) {
+        const range = document.createRange(); range.selectNodeContents(code);
+        const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+        code.focus(); status.textContent = copy.dataset.failure;
+      }
+    });
+  }
 })();

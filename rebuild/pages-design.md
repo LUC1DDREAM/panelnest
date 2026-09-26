@@ -4,7 +4,9 @@ Static Python renderer: `site_output.py`; translated content: `site-locales.json
 
 Run `python -m unittest discover -s rebuild -p "test_*.py"`. Full release gate: `python rebuild/pipeline.py && python rebuild/site_output.py`. Existing fail-closed gates and all source IDs/versions/icons remain unchanged.
 
-English static root plus `/en/`, `/de/`, `/es/`, `/fr/`, `/pt/`. Root and `/experimental/` are English aliases canonicalized to `/en/`; only aliases auto-select a matching browser language. Explicit locale links always win and persist to localStorage when available. All text is rendered without JavaScript; JS only enhances selection and copying. Catalog/package language metadata is shown as stored, not changed by UI locale.
+English static root plus `/en/`, `/de/`, `/es/`, `/fr/`, `/pt/`. Root and `/experimental/` are English aliases canonicalized to the root; only aliases auto-select a matching browser language. Explicit locale links always win and persist to localStorage when available. All text is rendered without JavaScript; JS only enhances selection and copying. Catalog/package language metadata is shown as stored, not changed by UI locale.
+
+Each locale also gets an indexable Aidoku setup guide and a detail page for every source. The homepage links directly to all source pages; page titles, descriptions, canonical URLs, `hreflang`, breadcrumbs and JSON-LD are generated from the release catalog. `sitemap.xml` includes each of the 40 canonical page URLs and reciprocal `xhtml:link` alternates. `/en/` and `/experimental/` remain crawlable compatibility aliases but are not sitemap entries. `robots.txt` points to the sitemap.
 
 `PANELNEST_SITE_URL` sets the absolute HTTPS canonical base, including its trailing project path; the default is https://luc1ddream.github.io/panelnest/. `GITHUB_REPOSITORY` selects issue links. The old installed my-aidoku-sources endpoint is maintained by a separate compatibility publisher. No rename is performed by this renderer. Old installed JSON URLs need complete compatibility artifacts (indexes + packages + icons), not HTML redirects.
 
