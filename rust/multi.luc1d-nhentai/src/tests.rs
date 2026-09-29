@@ -4,7 +4,7 @@ fn source_metadata_matches_aidoku_multilingual_filter() {
 	let manifest: serde_json::Value =
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	let languages = manifest["info"]["languages"].as_array().unwrap();
-	assert_eq!(manifest["info"]["version"], 26);
+	assert_eq!(manifest["info"]["version"], 27);
 	assert_eq!(manifest["config"]["supportsAuthorSearch"], true);
 	assert_eq!(manifest["config"]["supportsArtistSearch"], true);
 	assert!(languages.iter().any(|language| language == "multi"));
@@ -549,4 +549,56 @@ fn tag_deep_links_use_the_validated_official_slug_lookup() {
 	let mut invalid = tag;
 	invalid.url = "/tag/other-tag/".into();
 	assert!(super::listing_from_tag_slug(slug, &invalid).is_none());
+}
+
+// Sanitized metadata from the user's API response for gallery 684769.
+#[aidoku_test]
+fn reported_gallery_exposes_clickable_artist() {
+ let gallery: NHentaiGallery = serde_json::from_str(r#"{
+  "id":684769,"media_id":"4215753",
+  "title":{"english":"Reasons for Living in a Haunted Property.","japanese":null,"pretty":"Reasons for Living in a Haunted Property."},
+  "cover":{"path":"galleries/4215753/cover.webp.webp","width":350,"height":494},
+  "thumbnail":{"path":"galleries/4215753/thumb.webp","width":250,"height":353},
+  "scanlator":"","upload_date":1790633693,
+  "tags":[
+   {"id":70319,"type":"artist","name":"etuzan jakusui","slug":"etuzan-jakusui","url":"/artist/etuzan-jakusui/","count":279},
+   {"id":73137,"type":"group","name":"hayo-cinema","slug":"hayo-cinema","url":"/group/hayo-cinema/","count":90},
+   {"id":12227,"type":"language","name":"english","slug":"english","url":"/language/english/","count":147899},
+   {"id":17676,"type":"tag","name":"ghost","slug":"ghost","url":"/tag/ghost/","count":1575}
+  ],"num_pages":31,"num_favorites":4619,"pages":[]
+ }"#).unwrap();
+ let manga: aidoku::Manga = gallery.into();
+ assert_eq!(manga.artists.as_deref().unwrap(), &["etuzan jakusui"]);
+ assert_eq!(manga.authors, manga.artists);
+ let description = manga.description.as_deref().unwrap();
+ assert!(description.contains("Artists: etuzan jakusui"));
+ assert!(description.contains("Groups: hayo-cinema"));
+ for tag in manga.tags.unwrap() {
+  let expected = if tag == "Artist: etuzan jakusui" { "artist:\"etuzan jakusui\"" } else { "tag:\"ghost\"" };
+  let filter = aidoku::FilterValue::Select { id: "genre".into(), value: tag };
+  assert_eq!(super::detail_filter_query(&filter).as_deref(), Some(expected));
+ }
+}
+
+#[aidoku_test]
+fn artist_chips_cover_all_artists_and_do_not_retype_freeform_tags() {
+ let gallery: NHentaiGallery = serde_json::from_str(r#"{
+  "id":1,"media_id":"1","title":{"english":"Fixture","pretty":"Fixture"},
+  "cover":{"path":"galleries/1/cover.webp","width":1,"height":1},
+  "thumbnail":{"path":"galleries/1/thumb.webp","width":1,"height":1},
+  "scanlator":"","upload_date":0,"num_pages":1,"num_favorites":0,"pages":[],
+  "tags":[
+   {"id":1,"type":"artist","name":"first","count":2,"url":"/artist/first/"},
+   {"id":2,"type":"artist","name":"second","count":1,"url":"/artist/second/"}
+  ]
+ }"#).unwrap();
+ let manga: aidoku::Manga = gallery.clone().into();
+ assert_eq!(manga.tags.unwrap(), aidoku::alloc::vec!["Artist: first", "Artist: second"]);
+ assert_eq!(super::text_filter_query("genre", "Artist: a\"b".into()).as_deref(), Some("artist:\"a\\\"b\""));
+ assert_eq!(super::text_filter_query("tag", "Artist: first".into()).as_deref(), Some("tag:\"Artist: first\""));
+ let mut empty = gallery;
+ empty.tags.clear();
+ let manga: aidoku::Manga = empty.into();
+ assert!(manga.tags.unwrap().is_empty());
+ assert!(!manga.description.unwrap().contains("Artists:"));
 }
