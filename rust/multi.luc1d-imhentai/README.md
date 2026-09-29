@@ -55,3 +55,5 @@ Version 29 requests identity encoding for IMHentai HTML. This follows the curren
 Version 30 accepts the current reader layout, which exposes `#gimg` and `g_th` but no longer includes the legacy `input#load_id`. The page-list guard previously rejected this valid live response before the existing current-layout parser could run. A regression fixture exercises the same guard and verifies all 50 page URLs from the current reader response.
 
 Version 31 reads the official gallery `Category:` field to select Aidoku's reader direction. Western galleries use left-to-right; other categories retain right-to-left. A sanitized fixture from live `/gallery/1744476/` verifies the official Western markup and the resulting viewer selection.
+
+Version 32 preserves `Manga.artists` and mirrors those names into `Manga.authors` for Aidoku’s clickable detail header. The `author` and `artist` click filters browse the artist within this source. This is UI compatibility, not a separate author taxonomy. Existing saved filter IDs remain supported.

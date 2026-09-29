@@ -1,8 +1,8 @@
 #![no_std]
 use aidoku::{
-	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters, Filter,
-	DynamicListings, FilterValue, ImageRequestProvider, Listing, ListingProvider, Manga, MangaPageResult,
-	MultiSelectFilter, Page, PageContent, PageDescriptionProvider, Result, Source,
+	AlternateCoverProvider, Chapter, DeepLinkHandler, DeepLinkResult, DynamicFilters,
+	DynamicListings, Filter, FilterValue, ImageRequestProvider, Listing, ListingProvider, Manga,
+	MangaPageResult, MultiSelectFilter, Page, PageContent, PageDescriptionProvider, Result, Source,
 	alloc::{String, Vec, borrow::Cow, string::ToString, vec},
 	helpers::uri::encode_uri_component,
 	imports::{
@@ -178,9 +178,9 @@ fn listing_from_tag_slug(slug: &str, tag: &NHentaiTag) -> Option<Listing> {
 		|| tag.url != format!("/tag/{slug}/")
 		|| tag.count <= 0
 		|| name.is_empty()
-		|| name.chars().any(|character| {
-			character.is_control() || matches!(character, '"' | '\\')
-		})
+		|| name
+			.chars()
+			.any(|character| character.is_control() || matches!(character, '"' | '\\'))
 	{
 		return None;
 	}
@@ -233,16 +233,28 @@ fn taxonomy_type(filter_id: &str) -> Option<&'static str> {
 }
 
 fn text_filter_query(id: &str, value: String) -> Option<String> {
+	let value = value.trim().replace('\\', "\\\\").replace('"', "\\\"");
+	if value.is_empty() {
+		return None;
+	}
 	match id {
 		// The bundled freeform Artist filter has retained the `author` ID since
 		// it was first published. Keep that ID for saved-filter compatibility,
 		// but route it through nhentai's typed artist search operator.
-		"author" => Some(format!("artist:\"{value}\"")),
-		"tag" => Some(format!("tag:\"{value}\"")),
-		"artist" => Some(format!("artist:{value}")),
+		"author" | "artist" => Some(format!("artist:\"{value}\"")),
+		"tag" | "genre" => Some(format!("tag:\"{value}\"")),
 		"groups" => Some(format!("group:{value}")),
 		"parody" => Some(format!("parody:{value}")),
 		"character" => Some(format!("character:{value}")),
+		_ => None,
+	}
+}
+
+fn detail_filter_query(filter: &FilterValue) -> Option<String> {
+	match filter {
+		FilterValue::Text { id, value } => text_filter_query(id, value.clone()),
+		// Aidoku uses this shape for every tag when supportsTagSearch is set.
+		FilterValue::Select { id, value } if id == "genre" => text_filter_query(id, value.clone()),
 		_ => None,
 	}
 }
@@ -288,12 +300,11 @@ impl Source for NHentai {
 
 		// parse filters
 		for filter in filters {
+			if let Some(part) = detail_filter_query(&filter) {
+				query_parts.push(part);
+				continue;
+			}
 			match filter {
-				FilterValue::Text { id, value } => {
-					if let Some(part) = text_filter_query(&id, value) {
-						query_parts.push(part);
-					}
-				}
 				FilterValue::Sort { index, .. } => {
 					sort = match index {
 						0 => "date",          // Latest

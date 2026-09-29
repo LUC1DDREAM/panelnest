@@ -187,6 +187,19 @@ fn search_url_with_filters(
 				languages = Some(included.clone());
 			}
 			FilterValue::Text { id, value } => {
+				// The manga header supplies one complete creator name, rather
+				// than the comma-separated advanced-filter input below.
+				if matches!(id.as_str(), "author" | "artist") {
+					let term = value
+						.chars()
+						.filter(|c| !matches!(c, '"' | '\\') && !c.is_control())
+						.collect::<String>();
+					let term = term.split_whitespace().collect::<Vec<_>>().join("+");
+					if !term.is_empty() {
+						advanced_terms.push((false, "artist", term));
+					}
+					continue;
+				}
 				let kind = match id.as_str() {
 					"tags" => "tag",
 					"artists" => "artist",
@@ -479,7 +492,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 				.unwrap_or_default()
 		};
 		manga.artists = Some(gallery_artists(doc));
-		manga.authors = Some(Vec::new());
+		manga.authors = manga.artists.clone();
 		manga.tags = Some(if IS_IM {
 			doc.select("li")
 				.map(|els| {

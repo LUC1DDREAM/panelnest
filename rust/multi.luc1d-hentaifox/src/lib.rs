@@ -2,9 +2,9 @@
 use aidoku::{
 	Chapter, ContentRating, DeepLinkHandler, DeepLinkResult, DynamicFilters, DynamicListings,
 	Filter, FilterValue, HashMap, HomePartialResult, ImageRequestProvider, Listing, Manga,
-	MangaPageResult, MangaStatus, Page, PageContent, PageContext, PageDescriptionProvider, Result,
-	NotificationHandler, SelectFilter, SortFilter, Source, TextFilter, UpdateStrategy, Viewer,
-	WebLoginHandler,
+	MangaPageResult, MangaStatus, NotificationHandler, Page, PageContent, PageContext,
+	PageDescriptionProvider, Result, SelectFilter, SortFilter, Source, TextFilter, UpdateStrategy,
+	Viewer, WebLoginHandler,
 	alloc::{String, Vec, string::ToString, vec},
 	imports::{
 		html::{Document, Element},
@@ -190,7 +190,10 @@ fn parse_search(doc: &Document) -> MangaPageResult {
 				let title = el
 					.select_first(".caption .g_title a, .caption a")
 					.and_then(|element| element.text())
-					.or_else(|| el.select_first(".caption").and_then(|element| element.text()))
+					.or_else(|| {
+						el.select_first(".caption")
+							.and_then(|element| element.text())
+					})
 					.or_else(|| {
 						el.select_first(".inner_thumb img")
 							.and_then(|image| image.attr("alt"))
@@ -365,6 +368,10 @@ fn search_url_with_filters(
 				}
 			}
 			FilterValue::Text { id, value } if !value.trim().is_empty() => {
+				if matches!(id.as_str(), "author" | "artist") {
+					selected_taxonomies.push(("artist", taxonomy_text_slug(value)?));
+					continue;
+				}
 				if let Some((_, kind, _)) = TEXT_TAXONOMIES
 					.iter()
 					.find(|(filter_id, _, _)| *filter_id == id)
@@ -491,7 +498,7 @@ fn update(doc: &Document, mut manga: Manga, details: bool, chapters: bool) -> Re
 				.unwrap_or_default()
 		};
 		manga.artists = Some(gallery_artists(doc));
-		manga.authors = Some(Vec::new());
+		manga.authors = manga.artists.clone();
 		let groups = gallery_groups(doc);
 		manga.description = description_with_groups(manga.description.take(), &groups);
 		manga.tags = Some(if IS_IM {
@@ -1304,11 +1311,7 @@ impl Source for GallerySource {
 	}
 }
 impl ImageRequestProvider for GallerySource {
-	fn get_image_request(
-		&self,
-		url: String,
-		context: Option<PageContext>,
-	) -> Result<Request> {
+	fn get_image_request(&self, url: String, context: Option<PageContext>) -> Result<Request> {
 		let domain = BASE_URL.trim_start_matches("https://");
 		let image_host = url
 			.strip_prefix("https://")

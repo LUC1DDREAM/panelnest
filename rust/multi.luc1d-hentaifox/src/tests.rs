@@ -14,7 +14,7 @@ fn synthetic_details_and_chapter_flags() {
 	.unwrap();
 	assert_eq!(m.title, "Sample 2");
 	assert_eq!(m.artists.as_deref(), Some(&[String::from("Artist 7")][..]));
-	assert_eq!(m.authors.as_deref(), Some(&[][..]));
+	assert_eq!(m.authors, m.artists);
 	let chapters = m.chapters.unwrap();
 	assert_eq!(chapters[0].key, "42");
 	assert_eq!(chapters[0].language.as_deref(), Some("en"));
@@ -82,7 +82,13 @@ fn chapter_language_maps_all_official_language_tags_and_ignores_classifications(
 		let doc = Html::parse_with_url(&html, BASE_URL).unwrap();
 		assert_eq!(gallery_language(&doc).as_deref(), Some(expected), "{label}");
 	}
-	for classification in ["translated", "rewrite", "speechless", "text cleaned", "textless narrative"] {
+	for classification in [
+		"translated",
+		"rewrite",
+		"speechless",
+		"text cleaned",
+		"textless narrative",
+	] {
 		let html = format!(
 			"<ul class='languages'><span class='i_text'>Languages:</span><li><a class='tag_btn'>{classification}</a></li></ul>"
 		);
@@ -807,7 +813,9 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 37);
+	assert_eq!(manifest["info"]["version"], 38);
+	assert_eq!(manifest["config"]["supportsAuthorSearch"], true);
+	assert_eq!(manifest["config"]["supportsArtistSearch"], true);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -833,6 +841,24 @@ fn web_login_has_an_account_setting_and_logout_notification() {
 }
 
 use super::*;
+
+#[aidoku_test]
+fn manga_header_artist_click_browses_the_artist_in_this_source() {
+	for id in ["author", "artist"] {
+		let filter = [FilterValue::Text {
+			id: id.into(),
+			value: "Artist Name".into(),
+		}];
+		assert_eq!(
+			search_url_with_filters(None, 1, &filter).unwrap(),
+			format!("{BASE_URL}/artist/artist-name/")
+		);
+		assert_eq!(
+			search_url_with_filters(None, 2, &filter).unwrap(),
+			format!("{BASE_URL}/artist/artist-name/pag/2/")
+		);
+	}
+}
 use aidoku::imports::html::Html;
 use aidoku_test::aidoku_test;
 #[aidoku_test]

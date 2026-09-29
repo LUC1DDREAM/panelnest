@@ -14,10 +14,10 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 |---|---|---:|
 | Asura Scans [PN] | `en.luc1d-asurascans` | 17 |
 | Weeb Central [PN] | `en.luc1d-weebcentral` | 21 |
-| nhentai [PN] | `multi.luc1d-nhentai` | 25 |
+| nhentai [PN] | `multi.luc1d-nhentai` | 26 |
 | WEBTOON [PN] | `multi.luc1d-webtoon` | 23 |
-| IMHentai [PN] | `multi.luc1d-imhentai` | 31 |
-| HentaiFox [PN] | `multi.luc1d-hentaifox` | 37 |
+| IMHentai [PN] | `multi.luc1d-imhentai` | 32 |
+| HentaiFox [PN] | `multi.luc1d-hentaifox` | 38 |
 
 ## Verification and approval
 
@@ -38,6 +38,8 @@ The website is **dark by default regardless of OS theme**. The accessible light/
 ## Build
 
 Use Rust 1.98.1, `wasm32-unknown-unknown`, Python 3.11 and `aidoku-cli` / `aidoku-test-runner` from SDK `e1320b0a2e11afb59e4dee374883a2212d325699`, installed with `--locked`.
+
+Published WASM packages contain compiler paths from the GitHub runner. For an identical build with a different Cargo home, set `RUSTFLAGS="--remap-path-prefix=<actual-cargo-home>=/home/runner/.cargo"`. This preserves the existing package immutability checks; do not replace an old baseline to accommodate a local path difference.
 
 ```sh
 python -m unittest discover -s rebuild -p 'test_*.py'

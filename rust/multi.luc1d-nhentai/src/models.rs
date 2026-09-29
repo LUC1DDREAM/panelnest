@@ -264,7 +264,9 @@ impl From<NHentaiGallery> for Manga {
 			title,
 			cover: Some(make_image_url(&value.cover.path, true)),
 			description: Some(description),
-			authors: Some(Vec::new()),
+			// Aidoku's detail header renders/searches authors only. Preserve
+			// the typed artists too, and mirror them for its clickable header.
+			authors: Some(artists.clone()),
 			artists: Some(artists),
 			url: Some(format!("https://nhentai.net/g/{}", value.id)),
 			tags: Some(tags),
