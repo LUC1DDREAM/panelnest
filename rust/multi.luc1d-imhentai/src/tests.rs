@@ -14,7 +14,7 @@ fn synthetic_details_and_chapter_flags() {
 	.unwrap();
 	assert_eq!(m.title, "Sample 2");
 	assert_eq!(m.artists.as_deref(), Some(&[String::from("Artist 7")][..]));
-	assert_eq!(m.authors.as_deref(), Some(&[][..]));
+	assert_eq!(m.authors, m.artists);
 	let chapters = m.chapters.unwrap();
 	assert_eq!(chapters[0].key, "42");
 	assert_eq!(chapters[0].language.as_deref(), Some("fr"));
@@ -682,7 +682,9 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 31);
+	assert_eq!(manifest["info"]["version"], 32);
+	assert_eq!(manifest["config"]["supportsAuthorSearch"], true);
+	assert_eq!(manifest["config"]["supportsArtistSearch"], true);
 	assert!(
 		manifest["info"]["name"]
 			.as_str()
@@ -715,6 +717,22 @@ fn live_reader_page_one_fixture_builds_all_manifest_pages() {
 }
 
 use super::*;
+
+#[aidoku_test]
+fn manga_header_artist_click_is_an_artist_search_on_every_page() {
+	for id in ["author", "artist"] {
+		let filter = [FilterValue::Text {
+			id: id.into(),
+			value: "Artist Name".into(),
+		}];
+		for page in [1, 2] {
+			let url = search_url_with_filters(None, page, &filter).unwrap();
+			assert!(url.starts_with(&format!("{BASE_URL}/advsearch/?")));
+			assert!(url.contains("key=%2Bartist%3A%22Artist%2BName%22"));
+			assert!(url.ends_with(&format!("page={page}")));
+		}
+	}
+}
 use aidoku::imports::html::Html;
 use aidoku_test::aidoku_test;
 #[aidoku_test]

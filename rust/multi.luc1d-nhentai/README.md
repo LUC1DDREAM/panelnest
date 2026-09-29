@@ -36,3 +36,7 @@ Version 18 routes chapter pages and cover downloads through `ImageRequestProvide
 - No gallery image bytes fetched, no device installation/rendering verified. `runtime_tested=false`. Hosted access policy, pagination stability during uploads, and full home execution remain live caveats. A rate-limited home fails rather than substituting another sort or manufactured data.
 
 The opt-in live test makes multiple metadata requests; run only after server rate limits reset, not in an automatic retry loop.
+
+Version 26 preserves `Manga.artists` and mirrors those names into `Manga.authors` for Aidoku’s clickable detail header. The `author` and `artist` click filters browse the artist within this source. This is UI compatibility, not a separate author taxonomy. Existing saved filter IDs remain supported.
+
+Tag clicks with `supportsTagSearch=true` arrive as `FilterValue::Select { id: "genre", value: tag }`. Version 26 handles this shape and submits an exact quoted `tag:` query, including tags outside the bundled popular selector. Existing multi-select and freeform tag filters continue to work.

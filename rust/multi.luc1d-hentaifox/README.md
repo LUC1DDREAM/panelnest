@@ -59,3 +59,5 @@ Version 28 adds Aidoku WebLogin and account Bookmarks. Version 29 adds the setti
 Version 29 exposes the Aidoku login control and handles logout notifications so Bookmarks can be accessed and sessions can be cleared from source settings.
 
 Version 31 adds the account Faplist as a separate login-only paginated listing. It reads the official /faplist/ and /faplist/pag/N/ pages and recognizes the explicit empty-list state.
+
+Version 38 preserves `Manga.artists` and mirrors those names into `Manga.authors` for Aidoku’s clickable detail header. The `author` and `artist` click filters browse the artist within this source. This is UI compatibility, not a separate author taxonomy. Existing saved filter IDs remain supported.
