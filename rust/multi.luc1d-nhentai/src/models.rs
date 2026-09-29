@@ -200,7 +200,7 @@ impl From<NHentaiGallery> for Manga {
 		characters.sort_by(|a, b| b.1.cmp(&a.1));
 		languages.sort_by(|a, b| b.1.cmp(&a.1));
 
-		let tags = tags.into_iter().map(|(name, _)| name).collect::<Vec<_>>();
+		let mut tags = tags.into_iter().map(|(name, _)| name).collect::<Vec<_>>();
 		let groups = groups.into_iter().map(|(name, _)| name).collect::<Vec<_>>();
 		let artists = artists
 			.into_iter()
@@ -222,6 +222,9 @@ impl From<NHentaiGallery> for Manga {
 		let description = {
 			let mut info_parts = Vec::new();
 			info_parts.push(format!("#{}", value.id));
+			if !artists.is_empty() {
+				info_parts.push(format!("Artists: {}", artists.join(", ")));
+			}
 			if !parodies.is_empty() {
 				info_parts.push(format!("Parodies: {}", parodies.join(", ")));
 			}
@@ -240,6 +243,9 @@ impl From<NHentaiGallery> for Manga {
 			}
 			info_parts.join("  \n")
 		};
+
+		// Each artist remains independently searchable through Aidoku's tag UI.
+		tags.extend(artists.iter().map(|artist| format!("{}{artist}", crate::ARTIST_TAG_PREFIX)));
 
 		let title_preference = get_title_preference();
 		let title = match title_preference {

@@ -232,7 +232,14 @@ fn taxonomy_type(filter_id: &str) -> Option<&'static str> {
 	}
 }
 
+pub(crate) const ARTIST_TAG_PREFIX: &str = "Artist: ";
+
 fn text_filter_query(id: &str, value: String) -> Option<String> {
+	if id == "genre" {
+		if let Some(artist) = value.trim().strip_prefix(ARTIST_TAG_PREFIX) {
+			return text_filter_query("artist", artist.into());
+		}
+	}
 	let value = value.trim().replace('\\', "\\\\").replace('"', "\\\"");
 	if value.is_empty() {
 		return None;
