@@ -14,10 +14,10 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 |---|---|---:|
 | Asura Scans [PN] | `en.luc1d-asurascans` | 17 |
 | Weeb Central [PN] | `en.luc1d-weebcentral` | 21 |
-| nhentai [PN] | `multi.luc1d-nhentai` | 27 |
+| nhentai [PN] | `multi.luc1d-nhentai` | 28 |
 | WEBTOON [PN] | `multi.luc1d-webtoon` | 23 |
-| IMHentai [PN] | `multi.luc1d-imhentai` | 32 |
-| HentaiFox [PN] | `multi.luc1d-hentaifox` | 38 |
+| IMHentai [PN] | `multi.luc1d-imhentai` | 33 |
+| HentaiFox [PN] | `multi.luc1d-hentaifox` | 39 |
 
 ## Verification and approval
 
@@ -49,3 +49,5 @@ python rebuild/browser_smoke.py https://luc1ddream.github.io/panelnest/
 ```
 
 Native Swift diagnostics exercise pinned Aidoku Codable models, root/legacy JSON URLs, resolved assets and malformed controls on macOS. They are not physical iPhone proof. Report problems using the [PanelNest issue form](https://github.com/LUC1DDREAM/panelnest/issues/new?template=bug-report.yml); never include tokens, cookies or private library data.
+
+NSFW performance (nhentai v28, IMHentai v33, HentaiFox v39): bounded source-instance caches reuse one gallery/reader manifest for up to five minutes. nhentai also caches complete discovery directories for fifteen minutes. Home emits its first feed before optional rankings finish, and independent taxonomy/sidebar requests use rate-limited batches. Explicit detail refreshes remain fresh. Request-count reductions are fixture-verified; device latency has not been measured.

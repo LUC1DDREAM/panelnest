@@ -80,11 +80,15 @@ impl Home for NHentai {
 			query_parts.join(" ")
 		});
 
-		let responses: [core::result::Result<Response, RequestError>; 4] = Request::send_all([
-			// popular today
-			Request::get(format!(
-				"{API_URL}/search?query={query}&page=1&sort=popular-today"
-			))?,
+		let today: NHentaiSearchResponse = Request::get(format!(
+			"{API_URL}/search?query={query}&page=1&sort=popular-today"
+		))?.header("User-Agent", crate::USER_AGENT).json_owned()?;
+		let popular_today = today.result.into_iter().map(Into::into).collect::<Vec<Manga>>();
+		if !popular_today.is_empty() {
+			send_component(today_component(popular_today));
+		}
+
+		let responses: [core::result::Result<Response, RequestError>; 3] = Request::send_all([
 			// popular week
 			Request::get(format!(
 				"{API_URL}/search?query={query}&page=1&sort=popular-week"
@@ -97,8 +101,8 @@ impl Home for NHentai {
 			Request::get(format!("{API_URL}/search?query={query}&page=1&sort=date"))?,
 		])
 		.try_into()
-		.expect("requests vec length should be 4");
-		let results: [Result<Vec<Manga>>; 4] = responses
+		.expect("requests vec length should be 3");
+		let results: [Result<Vec<Manga>>; 3] = responses
 			.map(|res| res?.get_json::<NHentaiSearchResponse>())
 			.map(|res| {
 				Ok(res?
@@ -107,15 +111,10 @@ impl Home for NHentai {
 					.map(|gallery| gallery.into())
 					.collect::<Vec<Manga>>())
 			});
-		let [popular_today, popular_week, popular_all, recent] = results;
-		let popular_today = popular_today?;
+		let [popular_week, popular_all, recent] = results;
 		let popular_week = popular_week?;
 		let popular_all = popular_all?;
 		let recent = recent?;
-
-		if !popular_today.is_empty() {
-			send_component(today_component(popular_today));
-		}
 
 		if !popular_week.is_empty() {
 			send_component(HomeComponent {

@@ -939,20 +939,22 @@ fn php_session_cookie(header: &str) -> Option<String> {
 		})
 		.map(ToString::to_string)
 }
-fn post_sidebar_listing(category: &str, token: &str, cookie: &str) -> Result<MangaPageResult> {
+fn sidebar_request(category: &str, token: &str, cookie: &str) -> Result<Request> {
 	ensure!(
 		SIDEBAR_LISTINGS
 			.iter()
 			.any(|(_, _, value)| *value == category),
 		"Unsupported sidebar ranking"
 	);
-	let response = site_post(SIDEBAR_URL, &format!("{BASE_URL}/"))?
+	Ok(site_post(SIDEBAR_URL, &format!("{BASE_URL}/"))?
 		.header("Cookie", cookie)
 		.header("X-Csrf-Token", token)
 		.header("X-Requested-With", "XMLHttpRequest")
 		.header("Content-Type", "application/x-www-form-urlencoded")
-		.body(format!("type={category}"))
-		.send()?;
+		.body(format!("type={category}")))
+}
+fn post_sidebar_listing(category: &str, token: &str, cookie: &str) -> Result<MangaPageResult> {
+	let response = sidebar_request(category, token, cookie)?.send()?;
 	ensure!(response.status_code() == 200, "HentaiFox sidebar request failed");
 	parse_sidebar_items(&response.get_html()?)
 }
@@ -1060,8 +1062,12 @@ impl aidoku::Home for GallerySource {
 		let mut home = parse_home(&homepage)?;
 		send_partial_result(&HomePartialResult::Layout(home.clone()));
 		if let (Some(token), Some(cookie)) = (sidebar_csrf_token(&homepage), cookie) {
-			for (id, title, category) in SIDEBAR_LISTINGS {
-				if let Ok(result) = post_sidebar_listing(category, &token, &cookie) {
+			let requests = SIDEBAR_LISTINGS.iter().map(|(_, _, category)| {
+				sidebar_request(category, &token, &cookie)
+			}).collect::<Result<Vec<_>>>()?;
+			for ((id, title, _), response) in SIDEBAR_LISTINGS.iter().zip(Request::send_all(requests)) {
+				if let Ok(response) = response && response.status_code() == 200
+					&& let Ok(doc) = response.get_html() && let Ok(result) = parse_sidebar_items(&doc) {
 					let component = sidebar_home_component(id, title, result);
 					send_partial_result(&HomePartialResult::Component(component.clone()));
 					home.components.push(component);
@@ -1260,11 +1266,17 @@ fn parse_top_rated(doc: &Document) -> Result<MangaPageResult> {
 	})
 }
 
-struct GallerySource;
+#[path = "../../common/cache.rs"]
+mod cache;
+
+#[derive(Default)]
+struct GallerySource {
+	pages: cache::Cache<Vec<cache::CachedPage>>,
+}
 impl Source for GallerySource {
 	fn new() -> Self {
 		set_rate_limit(1, 1, TimeUnit::Seconds);
-		Self
+		Self::default()
 	}
 	fn get_search_manga_list(
 		&self,
@@ -1295,7 +1307,11 @@ impl Source for GallerySource {
 			"Invalid gallery key"
 		);
 		let doc = site_get(format!("{BASE_URL}/gallery/{}/", manga.key))?.html()?;
-		update(&doc, manga, needs_details, needs_chapters)
+		let manga = update(&doc, manga, needs_details, needs_chapters)?;
+		if let Ok(pages) = parse_pages(&doc, &manga.key) {
+			self.pages.remember_pages(manga.key.clone(), current_date(), &pages);
+		}
+		Ok(manga)
 	}
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
 		ensure!(
@@ -1304,10 +1320,15 @@ impl Source for GallerySource {
 				&& chapter.key.bytes().all(|b| b.is_ascii_digit()),
 			"Invalid gallery key"
 		);
-		parse_pages(
+		if let Some(pages) = self.pages.pages(&chapter.key, current_date()) {
+			return Ok(pages);
+		}
+		let pages = parse_pages(
 			&site_get(format!("{BASE_URL}/gallery/{}/", chapter.key))?.html()?,
 			&chapter.key,
-		)
+		)?;
+		self.pages.remember_pages(chapter.key, current_date(), &pages);
+		Ok(pages)
 	}
 }
 impl ImageRequestProvider for GallerySource {

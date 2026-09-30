@@ -354,7 +354,7 @@ fn discovery_filters_map_to_official_intermediate_search_parameters() {
 #[aidoku_test]
 fn dynamic_listings_expose_all_supported_categories_and_languages() {
 	use aidoku::DynamicListings;
-	let listings = GallerySource.get_dynamic_listings().unwrap();
+	let listings = GallerySource::default().get_dynamic_listings().unwrap();
 	assert_eq!(listings.len(), 13);
 	assert_eq!(listings[0].id, "category-m");
 	assert_eq!(listings[0].name, "Category: Manga");
@@ -507,7 +507,7 @@ fn current_live_reader_layout_passes_the_page_list_guard() {
 #[aidoku_test]
 fn image_requests_use_reader_context_and_validate_image_hosts() {
 	use aidoku::ImageRequestProvider;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	let mut context = aidoku::PageContext::new();
 	context.insert("url".into(), "https://imhentai.xxx/view/1743990/12/".into());
 	assert_eq!(
@@ -543,7 +543,7 @@ fn image_requests_use_reader_context_and_validate_image_hosts() {
 #[aidoku_test]
 fn page_descriptions_read_validated_reader_filenames() {
 	use aidoku::PageDescriptionProvider;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	let page = Page {
 		content: PageContent::url("https://m2.imhentai.xxx/001/81/17.webp"),
 		has_description: true,
@@ -652,7 +652,7 @@ fn discovery_home_has_working_latest_listing() {
 #[aidoku_test]
 fn listing_dispatch_rejects_unknown_and_invalid_pages_without_network() {
 	use aidoku::ListingProvider;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	assert!(
 		source
 			.get_manga_list(
@@ -682,7 +682,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 32);
+	assert_eq!(manifest["info"]["version"], 33);
 	assert_eq!(manifest["config"]["supportsAuthorSearch"], true);
 	assert_eq!(manifest["config"]["supportsArtistSearch"], true);
 	assert!(
@@ -753,7 +753,7 @@ fn synthetic_search() {
 #[aidoku_test]
 fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 	use aidoku::DeepLinkHandler;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	assert_eq!(
 		deep_link_key("https://imhentai.xxx/gallery/123/"),
 		Some("123".into())
@@ -777,4 +777,33 @@ fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 			.unwrap(),
 		Some(DeepLinkResult::Manga { key: "123".into() })
 	);
+}
+
+#[aidoku_test]
+fn cached_reader_preserves_all_pages_and_context_without_another_request() {
+	let reader_url = "https://imhentai.xxx/view/1743990/1/";
+	let doc = Html::parse_with_url(
+		include_str!("../fixtures/live-reader-page-one.html"),
+		reader_url,
+	)
+	.unwrap();
+	let pages = parse_pages_with_referer(&doc, reader_url).unwrap();
+	let source = GallerySource::default();
+	source
+		.pages
+		.remember_pages(reader_url.into(), current_date(), &pages);
+	let actual = source
+		.get_page_list(
+			Manga {
+				key: "1743990".into(),
+				..Default::default()
+			},
+			Chapter {
+				key: "1743990".into(),
+				..Default::default()
+			},
+		)
+		.unwrap();
+	assert_eq!(actual, pages);
+	assert_eq!(actual.len(), 50);
 }

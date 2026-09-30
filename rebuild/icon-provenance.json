@@ -39,7 +39,7 @@
   },
   {
     "id": "multi.luc1d-nhentai",
-    "version": 27,
+    "version": 28,
     "previous_version": 2,
     "asset_changed": false,
     "provenance": "original vector interpretation by assistant",
@@ -77,7 +77,7 @@
   },
   {
     "id": "multi.luc1d-imhentai",
-    "version": 32,
+    "version": 33,
     "previous_version": 3,
     "asset_changed": false,
     "provenance": "original vector interpretation by assistant",
@@ -96,7 +96,7 @@
   },
   {
     "id": "multi.luc1d-hentaifox",
-    "version": 38,
+    "version": 39,
     "previous_version": 3,
     "asset_changed": false,
     "provenance": "original vector interpretation by assistant",
