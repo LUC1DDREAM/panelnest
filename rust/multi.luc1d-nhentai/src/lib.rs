@@ -18,7 +18,9 @@ mod settings;
 #[cfg(test)]
 mod tests;
 
-use core::cell::RefCell;
+#[path = "../../common/cache.rs"]
+mod cache;
+use aidoku::imports::std::current_date;
 
 use models::*;
 
@@ -217,7 +219,9 @@ fn is_trusted_image_url(url: &str) -> bool {
 }
 
 struct NHentai {
-	cache: RefCell<Option<(String, NHentaiGallery)>>,
+	cache: cache::Cache<NHentaiGallery>,
+	filters: cache::Cache<Vec<Filter>>,
+	listings: cache::Cache<Vec<Listing>>,
 }
 
 fn taxonomy_type(filter_id: &str) -> Option<&'static str> {
@@ -270,7 +274,9 @@ impl Source for NHentai {
 	fn new() -> Self {
 		set_rate_limit(1, 1, TimeUnit::Seconds);
 		Self {
-			cache: RefCell::new(None),
+			cache: cache::Cache::default(),
+			filters: cache::Cache::default(),
+			listings: cache::Cache::default(),
 		}
 	}
 
@@ -386,9 +392,11 @@ impl Source for NHentai {
 	) -> Result<Manga> {
 		if needs_details || needs_chapters {
 			let url = format!("{API_URL}/galleries/{}", manga.key);
-			let gallery: NHentaiGallery = Request::get(&url)?
-				.header("User-Agent", USER_AGENT)
-				.json_owned()?;
+			let gallery: NHentaiGallery = if needs_details {
+				Request::get(&url)?.header("User-Agent", USER_AGENT).json_owned()?
+			} else {
+				self.cached_gallery(&manga.key)?
+			};
 
 			if needs_details {
 				manga.copy_from(gallery.clone().into());
@@ -398,29 +406,17 @@ impl Source for NHentai {
 				manga.chapters = Some(vec![chapter_from_gallery(&gallery)]);
 			}
 
-			// Cache the fetched gallery for potential reuse in get_page_list
-			self.cache
-				.borrow_mut()
-				.replace((manga.key.clone(), gallery));
+			// Only a fresh fetch restarts the cache deadline.
+			if needs_details {
+				self.cache.put(manga.key.clone(), current_date(), gallery);
+			}
 		}
 
 		Ok(manga)
 	}
 
 	fn get_page_list(&self, _manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
-		// Try to reuse cached gallery fetched by get_manga_update
-		let maybe_cached = self.cache.borrow();
-		let gallery: NHentaiGallery = match &*maybe_cached {
-			Some((cached_key, cached_gallery)) if cached_key == &chapter.key => {
-				cached_gallery.clone()
-			}
-			_ => {
-				let api_url = format!("{API_URL}/galleries/{}", chapter.key);
-				Request::get(&api_url)?
-					.header("User-Agent", USER_AGENT)
-					.json_owned()?
-			}
-		};
+		let gallery = self.cached_gallery(&chapter.key)?;
 
 		let pages = gallery
 			.pages
@@ -510,6 +506,9 @@ impl ListingProvider for NHentai {
 
 impl DynamicListings for NHentai {
 	fn get_dynamic_listings(&self) -> Result<Vec<Listing>> {
+		if let Some(listings) = self.listings.get("tags", current_date(), 900) {
+			return Ok(listings);
+		}
 		let response: NHentaiTagsResponse = Request::get(format!(
 			"{API_URL}/tags/tag?sort=popular&page=1&per_page=100"
 		))?
@@ -522,6 +521,7 @@ impl DynamicListings for NHentai {
 		if listings.is_empty() {
 			return Err(error!("No popular nhentai tags available"));
 		}
+		self.listings.put("tags".into(), current_date(), listings.clone());
 		Ok(listings)
 	}
 }
@@ -531,10 +531,7 @@ impl AlternateCoverProvider for NHentai {
 		if manga.key.is_empty() || !manga.key.bytes().all(|byte| byte.is_ascii_digit()) {
 			return Err(error!("Invalid gallery key"));
 		}
-		let url = format!("{API_URL}/galleries/{}", manga.key);
-		let gallery: NHentaiGallery = Request::get(&url)?
-			.header("User-Agent", USER_AGENT)
-			.json_owned()?;
+		let gallery = self.cached_gallery(&manga.key)?;
 		Ok(models::cover_variants(
 			&manga.key,
 			&gallery.media_id,
@@ -591,6 +588,9 @@ fn taxonomy_filter(
 
 impl DynamicFilters for NHentai {
 	fn get_dynamic_filters(&self) -> Result<Vec<Filter>> {
+		if let Some(filters) = self.filters.get("taxonomy", current_date(), 900) {
+			return Ok(filters);
+		}
 		let first: NHentaiTagsResponse = Request::get(format!(
 			"{API_URL}/tags/language?sort=popular&page=1&per_page=100"
 		))?
@@ -612,18 +612,18 @@ impl DynamicFilters for NHentai {
 			tags.extend(response.result);
 		}
 		let mut filters = vec![taxonomy_filter(tags, "language", "languages", "Language")?];
-		for (tag_type, id, title) in [
+		let taxonomies = [
 			("artist", "artists", "Popular Artists"),
 			("group", "group-tags", "Popular Groups"),
 			("parody", "parodies", "Popular Parodies"),
 			("character", "characters", "Popular Characters"),
-		] {
-			let response: Option<NHentaiTagsResponse> = Request::get(format!(
-				"{API_URL}/tags/{tag_type}?sort=popular&page=1&per_page=100"
-			))
-			.ok()
-			.map(|request| request.header("User-Agent", USER_AGENT))
-			.and_then(|request| request.json_owned().ok());
+		];
+		let requests = taxonomies.iter().map(|(tag_type, _, _)| {
+			Ok(Request::get(format!("{API_URL}/tags/{tag_type}?sort=popular&page=1&per_page=100"))?
+				.header("User-Agent", USER_AGENT))
+		}).collect::<Result<Vec<_>>>()?;
+		for ((tag_type, id, title), response) in taxonomies.into_iter().zip(Request::send_all(requests)) {
+			let response: Option<NHentaiTagsResponse> = response.ok().and_then(|mut response| response.get_json().ok());
 			if let Some(response) = response
 				&& response.num_pages > 0
 				&& let Ok(filter) = taxonomy_filter(response.result, tag_type, id, title)
@@ -640,6 +640,10 @@ impl DynamicFilters for NHentai {
 			filter.title = Some(Cow::Borrowed(title));
 			filter.placeholder = Some(Cow::Borrowed(placeholder));
 			filters.push(filter.into());
+		}
+		// Do not retain a partially failed optional taxonomy refresh.
+		if filters.len() == 7 {
+			self.filters.put("taxonomy".into(), current_date(), filters.clone());
 		}
 		Ok(filters)
 	}
@@ -690,3 +694,19 @@ register_source!(
 	DynamicListings,
 	DynamicFilters
 );
+
+impl NHentai {
+	fn cached_gallery(&self, key: &str) -> Result<NHentaiGallery> {
+		if key.is_empty() || !key.bytes().all(|b| b.is_ascii_digit()) {
+			return Err(error!("Invalid gallery key"));
+		}
+		if let Some(gallery) = self.cache.get(key, current_date(), 300) {
+			return Ok(gallery);
+		}
+		let gallery: NHentaiGallery = Request::get(format!("{API_URL}/galleries/{key}"))?
+			.header("User-Agent", USER_AGENT)
+			.json_owned()?;
+		self.cache.put(key.into(), current_date(), gallery.clone());
+		Ok(gallery)
+	}
+}

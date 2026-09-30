@@ -212,7 +212,7 @@ fn synthetic_pages_order_formats_and_validation() {
 #[aidoku_test]
 fn page_descriptions_read_validated_reader_filenames() {
 	use aidoku::PageDescriptionProvider;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	let page = Page {
 		content: PageContent::url("https://m2.hentaifox.com/001/81/17.webp"),
 		has_description: true,
@@ -239,7 +239,7 @@ fn page_descriptions_read_validated_reader_filenames() {
 #[aidoku_test]
 fn image_requests_validate_cdn_hosts_and_use_the_gallery_context() {
 	use aidoku::ImageRequestProvider;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	let mut context = aidoku::PageContext::new();
 	context.insert("url".into(), "https://hentaifox.com/gallery/81/".into());
 	assert!(source
@@ -758,7 +758,7 @@ fn popular_taxonomy_filters_map_to_official_latest_and_popular_routes() {
 #[aidoku_test]
 fn listing_dispatch_rejects_unknown_and_invalid_pages_without_network() {
 	use aidoku::ListingProvider;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	assert_eq!(sidebar_type("most-faved"), Some("top_faved"));
 	assert!(
 		source
@@ -813,7 +813,7 @@ fn manifest_preserves_identity_and_matches_discovery() {
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	assert_eq!(manifest["info"]["contentRating"], 2);
 	assert_eq!(manifest["info"]["languages"][0], "multi");
-	assert_eq!(manifest["info"]["version"], 38);
+	assert_eq!(manifest["info"]["version"], 39);
 	assert_eq!(manifest["config"]["supportsAuthorSearch"], true);
 	assert_eq!(manifest["config"]["supportsArtistSearch"], true);
 	assert!(
@@ -956,7 +956,7 @@ fn faplist_parses_gallery_cards_and_recognizes_the_official_empty_state() {
 #[aidoku_test]
 fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 	use aidoku::DeepLinkHandler;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	assert_eq!(
 		deep_link_key("https://hentaifox.com/gallery/123/"),
 		Some("123".into())
@@ -981,7 +981,7 @@ fn deep_links_resolve_only_numeric_gallery_ids_on_the_source_domain() {
 #[aidoku_test]
 fn deep_links_open_tag_latest_and_popular_listings() {
 	use aidoku::DeepLinkHandler;
-	let source = GallerySource;
+	let source = GallerySource::default();
 	for (url, expected_id) in [
 		("https://hentaifox.com/tag/english/", "popular-tag-english"),
 		(
@@ -1046,5 +1046,42 @@ fn search_sort_filter_preserves_latest_and_maps_popular_to_site_parameter() {
 	assert_eq!(
 		search_url_with_filters(None, 1, &latest).unwrap(),
 		search_url(None, 1).unwrap()
+	);
+}
+
+#[aidoku_test]
+fn cached_gallery_manifest_opens_reader_without_another_request() {
+	let doc = Html::parse_with_url(r#"<input id="load_id" value="81"><input id="load_dir" value="001"><input id="load_server" value="2"><input id="load_pages" value="2"><script>var images=$.parseJSON('{"2":"w,10,20","1":"p,30,40"}');</script>"#, BASE_URL).unwrap();
+	let pages = parse_pages(&doc, "81").unwrap();
+	let source = GallerySource::default();
+	source
+		.pages
+		.remember_pages("81".into(), current_date(), &pages);
+	let actual = source
+		.get_page_list(
+			Manga {
+				key: "81".into(),
+				..Default::default()
+			},
+			Chapter {
+				key: "81".into(),
+				..Default::default()
+			},
+		)
+		.unwrap();
+	assert_eq!(actual, pages);
+	assert!(
+		source
+			.get_page_list(
+				Manga {
+					key: "82".into(),
+					..Default::default()
+				},
+				Chapter {
+					key: "81".into(),
+					..Default::default()
+				}
+			)
+			.is_err()
 	);
 }

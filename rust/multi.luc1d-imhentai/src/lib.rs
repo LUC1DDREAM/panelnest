@@ -1014,29 +1014,21 @@ impl aidoku::Home for GallerySource {
 	fn get_home(&self) -> Result<HomeLayout> {
 		let mut home = home_layout();
 		send_partial_result(&HomePartialResult::Layout(home.clone()));
-		let requests = ["latest", "popular", "top-rated", "downloaded"]
-			.map(|id| {
-				let url = listing_url(id, 1)?;
-				site_request(url, &format!("{BASE_URL}/"))
-			})
-			.into_iter()
-			.collect::<Result<Vec<_>>>()?;
-		let responses: [core::result::Result<Response, RequestError>; 4] =
-			Request::send_all(requests)
-				.try_into()
-				.expect("request count matches home feeds");
-		let results = responses.map(|response| {
-			response.and_then(|response| response.get_html().map(|doc| parse_search(&doc)))
-		});
-		let [latest, popular, top_rated, downloaded] = results;
-		let latest = latest.map_err(|_| error!("Latest unavailable or site layout changed"))?;
-		ensure!(
-			!latest.entries.is_empty(),
-			"Latest unavailable or site layout changed"
-		);
+		// Render Latest before waiting for the three optional rankings.
+		let latest_doc = site_request(listing_url("latest", 1)?, &format!("{BASE_URL}/"))?.html()?;
+		let latest = parse_search(&latest_doc);
+		ensure!(!latest.entries.is_empty(), "Latest unavailable or site layout changed");
 		let component = listing_component_from_result("latest", "Latest", latest);
 		update_home_component(&mut home, component.clone());
 		send_partial_result(&HomePartialResult::Component(component));
+		let requests = ["popular", "top-rated", "downloaded"]
+			.map(|id| site_request(listing_url(id, 1)?, &format!("{BASE_URL}/")))
+			.into_iter().collect::<Result<Vec<_>>>()?;
+		let responses: [core::result::Result<Response, RequestError>; 3] = Request::send_all(requests)
+			.try_into().expect("request count matches optional home feeds");
+		let [popular, top_rated, downloaded] = responses.map(|response| {
+			response.and_then(|response| response.get_html().map(|doc| parse_search(&doc)))
+		});
 
 		for (id, title, result) in [
 			("popular", "Popular", popular),
@@ -1078,11 +1070,17 @@ impl aidoku::ListingProvider for GallerySource {
 	}
 }
 
-struct GallerySource;
+#[path = "../../common/cache.rs"]
+mod cache;
+
+#[derive(Default)]
+struct GallerySource {
+	pages: cache::Cache<Vec<cache::CachedPage>>,
+}
 impl Source for GallerySource {
 	fn new() -> Self {
 		set_rate_limit(1, 1, TimeUnit::Seconds);
-		Self
+		Self::default()
 	}
 	fn get_search_manga_list(
 		&self,
@@ -1129,13 +1127,18 @@ impl Source for GallerySource {
 			"Invalid gallery key"
 		);
 		let reader_url = reader_url_for_chapter(&manga.key, &chapter)?;
+		if let Some(pages) = self.pages.pages(&reader_url, current_date()) {
+			return Ok(pages);
+		}
 		let referer = gallery_referer(&manga.key)?;
 		let reader_doc = site_request(reader_url.clone(), referer.as_str())?.html()?;
 		ensure!(
 			is_reader_document(&reader_doc),
 			"Reader unavailable or site layout changed"
 		);
-		parse_pages_with_referer(&reader_doc, &reader_url)
+		let pages = parse_pages_with_referer(&reader_doc, &reader_url)?;
+		self.pages.remember_pages(reader_url, current_date(), &pages);
+		Ok(pages)
 	}
 }
 impl DynamicListings for GallerySource {

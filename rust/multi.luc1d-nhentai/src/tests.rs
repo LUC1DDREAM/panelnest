@@ -4,7 +4,7 @@ fn source_metadata_matches_aidoku_multilingual_filter() {
 	let manifest: serde_json::Value =
 		serde_json::from_str(include_str!("../res/source.json")).unwrap();
 	let languages = manifest["info"]["languages"].as_array().unwrap();
-	assert_eq!(manifest["info"]["version"], 27);
+	assert_eq!(manifest["info"]["version"], 28);
 	assert_eq!(manifest["config"]["supportsAuthorSearch"], true);
 	assert_eq!(manifest["config"]["supportsArtistSearch"], true);
 	assert!(languages.iter().any(|language| language == "multi"));
@@ -601,4 +601,59 @@ fn artist_chips_cover_all_artists_and_do_not_retype_freeform_tags() {
  let manga: aidoku::Manga = empty.into();
  assert!(manga.tags.unwrap().is_empty());
  assert!(!manga.description.unwrap().contains("Artists:"));
+}
+
+#[aidoku_test]
+fn cached_gallery_is_shared_by_pages_and_alternate_covers() {
+	let gallery: NHentaiGallery = serde_json::from_str(r#"{
+ "id":123,"media_id":"456","title":{"english":"Fixture","pretty":"Fixture"},
+ "cover":{"path":"galleries/456/cover.webp","width":1,"height":1},
+ "thumbnail":{"path":"galleries/456/thumb.webp","width":1,"height":1},
+ "scanlator":"","upload_date":0,"tags":[],"num_pages":1,"num_favorites":0,
+ "pages":[{"number":1,"path":"galleries/456/1.webp","width":1,"height":1,"thumbnail":"galleries/456/1t.webp","thumbnail_width":1,"thumbnail_height":1}]
+ }"#).unwrap();
+	use aidoku::Source;
+	let source = super::NHentai::new();
+	source
+		.cache
+		.put("123".into(), super::current_date(), gallery);
+	let pages = source
+		.get_page_list(
+			aidoku::Manga::default(),
+			aidoku::Chapter {
+				key: "123".into(),
+				..Default::default()
+			},
+		)
+		.unwrap();
+	assert_eq!(pages.len(), 1);
+	let covers = aidoku::AlternateCoverProvider::get_alternate_covers(
+		&source,
+		aidoku::Manga {
+			key: "123".into(),
+			..Default::default()
+		},
+	)
+	.unwrap();
+	assert!(!covers.is_empty());
+}
+
+#[aidoku_test]
+fn cached_discovery_does_not_refetch_taxonomy() {
+	use aidoku::{DynamicFilters, DynamicListings, Source};
+	let source = super::NHentai::new();
+	let filters = aidoku::alloc::vec![aidoku::TextFilter::default().into()];
+	let listings = aidoku::alloc::vec![aidoku::Listing {
+		id: "tag:fixture".into(),
+		name: "Fixture".into(),
+		..Default::default()
+	}];
+	source
+		.filters
+		.put("taxonomy".into(), super::current_date(), filters.clone());
+	source
+		.listings
+		.put("tags".into(), super::current_date(), listings.clone());
+	assert_eq!(source.get_dynamic_filters().unwrap(), filters);
+	assert_eq!(source.get_dynamic_listings().unwrap(), listings);
 }
