@@ -75,7 +75,7 @@ def render(root, base, repository):
              'inLanguage':lang,'isPartOf':{'@id':base+'#website'},
              'mainEntity':{'@type':'ItemList','numberOfItems':len(sources),'itemListElement':[
                  {'@type':'ListItem','position':i,'name':s.get('name',s['id']),
-                  'url':canonical+'sources/'+quote(str(s['id']), safe='-._')+'/'}
+                  'url':canonical+'#source-'+quote(str(s['id']), safe='-._')}
                  for i,s in enumerate(sources,1)]}}
         ]}, ensure_ascii=False).replace('<','\\u003c')
         html = f'''<!doctype html>
