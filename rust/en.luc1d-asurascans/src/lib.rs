@@ -251,7 +251,7 @@ impl Source for AsuraScans {
 					"astro-island[component-url*=ChapterListReact], astro-island[opts*=ChapterListReact]",
 				)
 				.and_then(|el| el.attr("props"))
-				.ok_or_else(|| error!("Missing astro-island"))?;
+				.ok_or_else(|| error!("Asura series page did not contain a chapter list"))?;
 
 			let json = serde_json::from_str::<serde_json::Value>(&island_props)?;
 			let public_props = html.select_first("astro-island[props*=publicUrl]").and_then(|el| el.attr("props")).and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok());
@@ -284,41 +284,51 @@ impl Source for AsuraScans {
 	fn get_page_list(&self, manga: Manga, chapter: Chapter) -> Result<Vec<Page>> {
 		// Recheck the source before either reader endpoint: cached Chapter.locked
 		// may be stale, and elapsed timers alone never grant premium access.
-		let current = self.get_manga_update(manga.clone(), false, true)?;
+		let mut series = manga.clone();
+		if let Some(slug) = chapter.url.as_deref()
+			.and_then(|url| url.strip_prefix("https://asurascans.com/comics/"))
+			.and_then(|path| path.split_once("/chapter/").map(|(slug, _)| slug))
+			.filter(|slug| slug.rsplit_once('-').is_some_and(|(base, suffix)| {
+				base == manga.key.as_str() && suffix.len() == 8 && suffix.bytes().all(|b| b.is_ascii_alphanumeric())
+			}))
+		{
+			series.key = slug.into();
+		}
+		let current = self.get_manga_update(series, false, true)?;
 		chapters::require_readable(
 			current
 				.chapters
 				.as_ref()
 				.and_then(|chapters| chapters.iter().find(|current| current.key == chapter.key)),
 		)?;
-		let api_url = format!("{API_URL}/series/{}/chapters/{}", manga.key, chapter.key);
-		let mut api_req = Request::get(api_url)?;
 		if let Ok(status) = auth::get_login_status() {
-			api_req.set_header("Authorization", &format!("Bearer {}", status.access_token));
-			api_req.set_header(
-				"Cookie",
-				&format!(
-					"access_token={}; refresh_token={}",
-					status.access_token, status.refresh_token
-				),
-			);
-		}
-		if let Ok(json) = api_req.json_owned::<serde_json::Value>()
-			&& let Some(page_arr) = json["data"]["chapter"]["pages"].as_array()
-		{
-			let mut pages = Vec::new();
-			for obj in page_arr {
-				let Some(url) = obj
-					.as_str()
-					.or_else(|| obj["url"].as_str())
-					.or_else(|| obj["url"][1].as_str())
-				else {
-					continue;
-				};
-				pages.push(numbered_reader_page(url.into(), pages.len() + 1));
-			}
-			if !pages.is_empty() {
-				return Ok(pages);
+			let api_url = format!("{API_URL}/series/{}/chapters/{}", manga.key, chapter.key);
+			let mut api_req = Request::get(api_url)?;
+				api_req.set_header("Authorization", &format!("Bearer {}", status.access_token));
+				api_req.set_header(
+					"Cookie",
+					&format!(
+						"access_token={}; refresh_token={}",
+						status.access_token, status.refresh_token
+					),
+				);
+			if let Ok(json) = api_req.json_owned::<serde_json::Value>()
+				&& let Some(page_arr) = json["data"]["chapter"]["pages"].as_array()
+			{
+				let mut pages = Vec::new();
+				for obj in page_arr {
+					let Some(url) = obj
+						.as_str()
+						.or_else(|| obj["url"].as_str())
+						.or_else(|| obj["url"][1].as_str())
+					else {
+						continue;
+					};
+					pages.push(numbered_reader_page(url.into(), pages.len() + 1));
+				}
+				if !pages.is_empty() {
+					return Ok(pages);
+				}
 			}
 		}
 
@@ -341,7 +351,7 @@ impl Source for AsuraScans {
 				"astro-island[component-url*=ChapterReader], astro-island[opts*=ChapterReader], astro-island[props*=pages]",
 			)
 			.and_then(|el| el.attr("props"))
-			.ok_or_else(|| error!("Missing astro-island"))?;
+			.ok_or_else(|| error!("Asura reader page did not contain page data"))?;
 
 		let json = serde_json::from_str::<serde_json::Value>(&island_props)?;
 

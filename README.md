@@ -12,7 +12,7 @@ All six sources are published in the root catalog. **Already installed? In Aidok
 - Discovery menu reads the genre and sort links from the selected locale current page, falling back to bundled defaults if fetching or parsing fails. Filters and home links then track WEBTOON catalog changes. Named listings cover each known genre in all three official sort orders and keep existing IDs.
 | Display name | Stable ID | Version |
 |---|---|---:|
-| Asura Scans [PN] | `en.luc1d-asurascans` | 18 |
+| Asura Scans [PN] | `en.luc1d-asurascans` | 19 |
 | Weeb Central [PN] | `en.luc1d-weebcentral` | 21 |
 | nhentai [PN] | `multi.luc1d-nhentai` | 28 |
 | WEBTOON [PN] | `multi.luc1d-webtoon` | 23 |
