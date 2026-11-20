@@ -254,6 +254,8 @@ impl Source for AsuraScans {
 				.ok_or_else(|| error!("Missing astro-island"))?;
 
 			let json = serde_json::from_str::<serde_json::Value>(&island_props)?;
+			let public_props = html.select_first("astro-island[props*=publicUrl]").and_then(|el| el.attr("props")).and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok());
+			let public_slug = public_props.as_ref().and_then(|props| props["publicUrl"][1].as_str()).and_then(|path| path.strip_prefix("/comics/")).filter(|slug| !slug.is_empty() && slug.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')).unwrap_or(&manga.key);
 			let chapters_arr = json["chapters"][1]
 				.as_array()
 				.ok_or_else(|| error!("Missing chapters"))?;
@@ -267,7 +269,7 @@ impl Source for AsuraScans {
 				chapters_arr
 					.iter()
 					.filter_map(|row| {
-						chapters::chapter_from_astro(row, &manga.key, is_subscribed, now)
+						chapters::chapter_from_astro(row, public_slug, is_subscribed, now)
 					})
 					.filter(|chapter| !skip_locked || !chapter.locked)
 					.map(|chapter| chapters::with_series_thumbnail(chapter, &manga.cover))
@@ -320,7 +322,7 @@ impl Source for AsuraScans {
 			}
 		}
 
-		let url = helpers::get_chapter_url(&chapter.key, &manga.key);
+		let url = current.chapters.as_ref().and_then(|rows| rows.iter().find(|row| row.key == chapter.key)).and_then(|row| row.url.clone()).ok_or_else(|| error!("Missing chapter URL"))?;
 		let mut req = Request::get(url)?;
 		if let Ok(status) = auth::get_login_status() {
 			req.set_header("Authorization", &format!("Bearer {}", status.access_token));
@@ -336,7 +338,7 @@ impl Source for AsuraScans {
 
 		let island_props = html
 			.select_first(
-				"astro-island[component-url*=ChapterReader], astro-island[opts*=ChapterReader]",
+				"astro-island[component-url*=ChapterReader], astro-island[opts*=ChapterReader], astro-island[props*=pages]",
 			)
 			.and_then(|el| el.attr("props"))
 			.ok_or_else(|| error!("Missing astro-island"))?;
