@@ -181,7 +181,37 @@ impl Source for AsuraScans {
 		needs_chapters: bool,
 	) -> Result<Manga> {
 		let url = helpers::get_manga_url(&manga.key);
-		let html = Request::get(&url)?.html()?;
+		let mut api_chapters_loaded = false;
+		if needs_chapters {
+			let endpoint = format!("{API_URL}/series/{}/chapters", manga.key);
+			if let Ok(payload) = Request::get(endpoint)?.json_owned::<serde_json::Value>()
+				&& let Some(rows) = payload["data"].as_array()
+			{
+				let subscribed = auth::is_subscribed();
+				let now = aidoku::imports::std::current_date();
+				let show_locked = defaults_get::<bool>("showLocked").unwrap_or(true);
+				let chapters: Vec<_> = rows.iter().filter_map(|row| {
+					let wrapped = serde_json::json!([0, {
+						"number": [0, row["number"]], "title": [0, row["title"]],
+						"published_at": [0, row["published_at"]], "is_premium": [0, row["is_premium"]],
+						"early_access_until": [0, row["early_access_until"]]
+					}]);
+					chapters::chapter_from_astro(&wrapped, &manga.key, subscribed, now)
+				}).collect();
+				if chapters.len() == rows.len() {
+					manga.chapters = Some(chapters.into_iter().filter(|ch| show_locked || !ch.locked)
+						.map(|ch| chapters::with_series_thumbnail(ch, &manga.cover)).collect());
+					api_chapters_loaded = true;
+					if !needs_details { return Ok(manga); }
+				}
+			}
+		}
+		let response = Request::get(&url)?.send()?;
+		if response.status_code() == 403 || response.get_header("cf-mitigated").as_deref() == Some("challenge") {
+			if needs_chapters && api_chapters_loaded { return Ok(manga); }
+			return Err(error!("Asura denied the series request; chapter availability could not be verified"));
+		}
+		let html = response.get_html()?;
 
 		if needs_details {
 			manga.title = html
@@ -245,7 +275,7 @@ impl Source for AsuraScans {
 				.unwrap_or(Viewer::Webtoon);
 		}
 
-		if needs_chapters {
+		if needs_chapters && !api_chapters_loaded {
 			let json = html.select("astro-island[props*=chapters]")
 				.and_then(|elements| elements.filter_map(|el| {
 					let props = el.attr("props")?;
