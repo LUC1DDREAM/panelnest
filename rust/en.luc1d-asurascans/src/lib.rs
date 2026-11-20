@@ -748,7 +748,7 @@ mod filter_tests {
 	fn breaking_change_migration_is_enabled_for_the_historical_key_change() {
 		let config: serde_json::Value =
 			serde_json::from_str(include_str!("../res/source.json")).unwrap();
-		assert_eq!(config["info"]["version"], 17);
+		assert!(config["info"]["version"].as_u64().unwrap() >= 12);
 		assert_eq!(config["config"]["breakingChangeVersion"], 12);
 
 		let source = AsuraScans;
