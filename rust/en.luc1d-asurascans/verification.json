@@ -1,13 +1,13 @@
 {
   "id": "en.luc1d-asurascans",
-  "version": 17,
-  "sha256": "710b6e3eac36d207eb7efb5ac50cf9d1b7488ecffbbbd1da926fd2fd48ef00a4",
-  "bytes": 128586,
+  "version": 18,
+  "sha256": null,
+  "bytes": null,
   "languages": [
     "en"
   ],
   "contentRating": 0,
-  "package_verified": true,
+  "package_verified": false,
   "runtime_tested": false,
   "device_tested": false,
   "fixture_tests_passed": 28,
