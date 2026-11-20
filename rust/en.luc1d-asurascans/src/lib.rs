@@ -246,14 +246,13 @@ impl Source for AsuraScans {
 		}
 
 		if needs_chapters {
-			let island_props = html
-				.select_first(
-					"astro-island[component-url*=ChapterListReact], astro-island[opts*=ChapterListReact]",
-				)
-				.and_then(|el| el.attr("props"))
+			let json = html.select("astro-island[props*=chapters]")
+				.and_then(|elements| elements.filter_map(|el| {
+					let props = el.attr("props")?;
+					let value: serde_json::Value = serde_json::from_str(&props).ok()?;
+					value["chapters"][1].is_array().then_some(value)
+				}).next())
 				.ok_or_else(|| error!("Asura series page did not contain a chapter list"))?;
-
-			let json = serde_json::from_str::<serde_json::Value>(&island_props)?;
 			let public_props = html.select_first("astro-island[props*=publicUrl]").and_then(|el| el.attr("props")).and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok());
 			let public_slug = public_props.as_ref().and_then(|props| props["publicUrl"][1].as_str()).and_then(|path| path.strip_prefix("/comics/")).filter(|slug| !slug.is_empty() && slug.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')).unwrap_or(&manga.key);
 			let chapters_arr = json["chapters"][1]
@@ -294,7 +293,11 @@ impl Source for AsuraScans {
 		{
 			series.key = slug.into();
 		}
-		let current = self.get_manga_update(series, false, true)?;
+		let has_suffix = series.key != manga.key;
+		let current = match self.get_manga_update(series, false, true) {
+			Err(_) if has_suffix => self.get_manga_update(manga.clone(), false, true)?,
+			result => result?,
+		};
 		chapters::require_readable(
 			current
 				.chapters
